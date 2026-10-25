@@ -2907,14 +2907,12 @@ export interface SubscriptionConfig {
     selfHosted: {
       title: string;
       description: string;
-      icon: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     cloud: {
       title: string;
       description: string;
-      icon: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
@@ -2925,14 +2923,12 @@ export interface SubscriptionConfig {
     b2b: {
       title: string;
       description: string;
-      icon: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     b2c: {
       title: string;
       description: string;
-      icon: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
@@ -2964,7 +2960,6 @@ export interface SubscriptionConfig {
         text: string;
         id?: string | null;
       }[];
-      icon: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
@@ -2975,7 +2970,6 @@ export interface SubscriptionConfig {
         text: string;
         id?: string | null;
       }[];
-      icon: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
@@ -2986,7 +2980,6 @@ export interface SubscriptionConfig {
         text: string;
         id?: string | null;
       }[];
-      icon: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
@@ -3670,7 +3663,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
-              icon?: T;
               color?: T;
               image?: T;
             };
@@ -3679,7 +3671,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
-              icon?: T;
               color?: T;
               image?: T;
             };
@@ -3694,7 +3685,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
-              icon?: T;
               color?: T;
               image?: T;
             };
@@ -3703,7 +3693,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
-              icon?: T;
               color?: T;
               image?: T;
             };
@@ -3740,7 +3729,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
                     text?: T;
                     id?: T;
                   };
-              icon?: T;
               color?: T;
               image?: T;
             };
@@ -3755,7 +3743,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
                     text?: T;
                     id?: T;
                   };
-              icon?: T;
               color?: T;
               image?: T;
             };
@@ -3770,7 +3757,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
                     text?: T;
                     id?: T;
                   };
-              icon?: T;
               color?: T;
               image?: T;
             };

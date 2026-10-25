@@ -151,7 +151,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                                 type: "textarea",
                                             }
                                         ),
-                                        { ...iconField, defaultValue: "server" },
                                         { ...colorField, defaultValue: "yellow" },
                                         optionImageField(),
                                     ],
@@ -164,7 +163,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                         localizedText("description", "Use managed infrastructure with selectable runtime consumption.", "Nutze verwaltete Infrastruktur mit wählbarem Laufzeitverbrauch.", {
                                             type: "textarea",
                                         }),
-                                        { ...iconField, defaultValue: "cloud" },
                                         { ...colorField, defaultValue: "aqua" },
                                         optionImageField(),
                                     ],
@@ -185,7 +183,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                         localizedText("description", "Organization purchase flow with tailored commercial handling.", "Kaufprozess für Organisationen mit individueller kaufmännischer Abwicklung.", {
                                             type: "textarea",
                                         }),
-                                        { ...iconField, defaultValue: "briefcase-2" },
                                         { ...colorField, defaultValue: "blue" },
                                         optionImageField(),
                                     ],
@@ -198,7 +195,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                         localizedText("description", "Standardized subscription flow with directly selectable plans.", "Standardisierter Abo-Prozess mit direkt wählbaren Plänen.", {
                                             type: "textarea",
                                         }),
-                                        { ...iconField, defaultValue: "building-store" },
                                         { ...colorField, defaultValue: "pink" },
                                         optionImageField(),
                                     ],
@@ -254,7 +250,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                             { en: "AI-assisted workflows", de: "KI-unterstützte Workflows" },
                                             { en: "Cloud or self-hosted deployment", de: "Cloud- oder Self-hosted-Bereitstellung" },
                                         ]),
-                                        { ...iconField, defaultValue: "sparkles" },
                                         { ...colorField, defaultValue: "lime" },
                                         optionImageField(),
                                     ],
@@ -273,7 +268,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                             { en: "Advanced automation capabilities", de: "Erweiterte Automatisierungsfunktionen" },
                                             { en: "Designed for higher workflow demand", de: "Für einen höheren Workflow-Bedarf ausgelegt" },
                                         ]),
-                                        { ...iconField, defaultValue: "rocket" },
                                         { ...colorField, defaultValue: "magenta" },
                                         optionImageField(),
                                     ],
@@ -290,7 +284,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                             { en: "Configurable workflow executions", de: "Konfigurierbare Workflow-Ausführungen" },
                                             { en: "Tailored usage configuration", de: "Individuelle Nutzungskonfiguration" },
                                         ]),
-                                        { ...iconField, defaultValue: "settings" },
                                         { ...colorField, defaultValue: "yellow" },
                                         optionImageField(),
                                     ],

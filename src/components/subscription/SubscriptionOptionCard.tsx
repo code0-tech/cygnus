@@ -1,28 +1,25 @@
-import { StableBadge } from "@/components/ui/StableBadge"
+import { Card } from "@/components/ui/Card"
 import { cn } from "@/lib/utils"
+import { IconCheck } from "@tabler/icons-react"
 import type { CSSProperties, ReactNode } from "react"
 
 type SubscriptionOptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta" | "neutral"
 
-const SUBSCRIPTION_OPTION_ACTIVE_GLOW_STYLE: CSSProperties = {
-    background: "radial-gradient(circle at top right, color-mix(in oklab, var(--option-accent) 16%, transparent), transparent 38%)",
+// Options of one configurator step share this container; the active card is highlighted inside it.
+export function SubscriptionOptionGroup({ children }: { children: ReactNode }) {
+    return (
+        <Card variant="light" className="grid gap-1 rounded-2xl p-1.5">
+            {children}
+        </Card>
+    )
 }
 
-const SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE: CSSProperties = {
-    color: "var(--option-accent)",
-}
+const mixAccent = (color: string, percent: number) => `color-mix(in oklab, ${color} ${percent}%, transparent)`
 
-function getSubscriptionOptionAccentStyle(accent: SubscriptionOptionAccent, active: boolean): CSSProperties {
-    const accentColor = `var(--bg-${accent})`
-
-    return {
-        "--option-accent": accentColor,
-        ...(active && {
-            borderColor: `color-mix(in oklab, ${accentColor} 60%, transparent)`,
-            background: `linear-gradient(to bottom right, color-mix(in oklab, ${accentColor} 14%, transparent), rgba(255, 255, 255, 0.04), transparent)`,
-            boxShadow: `0 0 0 1px color-mix(in oklab, ${accentColor} 25%, transparent)`,
-        }),
-    } as CSSProperties
+export interface SubscriptionOptionPrice {
+    label: string
+    amount: string
+    suffix: string
 }
 
 interface SubscriptionOptionCardProps {
@@ -30,53 +27,51 @@ interface SubscriptionOptionCardProps {
     description: string
     active: boolean
     onClick?: () => void
-    icon: ReactNode
     disabled?: boolean
     accent?: SubscriptionOptionAccent
     badge?: string
+    startingPrice?: SubscriptionOptionPrice
     children?: ReactNode
 }
 
-export function SubscriptionOptionCard({ title, description, active, onClick, icon, disabled = false, accent = "aqua", badge, children }: SubscriptionOptionCardProps) {
+export function SubscriptionOptionCard({ title, description, active, onClick, disabled = false, accent = "aqua", badge, startingPrice, children }: SubscriptionOptionCardProps) {
+    const accentColor = `var(--bg-${accent})`
+    const activeStyle: CSSProperties = { background: `linear-gradient(to right, ${mixAccent(accentColor, 18)}, ${mixAccent(accentColor, 2)} 70%)` }
+
     return (
         <button
             type="button"
+            aria-pressed={active}
             onClick={onClick}
             disabled={disabled}
-            style={getSubscriptionOptionAccentStyle(accent, active)}
-            className={cn(
-                "relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300",
-                disabled ? "cursor-not-allowed border-white/10 opacity-45" : "border-white/10 hover:bg-light"
-            )}
+            style={active ? activeStyle : undefined}
+            className={cn("flex w-full items-start gap-4 rounded-xl px-4 py-3.5 text-left transition-colors duration-200", !active && "hover:bg-white/4", disabled && "cursor-not-allowed opacity-45")}
         >
-            <div className="relative z-10 flex flex-col gap-1">
-                <div className="flex items-center gap-1.5">
-                    <div className="relative inline-flex shrink-0 items-center justify-center">
-                        {active ? (
-                            <div
-                                aria-hidden="true"
-                                style={SUBSCRIPTION_OPTION_ACTIVE_GLOW_STYLE}
-                                className="pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-xl"
-                            />
-                        ) : null}
-                        <div
-                            style={active ? SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE : undefined}
-                            className="relative inline-flex items-center justify-center text-secondary [&>svg]:h-[1.05em] [&>svg]:w-[1.05em]"
-                        >
-                            {icon}
-                        </div>
-                    </div>
-                    <p className="text-xl text-white" style={active ? SUBSCRIPTION_OPTION_ACTIVE_ICON_STYLE : undefined}>
-                        {title}
-                    </p>
+            <span
+                aria-hidden="true"
+                style={active ? { background: accentColor, borderColor: accentColor } : undefined}
+                className={cn("mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border text-primary transition-colors duration-200", !active && "border-white/25")}
+            >
+                {active && <IconCheck size={12} stroke={3} />}
+            </span>
+            <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <p className="text-base font-medium text-white">{title}</p>
                     {badge && (
-                        <StableBadge border className="ml-auto shrink-0 border-brand/10! bg-brand/10! px-2! py-0.5! text-brand! text-base!">
+                        <span style={{ background: mixAccent(accentColor, 15), color: accentColor }} className="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium">
                             {badge}
-                        </StableBadge>
+                        </span>
                     )}
                 </div>
-                <p className="text-base text-secondary">{description}</p>
+                <p className="mt-0.5 text-sm text-secondary">{description}</p>
                 {children}
+                {startingPrice && (
+                    <p className="mt-2 flex items-baseline gap-1 whitespace-nowrap">
+                        <span className="text-xs text-tertiary">{startingPrice.label}</span>
+                        <span className="text-base font-semibold text-white">{startingPrice.amount}</span>
+                        <span className="text-xs text-tertiary">{startingPrice.suffix}</span>
+                    </p>
+                )}
             </div>
         </button>
     )

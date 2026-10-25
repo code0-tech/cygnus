@@ -1,10 +1,10 @@
-import type { PaymentPeriod, SubscriptionCustomerType, SubscriptionDeploymentMode, SubscriptionPlan, SubscriptionSelection } from "@/lib/subscription/types"
+import { PAYMENT_PERIOD_OPTIONS, type PaymentPeriod, type SubscriptionCustomerType, type SubscriptionDeploymentMode, type SubscriptionPlan, type SubscriptionSelection } from "@/lib/subscription/types"
 import type { SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { getSubscriptionCatalog, type SubscriptionCatalog } from "@/lib/subscription/catalog"
 import { normalizePaymentPeriod, resolveSubscriptionSelection } from "@/lib/subscription/configurator"
 import { getSubscriptionPriceAmount, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscription/prices"
-import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
+import { normalizeUsagePackages, type CheckoutPackages } from "@/lib/subscription/usagePackages"
 
 export function formatDiscountBadge(discount: number, locale: AppLocale) {
     return new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", {
@@ -116,6 +116,39 @@ export function getSubscriptionMonthlySavings(selection: SubscriptionSelection, 
     const monthlyQuote = calculateSubscriptionQuote({ ...selection, paymentPeriod: "monthly" }, config)
     const quote = calculateSubscriptionQuote(selection, config)
     return Math.max(0, monthlyQuote.total - getMonthlyEquivalentAmount(quote.total, selection.paymentPeriod))
+}
+
+const SUBSCRIPTION_PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
+const SUBSCRIPTION_DEPLOYMENTS: SubscriptionDeploymentMode[] = ["self_hosted", "cloud"]
+
+// Cheapest monthly-equivalent amount (in cents) reachable once the given options are fixed; open options take their cheapest value.
+export function getSubscriptionStartingMonthlyAmount(
+    fixed: Pick<SubscriptionSelection, "customerType"> & Partial<Pick<SubscriptionSelection, "plan" | "deployment">>,
+    config: SubscriptionCatalog
+): number | null {
+    const aiTokenPackages = normalizeUsagePackages(config.aiTokens[fixed.customerType].packages)
+    const workflowExecutionPackages = normalizeUsagePackages(config.workflowExecutions[fixed.customerType].packages)
+    const amounts: number[] = []
+
+    for (const plan of fixed.plan ? [fixed.plan] : SUBSCRIPTION_PLANS) {
+        // Custom components are priced per unit, so the smallest packages are always the cheapest.
+        if (plan === "custom" && (!aiTokenPackages.length || !workflowExecutionPackages.length)) continue
+        for (const deployment of fixed.deployment ? [fixed.deployment] : SUBSCRIPTION_DEPLOYMENTS) {
+            for (const paymentPeriod of PAYMENT_PERIOD_OPTIONS) {
+                const selection: SubscriptionSelection = {
+                    customerType: fixed.customerType,
+                    plan,
+                    deployment,
+                    paymentPeriod,
+                    aiTokens: plan === "custom" ? aiTokenPackages[0] : 0,
+                    workflowExecutions: plan === "custom" ? workflowExecutionPackages[0] : 0,
+                }
+                amounts.push(getMonthlyEquivalentAmount(calculateSubscriptionQuote(selection, config).total, paymentPeriod))
+            }
+        }
+    }
+
+    return amounts.length ? Math.min(...amounts) : null
 }
 
 function parseNumber(value: string | null, fallback: number) {

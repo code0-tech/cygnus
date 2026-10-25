@@ -56,10 +56,10 @@ interface CheckoutPricingOverviewBaseProps {
 }
 
 
-function SummaryBadge({ icon, value, tone = "neutral" }: { icon: ReactNode; value: ReactNode; tone?: IconColor }) {
+function SummaryBadge({ icon, value, tone = "neutral" }: { icon?: ReactNode; value: ReactNode; tone?: IconColor }) {
     return (
-        <StableBadge color={tone} border className={`min-w-0! max-w-full! rounded-xl! gap-1.5! pl-1.5! pr-2.5! py-0.5! text-sm! ${TONE_CLASS_NAME[tone]}`}>
-            <span className="inline-flex shrink-0 text-current">{icon}</span>
+        <StableBadge color={tone} border className={`min-w-0! max-w-full! rounded-xl! gap-1.5! ${icon ? "pl-1.5!" : "pl-2.5!"} pr-2.5! py-0.5! text-sm! ${TONE_CLASS_NAME[tone]}`}>
+            {icon && <span className="inline-flex shrink-0 text-current">{icon}</span>}
             <span className="min-w-0 truncate font-medium">{value}</span>
         </StableBadge>
     )
@@ -120,7 +120,7 @@ export function CheckoutPricingOverview(props: CheckoutPricingOverviewProps) {
     return (
         <Card className="bg-light! p-4!">
             <span className="flex flex-wrap items-center gap-2 text-sm text-secondary">
-                {confirmedPricing && <SummaryBadge icon={getIcon(plan.icon, 16)} tone={plan.color} value={planTitle} />}
+                {confirmedPricing && <SummaryBadge tone={plan.color} value={planTitle} />}
                 {deployment && (
                     <SummaryBadge
                         icon={getIcon(deployment === "cloud" ? content.deploymentIcons.cloud : content.deploymentIcons.selfHosted, 16)}

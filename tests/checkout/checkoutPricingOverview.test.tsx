@@ -52,9 +52,9 @@ const content = {
 
 const subscriptionConfig = {
     plan: {
-        pro: { title: "Pro", color: "yellow", icon: "pro" },
-        max: { title: "Max", color: "aqua", icon: "max" },
-        custom: { title: "Custom", color: "magenta", icon: "custom" },
+        pro: { title: "Pro", color: "yellow" },
+        max: { title: "Max", color: "aqua" },
+        custom: { title: "Custom", color: "magenta" },
     },
 } as SubscriptionConfigData
 

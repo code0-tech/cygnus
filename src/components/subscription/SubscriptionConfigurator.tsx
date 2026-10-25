@@ -2,13 +2,14 @@
 
 import { PAYMENT_PERIOD_OPTIONS, type SubscriptionSelection, type SubscriptionSelectionAction } from "@/lib/subscription/types"
 import { WorkflowCalculatorDialog } from "@/components/subscription/WorkflowCalculatorDialog"
-import { SubscriptionOptionCard } from "@/components/subscription/SubscriptionOptionCard"
+import { SubscriptionOptionCard, SubscriptionOptionGroup, type SubscriptionOptionPrice } from "@/components/subscription/SubscriptionOptionCard"
 import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { Card } from "@/components/ui/Card"
 import { PackageSlider } from "@/components/ui/PackageSlider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { calculateSubscriptionQuote, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionMonthlySavings } from "@/lib/subscription/calculator"
+import { calculateSubscriptionQuote, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionMonthlySavings, getSubscriptionStartingMonthlyAmount } from "@/lib/subscription/calculator"
 import { formatMinorCurrency } from "@/lib/formatters"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { buildSubscriptionSelectionSearchParams, parseSubscriptionSelectionFromSearchParams, reduceSubscriptionSelection } from "@/lib/subscription/configurator"
@@ -16,26 +17,12 @@ import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { normalizeUsagePackages, type CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
-import { IconCalendarMonth } from "@tabler/icons-react"
 import { usePathname, useSearchParams } from "next/navigation"
 import type { ReactNode } from "react"
 import { useEffect, useRef, useState } from "react"
 import { LinkButton } from "../ui/LinkButton"
 
 export interface SubscriptionIcons {
-    deployment: {
-        selfHosted: ReactNode
-        cloud: ReactNode
-    }
-    plan: {
-        pro: ReactNode
-        max: ReactNode
-        custom: ReactNode
-    }
-    customerType: {
-        b2b: ReactNode
-        b2c: ReactNode
-    }
     workflowBusinessTypes: ReactNode[]
 }
 
@@ -82,7 +69,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const planPackageSizes = (plan: "pro" | "max") => {
         const quantities = checkoutPackages.planQuantities[plan]
         return (
-            <div className="mt-2 space-y-1 text-base text-secondary">
+            <div className="mt-1.5 flex flex-wrap gap-x-3 text-xs text-tertiary">
                 <p>{formatQuantity(quantities.aiTokens)} AI Tokens</p>
                 <p>{formatQuantity(quantities.workflowExecutions)} Workflow Executions</p>
             </div>
@@ -105,6 +92,12 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const checkoutBaseUrl = localizeHref(content.subscribe.baseUrl.trim() || "/checkout", locale)
     const checkoutLoginUrl = checkoutBaseUrl.endsWith("/login") ? checkoutBaseUrl : `${checkoutBaseUrl.replace(/\/$/, "")}/login`
     const subscribeHref = `${checkoutLoginUrl}?${subscribeSearchParams.toString()}`
+    const startingPriceFormatter = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" })
+    const startingPrice = (fixed: Parameters<typeof getSubscriptionStartingMonthlyAmount>[0]): SubscriptionOptionPrice | undefined => {
+        const amount = getSubscriptionStartingMonthlyAmount(fixed, catalog)
+        if (amount === null) return undefined
+        return { label: locale === "de" ? "ab" : "from", amount: startingPriceFormatter.format(amount / 100), suffix: locale === "de" ? "/Monat" : "/mo" }
+    }
     const configuratorSteps = [
         content.customerType.label,
         content.plan.title,
@@ -176,34 +169,34 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
             <div className="space-y-48">
                 <div className="space-y-8 scroll-mt-48" data-subscription-step="customerType">
                     <SubscriptionOptionCategoryLabel label={content.customerType.label} description={content.customerType.description} />
-                    <div className="grid gap-3">
+                    <SubscriptionOptionGroup>
                         <SubscriptionOptionCard
                             title={content.customerType.b2b.title}
                             description={content.customerType.b2b.description}
-                            icon={icons.customerType.b2b}
                             accent={content.customerType.b2b.color}
+                            startingPrice={startingPrice({ customerType: "b2b" })}
                             active={selection.customerType === "b2b"}
                             onClick={() => selectOption({ type: "customerTypeChanged", value: "b2b" }, "b2b")}
                         />
                         <SubscriptionOptionCard
                             title={content.customerType.b2c.title}
                             description={content.customerType.b2c.description}
-                            icon={icons.customerType.b2c}
                             accent={content.customerType.b2c.color}
+                            startingPrice={startingPrice({ customerType: "b2c" })}
                             active={selection.customerType === "b2c"}
                             onClick={() => selectOption({ type: "customerTypeChanged", value: "b2c" }, "b2c")}
                         />
-                    </div>
+                    </SubscriptionOptionGroup>
                 </div>
 
                 <div className="space-y-8 scroll-mt-48" data-subscription-step="plan">
                     <SubscriptionOptionCategoryLabel label={content.plan.title} description={content.plan.description} />
-                    <div className="grid gap-3">
+                    <SubscriptionOptionGroup>
                         <SubscriptionOptionCard
                             title={content.plan.pro.title}
                             description={content.plan.pro.description}
-                            icon={icons.plan.pro}
                             accent="brand"
+                            startingPrice={startingPrice({ customerType: selection.customerType, plan: "pro" })}
                             active={selection.plan === "pro"}
                             onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro")}
                         >
@@ -212,8 +205,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         <SubscriptionOptionCard
                             title={content.plan.max.title}
                             description={content.plan.max.description}
-                            icon={icons.plan.max}
                             accent="magenta"
+                            startingPrice={startingPrice({ customerType: selection.customerType, plan: "max" })}
                             active={selection.plan === "max"}
                             onClick={() => selectOption({ type: "planChanged", value: "max" }, "max")}
                         >
@@ -222,65 +215,67 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         <SubscriptionOptionCard
                             title={content.plan.custom.title}
                             description={content.plan.custom.description}
-                            icon={icons.plan.custom}
                             accent="aqua"
+                            startingPrice={startingPrice({ customerType: selection.customerType, plan: "custom" })}
                             active={selection.plan === "custom"}
                             onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom")}
                         />
-                    </div>
+                    </SubscriptionOptionGroup>
                 </div>
 
                 <div className="space-y-8 scroll-mt-48" data-subscription-step="deployment">
                     <SubscriptionOptionCategoryLabel label={content.deployment.label} description={content.deployment.description} />
-                    <div className="grid gap-3">
+                    <SubscriptionOptionGroup>
                         <SubscriptionOptionCard
                             title={content.deployment.selfHosted.title}
                             description={content.deployment.selfHosted.description}
-                            icon={icons.deployment.selfHosted}
                             accent={content.deployment.selfHosted.color}
+                            startingPrice={startingPrice({ customerType: selection.customerType, plan: selection.plan, deployment: "self_hosted" })}
                             active={selection.deployment === "self_hosted"}
                             onClick={() => selectOption({ type: "deploymentChanged", value: "self_hosted" }, "selfHosted")}
                         />
                         <SubscriptionOptionCard
                             title={content.deployment.cloud.title}
                             description={content.deployment.cloud.description}
-                            icon={icons.deployment.cloud}
                             accent={content.deployment.cloud.color}
+                            startingPrice={startingPrice({ customerType: selection.customerType, plan: selection.plan, deployment: "cloud" })}
                             active={selection.deployment === "cloud"}
                             onClick={() => selectOption({ type: "deploymentChanged", value: "cloud" }, "cloud")}
                         />
-                    </div>
+                    </SubscriptionOptionGroup>
                 </div>
 
                 {selection.plan === "custom" && (
                     <div className="space-y-8 scroll-mt-48" data-subscription-step="aiTokens">
                         <SubscriptionOptionCategoryLabel label={aiTokens.title} description={aiTokens.description} />
-                        <PackageSlider
-                            packages={aiTokenPackages}
-                            value={aiTokensPreview}
-                            onChange={setAiTokensPreview}
-                            onValueCommit={(aiTokensValue) => dispatch({ type: "aiTokensChanged", value: aiTokensValue })}
-                            ariaLabel={aiTokens.title}
-                            className="rounded-2xl border border-white/10 p-4"
-                            valueLabelSuffix={aiTokens.suffix}
-                            centerLabelSuffix={monthlyPeriodSuffix}
-                        />
+                        <Card variant="light" className="overflow-visible rounded-2xl p-4">
+                            <PackageSlider
+                                packages={aiTokenPackages}
+                                value={aiTokensPreview}
+                                onChange={setAiTokensPreview}
+                                onValueCommit={(aiTokensValue) => dispatch({ type: "aiTokensChanged", value: aiTokensValue })}
+                                ariaLabel={aiTokens.title}
+                                valueLabelSuffix={aiTokens.suffix}
+                                centerLabelSuffix={monthlyPeriodSuffix}
+                            />
+                        </Card>
                     </div>
                 )}
 
                 {selection.plan === "custom" && (
                     <div className="space-y-8 scroll-mt-48" data-subscription-step="workflowExecutions">
                         <SubscriptionOptionCategoryLabel label={workflowExecutions.title} description={workflowExecutions.description} />
-                        <PackageSlider
-                            packages={workflowExecutionPackages}
-                            value={workflowExecutionsPreview}
-                            onChange={setWorkflowExecutionsPreview}
-                            onValueCommit={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
-                            ariaLabel={workflowExecutions.title}
-                            className="rounded-2xl border border-white/10 p-4"
-                            valueLabelSuffix={workflowExecutions.suffix}
-                            centerLabelSuffix={monthlyPeriodSuffix}
-                        />
+                        <Card variant="light" className="overflow-visible rounded-2xl p-4">
+                            <PackageSlider
+                                packages={workflowExecutionPackages}
+                                value={workflowExecutionsPreview}
+                                onChange={setWorkflowExecutionsPreview}
+                                onValueCommit={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
+                                ariaLabel={workflowExecutions.title}
+                                valueLabelSuffix={workflowExecutions.suffix}
+                                centerLabelSuffix={monthlyPeriodSuffix}
+                            />
+                        </Card>
                         <div className="flex w-full items-center justify-between gap-4">
                             <WorkflowCalculatorDialog
                                 locale={locale}
@@ -304,7 +299,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
 
                 <div className="space-y-8 scroll-mt-48" data-subscription-step="paymentPeriod">
                     <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} description={content.paymentPeriod.description} />
-                    <div className="grid gap-3">
+                    <SubscriptionOptionGroup>
                         {paymentPeriodOptions.map((period) => {
                             const savings = getSubscriptionMonthlySavings({ ...selection, paymentPeriod: period }, catalog)
 
@@ -313,7 +308,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                     key={period}
                                     title={content.paymentPeriod[`${period}Text`]}
                                     description={content.paymentPeriod[`${period}PeriodSuffix`]}
-                                    icon={<IconCalendarMonth size={18} />}
                                     accent={content.paymentPeriod[`${period}Color`]}
                                     badge={savings > 0 ? `${content.paymentPeriod.savingsLabel} ${formatMinorCurrency(savings, "EUR", locale)}` : undefined}
                                     active={selection.paymentPeriod === period}
@@ -321,7 +315,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                 />
                             )
                         })}
-                    </div>
+                    </SubscriptionOptionGroup>
                 </div>
             </div>
 
