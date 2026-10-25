@@ -252,8 +252,6 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                                 onValueCommit={setAiTokens}
                                 ariaLabel={content.dashboard.aiTokensLabel}
                                 size="sm"
-                                variant="gradient"
-                                shape="cone-incline"
                             />
                         </LicenseTabRow>
                         <LicenseTabRow title={content.dashboard.workflowExecutionsLabel}>
@@ -264,8 +262,6 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                                 onValueCommit={setWorkflowExecutions}
                                 ariaLabel={content.dashboard.workflowExecutionsLabel}
                                 size="sm"
-                                variant="gradient"
-                                shape="cone-incline"
                             />
                         </LicenseTabRow>
                     </>

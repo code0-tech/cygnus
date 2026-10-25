@@ -6,6 +6,7 @@ import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 const dom = installDomTestEnvironment()
 const { act, cleanup, fireEvent, render, screen } = await import("@testing-library/react")
 const { PackageSlider } = await import("../../src/components/ui/PackageSlider")
+const { Slider } = await import("../../src/components/ui/Slider")
 const frames = new Map<number, FrameRequestCallback>()
 let frameId = 0
 window.requestAnimationFrame = (callback) => {
@@ -60,7 +61,6 @@ test("tracks the pointer continuously and settles on a valid package after relea
             <PackageSlider
                 packages={[10, 100, 500, 1000]}
                 value={value}
-                lines={31}
                 onChange={(next) => {
                     changes.push(next)
                     setValue(next)
@@ -76,18 +76,20 @@ test("tracks the pointer continuously and settles on a valid package after relea
     assert.deepEqual(changes, [500])
     assert.deepEqual(commits, [])
     const bars = track.firstElementChild!.children
-    assert.equal((bars[19].firstElementChild as HTMLElement).style.opacity, "0")
+    const dragProbe = Math.floor((185 / 300) * (bars.length - 1)) + 1
+    assert.equal((bars[dragProbe].firstElementChild as HTMLElement).style.opacity, "0")
     pointer(track, "pointermove", 185)
     assert.deepEqual(changes, [500])
-    assert.ok(Number((bars[19].firstElementChild as HTMLElement).style.opacity) > 0)
-    const dragOpacity = (bars[19].firstElementChild as HTMLElement).style.opacity
+    assert.ok(Number((bars[dragProbe].firstElementChild as HTMLElement).style.opacity) > 0)
+    const dragOpacity = (bars[dragProbe].firstElementChild as HTMLElement).style.opacity
     pointer(track, "pointerup", 185)
     assert.deepEqual(commits, [500])
-    assert.equal((bars[19].firstElementChild as HTMLElement).style.opacity, dragOpacity)
+    assert.equal((bars[dragProbe].firstElementChild as HTMLElement).style.opacity, dragOpacity)
     settleAnimation()
-    assert.equal((bars[19].firstElementChild as HTMLElement).style.opacity, "1")
-    assert.equal((bars[20].firstElementChild as HTMLElement).style.opacity, "1")
-    assert.equal((bars[21].firstElementChild as HTMLElement).style.opacity, "0")
+    assert.equal((bars[dragProbe].firstElementChild as HTMLElement).style.opacity, "1")
+    const lastActiveLine = Math.floor((2 / 3) * (bars.length - 1))
+    assert.equal((bars[lastActiveLine].firstElementChild as HTMLElement).style.opacity, "1")
+    assert.equal((bars[lastActiveLine + 2].firstElementChild as HTMLElement).style.opacity, "0")
 })
 
 test("keyboard changes and commits exactly one package at a time", () => {
@@ -107,4 +109,47 @@ test("a single package disables pointer and keyboard changes", () => {
     pointer(track, "pointerdown", 300)
     fireEvent.keyDown(track, { key: "ArrowRight" })
     assert.deepEqual(changes, [])
+})
+
+for (const size of ["sm", "md"] as const) {
+    test(`shows exactly four prominent marks at the selectable package positions (${size})`, () => {
+        const packages = [10, 100, 500, 1000]
+        render(<PackageSlider packages={packages} value={100} onChange={() => {}} size={size} />)
+        const track = screen.getByRole("slider")
+        const bars = Array.from(track.firstElementChild!.children) as HTMLElement[]
+        const marks = bars.filter((bar) => bar.dataset.major === "true")
+        assert.equal(marks.length, packages.length)
+        assert.deepEqual(
+            marks.map((mark) => bars.indexOf(mark)),
+            packages.map((_, index) => (index * (bars.length - 1)) / (packages.length - 1))
+        )
+        for (const mark of marks) {
+            const index = bars.indexOf(mark)
+            const neighbor = bars[index === bars.length - 1 ? index - 1 : index + 1]
+            assert.ok(parseFloat(mark.style.height) - parseFloat(neighbor.style.height) >= (size === "sm" ? 11 : 15))
+        }
+    })
+}
+
+test("updates package markers when the available package list changes", () => {
+    const view = render(<PackageSlider packages={[10, 100, 500, 1000]} value={100} onChange={() => {}} />)
+    view.rerender(<PackageSlider packages={[100, 500]} value={100} onChange={() => {}} />)
+    const marks = screen.getByRole("slider").querySelectorAll("[data-major]")
+    assert.equal(marks.length, 2)
+})
+
+test("the calculator's sticky marks select the exact supplied value rather than a rounded bar position", () => {
+    const changes: number[] = []
+    const commits: number[] = []
+    function Controlled() {
+        const [value, setValue] = useState(100)
+        return <Slider min={100} max={10000} step={100} majorValues={[100, 1000, 5000, 10000]} value={value} onChange={(next) => { changes.push(next); setValue(next) }} onValueCommit={(next) => commits.push(next)} />
+    }
+    render(<Controlled />)
+    const track = prepareTrack()
+    pointer(track, "pointerdown", 20)
+    pointer(track, "pointermove", 32)
+    pointer(track, "pointerup", 32)
+    assert.equal(changes.at(-1), 1000)
+    assert.deepEqual(commits, [1000])
 })

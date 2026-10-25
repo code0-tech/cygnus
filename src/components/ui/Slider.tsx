@@ -1,42 +1,33 @@
-"use client"
-
 import { formatCompactNumber } from "@/lib/formatters"
 import { cn } from "@/lib/utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-type SliderSize = "sm" | "md" | "lg"
+type SliderSize = "sm" | "md"
 
+const LINE_COUNT = 37
+const ANIMATION_SPEED = 240
 const SLIDER_SIZE_STYLES = {
-    sm: { track: "h-12", label: "text-[0.6875rem]", baseHeight: 18, coneMinHeight: 6, coneHeightRange: 20, majorHeight: 24, coneMajorMax: 30 },
-    md: { track: "h-16", label: "text-xs", baseHeight: 24, coneMinHeight: 8, coneHeightRange: 28, majorHeight: 32, coneMajorMax: 40 },
-    lg: { track: "h-20", label: "text-sm", baseHeight: 30, coneMinHeight: 10, coneHeightRange: 36, majorHeight: 40, coneMajorMax: 50 },
-} satisfies Record<SliderSize, Record<string, string | number>>
+    sm: { track: "h-16", label: "text-[0.6875rem]", minHeight: 6, heightRange: 20, majorExtraHeight: 12 },
+    md: { track: "h-20", label: "text-xs", minHeight: 8, heightRange: 28, majorExtraHeight: 16 },
+} as const
 
 type SliderProps = {
     min: number
     max: number
+    majorValues: readonly number[]
     step?: number
     value: number
     onChange: (value: number) => void
     onValueCommit?: (value: number) => void
-    name?: string
     disabled?: boolean
     size?: SliderSize
     className?: string
-    lines?: number
     minLabel?: string
     maxLabel?: string
     centerLabel?: string
     ariaLabel?: string
     valueLabelSuffix?: string
     centerLabelSuffix?: string
-    variant?: "default" | "gradient"
-    activeColor?: string
-    inactiveColor?: string
-    shape?: "default" | "cone-incline" | "cone-decline"
-    showMajorLines?: boolean
-    majorLines?: number[]
-    animationSpeed?: number
     smoothDrag?: boolean
 }
 
@@ -50,38 +41,23 @@ function getDecimalPlaces(value: number) {
     return Math.max(0, decimals - Number(exponent))
 }
 
-function getDefaultLines() {
-    if (typeof window === "undefined") return 56
-    if (window.matchMedia("(min-width: 1280px)").matches) return 56
-    if (window.matchMedia("(min-width: 768px)").matches) return 48
-    return 36
-}
-
 export function Slider({
     min,
     max,
+    majorValues,
     step = 1,
     value,
     onChange,
     onValueCommit,
-    name,
     disabled = false,
     size = "md",
     className,
-    lines,
     minLabel,
     maxLabel,
     centerLabel,
     ariaLabel,
     valueLabelSuffix,
     centerLabelSuffix = "",
-    variant = "default",
-    activeColor = "currentColor",
-    inactiveColor = "rgba(255,255,255,0.18)",
-    shape = "default",
-    showMajorLines = true,
-    majorLines,
-    animationSpeed = 240,
     smoothDrag = false,
 }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
@@ -92,16 +68,13 @@ export function Slider({
     const stickyMajorLineRef = useRef<number | null>(null)
     const commitStartValueRef = useRef(value)
     const pendingValueRef = useRef(value)
-    const [responsiveLines, setResponsiveLines] = useState(lines ?? 56)
 
     const resolvedMin = Number.isFinite(min) ? min : 0
     const resolvedStep = Number.isFinite(step) && step > 0 ? step : 1
     const resolvedMax = Number.isFinite(max) && max > resolvedMin ? max : resolvedMin + resolvedStep
     const resolvedValue = Number.isFinite(value) ? value : resolvedMin
     const clampedValue = Math.min(resolvedMax, Math.max(resolvedMin, resolvedValue))
-    const requestedLines = lines ?? responsiveLines
-    const lineCount = Math.min(512, Math.max(2, Math.floor(Number.isFinite(requestedLines) ? requestedLines : 48)))
-    const resolvedAnimationSpeed = Math.min(2_000, Number.isFinite(animationSpeed) && animationSpeed > 0 ? animationSpeed : 240)
+    const lineCount = LINE_COUNT
     const range = resolvedMax - resolvedMin
     const progress = (clampedValue - resolvedMin) / range
     const activePosition = progress * (lineCount - 1)
@@ -117,11 +90,11 @@ export function Slider({
     const visiblePosition = shouldAnimate ? animatedPosition : immediatePosition
     const sizeStyles = SLIDER_SIZE_STYLES[size] ?? SLIDER_SIZE_STYLES.md
     const resolvedMajorLines = useMemo(() => {
-        const defaultMajorLines = [0, Math.round((lineCount - 1) / 4), Math.round((lineCount - 1) / 2), Math.round(((lineCount - 1) * 3) / 4), lineCount - 1]
-        const lineIndexes = majorLines ?? defaultMajorLines
-
-        return Array.from(new Set(lineIndexes.filter(Number.isFinite).map((line) => Math.min(lineCount - 1, Math.max(0, Math.round(line)))))).sort((first, second) => first - second)
-    }, [lineCount, majorLines])
+        const indexes = majorValues
+            .filter((value) => Number.isFinite(value) && value >= resolvedMin && value <= resolvedMax)
+            .map((value) => Math.round(((value - resolvedMin) / range) * (lineCount - 1)))
+        return Array.from(new Set(indexes)).sort((first, second) => first - second)
+    }, [majorValues, range, resolvedMin, resolvedMax])
     const majorLineIndexes = useMemo(() => new Set(resolvedMajorLines), [resolvedMajorLines])
     const resolvedMinLabel = minLabel ?? formatSliderLabel(resolvedMin, valueLabelSuffix)
     const resolvedCenterLabel = centerLabel ?? formatSliderLabel(clampedValue, valueLabelSuffix, centerLabelSuffix)
@@ -140,23 +113,6 @@ export function Slider({
         },
         [getPositionForValue]
     )
-
-    useEffect(() => {
-        if (lines !== undefined) {
-            setResponsiveLines(lines)
-            return
-        }
-
-        const mediaQueries = [window.matchMedia("(min-width: 1280px)"), window.matchMedia("(min-width: 768px)")]
-        const updateLines = () => setResponsiveLines(getDefaultLines())
-
-        updateLines()
-        mediaQueries.forEach((mediaQuery) => mediaQuery.addEventListener("change", updateLines))
-
-        return () => {
-            mediaQueries.forEach((mediaQuery) => mediaQuery.removeEventListener("change", updateLines))
-        }
-    }, [lines])
 
     useEffect(() => {
         const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -181,7 +137,7 @@ export function Slider({
 
         let animationFrame = 0
         let previousTime = performance.now()
-        const stiffness = resolvedAnimationSpeed
+        const stiffness = ANIMATION_SPEED
         const damping = 2 * Math.sqrt(stiffness) * 0.82
 
         const animate = (currentTime: number) => {
@@ -214,7 +170,7 @@ export function Slider({
 
         animationFrame = window.requestAnimationFrame(animate)
         return () => window.cancelAnimationFrame(animationFrame)
-    }, [activePosition, immediatePosition, resolvedAnimationSpeed, shouldAnimate])
+    }, [activePosition, immediatePosition, ANIMATION_SPEED, shouldAnimate])
 
     const updateValue = useCallback(
         (nextValue: number) => {
@@ -251,7 +207,7 @@ export function Slider({
             let nextPosition = rawPosition
             let releasedStickyLine = false
 
-            if (applyMajorLineStickiness && showMajorLines && !smoothDrag) {
+            if (applyMajorLineStickiness && !smoothDrag) {
                 const stickyLine = stickyMajorLineRef.current
 
                 if (stickyLine !== null) {
@@ -291,15 +247,14 @@ export function Slider({
                 setAnimatedPosition(rawPosition)
                 springVelocityRef.current = 0
             }
-            updateValue(resolvedMin + (nextPosition / (lineCount - 1)) * range)
+            const stickyValue = stickyMajorLineRef.current === null ? undefined : majorValues.find((value) => Math.round(getPositionForValue(value)) === stickyMajorLineRef.current)
+            updateValue(stickyValue ?? resolvedMin + (nextPosition / (lineCount - 1)) * range)
         },
-        [lineCount, prefersReducedMotion, range, resolvedMajorLines, resolvedMin, showMajorLines, smoothDrag, updateValue]
+        [getPositionForValue, lineCount, majorValues, prefersReducedMotion, range, resolvedMajorLines, resolvedMin, smoothDrag, updateValue]
     )
 
     return (
         <div className={cn("w-full", className)}>
-            {name ? <input type="hidden" name={name} value={clampedValue} disabled={disabled} /> : null}
-
             <div
                 ref={trackRef}
                 role="slider"
@@ -394,18 +349,18 @@ export function Slider({
                         const lineProgress = index / (lineCount - 1)
                         const edgeInfluence = overscrollStretch > 0 ? lineProgress ** 2 : (1 - lineProgress) ** 2
                         const edgeScale = overscrollStretch > 0 ? 1 + Math.abs(overscrollStretch) * edgeInfluence * 0.14 : 1 - Math.abs(overscrollStretch) * edgeInfluence * 0.08
-                        const coneProgress = shape === "cone-decline" ? 1 - lineProgress : lineProgress
-                        const baseHeight = shape === "default" ? sizeStyles.baseHeight : sizeStyles.coneMinHeight + coneProgress * sizeStyles.coneHeightRange
-                        const isMajorLine = showMajorLines && majorLineIndexes.has(index)
-                        const lineHeight = isMajorLine ? (shape === "default" ? sizeStyles.majorHeight : Math.min(baseHeight + 4, sizeStyles.coneMajorMax)) : baseHeight
+                        const baseHeight = sizeStyles.minHeight + lineProgress * sizeStyles.heightRange
+                        const isMajorLine = majorLineIndexes.has(index)
+                        const lineHeight = baseHeight + (isMajorLine ? sizeStyles.majorExtraHeight : 0)
 
                         return (
                             <span
                                 key={index}
+                                data-major={isMajorLine || undefined}
                                 className="relative flex-1 origin-center overflow-hidden rounded-full transition-[opacity,transform] duration-75 ease-out motion-reduce:transition-none"
                                 style={{
                                     height: `${lineHeight}px`,
-                                    backgroundColor: inactiveColor,
+                                    backgroundColor: "rgba(255,255,255,0.18)",
                                     opacity: 0.4 + activation * 0.6,
                                     transform: `scaleY(${scale * edgeScale})`,
                                     transitionDuration: shouldAnimate ? undefined : "0ms",
@@ -417,14 +372,9 @@ export function Slider({
                                     style={{
                                         opacity: activation,
                                         transitionDuration: shouldAnimate ? undefined : "0ms",
-                                        backgroundColor: variant === "default" ? activeColor : undefined,
-                                        ...(variant === "gradient"
-                                            ? {
-                                                  backgroundImage: "linear-gradient(to right, #ff6b6b, #ffb86b, #72f896)",
-                                                  backgroundPosition: `${lineProgress * 100}% center`,
-                                                  backgroundSize: `${lineCount * 100}% 100%`,
-                                              }
-                                            : {}),
+                                        backgroundImage: "linear-gradient(to right, #ff6b6b, #ffb86b, #72f896)",
+                                        backgroundPosition: `${lineProgress * 100}% center`,
+                                        backgroundSize: `${lineCount * 100}% 100%`,
                                     }}
                                 />
                             </span>

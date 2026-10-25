@@ -265,8 +265,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             className="rounded-2xl border border-white/10 p-4"
                             valueLabelSuffix={aiTokens.suffix}
                             centerLabelSuffix={monthlyPeriodSuffix}
-                            variant="gradient"
-                            shape="cone-incline"
                         />
                     </div>
                 )}
@@ -283,8 +281,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                             className="rounded-2xl border border-white/10 p-4"
                             valueLabelSuffix={workflowExecutions.suffix}
                             centerLabelSuffix={monthlyPeriodSuffix}
-                            variant="gradient"
-                            shape="cone-incline"
                         />
                         <div className="flex w-full items-center justify-between gap-4">
                             <WorkflowCalculatorDialog

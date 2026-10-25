@@ -139,6 +139,7 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                         <Slider
                             min={min}
                             max={max}
+                            majorValues={packages}
                             step={step}
                             value={runsPerDayPreview}
                             onChange={setRunsPerDayPreview}
@@ -146,9 +147,6 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                             ariaLabel={unitLabel}
                             valueLabelSuffix={unit}
                             centerLabelSuffix={centerLabelSuffix}
-                            lines={40}
-                            variant="gradient"
-                            shape="cone-incline"
                         />
                     </div>
                 </div>

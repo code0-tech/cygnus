@@ -1,11 +1,9 @@
-"use client"
-
 import { Slider } from "@/components/ui/Slider"
 import { formatCompactNumber } from "@/lib/formatters"
 import { snapToUsagePackage } from "@/lib/subscription/usagePackages"
 import type { ComponentProps } from "react"
 
-type PackageSliderProps = Omit<ComponentProps<typeof Slider>, "min" | "max" | "step" | "value" | "onChange" | "onValueCommit" | "name" | "minLabel" | "maxLabel" | "centerLabel"> & {
+type PackageSliderProps = Omit<ComponentProps<typeof Slider>, "min" | "max" | "majorValues" | "step" | "value" | "onChange" | "onValueCommit" | "minLabel" | "maxLabel" | "centerLabel"> & {
     packages: readonly number[]
     value: number
     onChange: (value: number) => void
@@ -27,7 +25,7 @@ export function PackageSlider({ packages, value, onChange, onValueCommit, valueL
             {...props}
             min={0}
             max={lastIndex}
-            lines={props.lines ?? 36}
+            majorValues={packages.map((_, index) => index)}
             step={1}
             smoothDrag
             disabled={props.disabled || packages.length < 2}
