@@ -325,6 +325,8 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                 <DialogPortal>
                     <DialogOverlay className="backdrop-blur-sm" />
                     <DialogContent
+                        tabIndex={-1}
+                        onOpenAutoFocus={(event) => event.preventDefault()}
                         showCloseButton={false}
                         className="flex! flex-col! h-[calc(100dvh-2rem)]! w-[calc(100vw-2rem)]! max-w-5xl! overflow-hidden! border border-white/5 bg-primary! p-4! sm:p-6!"
                     >

@@ -25,7 +25,7 @@ import {
     TooltipTrigger,
 } from "@code0-tech/pictor"
 import { IconX } from "@tabler/icons-react"
-import type { ComponentType, CSSProperties, ReactNode } from "react"
+import { useEffect, useRef, type ComponentType, type CSSProperties, type ReactNode } from "react"
 
 export interface LicenseDialogTab {
     value: string
@@ -49,6 +49,16 @@ export function LicenseDialog({ closeLabel, description, onClose, onValueChange,
     const visibleTabs = tabs.filter((tab): tab is LicenseDialogTab => Boolean(tab))
     const activeTab = value ?? visibleTabs[0]?.value
     const showTabs = visibleTabs.length > 1
+    const navigationRef = useRef<HTMLDivElement>(null)
+    const hadNavigationRef = useRef(showTabs)
+
+    useEffect(() => {
+        const navigationAppeared = open && showTabs && !hadNavigationRef.current
+        hadNavigationRef.current = open && showTabs
+        if (!navigationAppeared) return
+
+        navigationRef.current?.querySelector<HTMLButtonElement>("button[data-license-tab-active]")?.focus({ preventScroll: true })
+    }, [open, showTabs])
 
     return (
         <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
@@ -57,13 +67,16 @@ export function LicenseDialog({ closeLabel, description, onClose, onValueChange,
                 <DialogContent
                     autoFocus
                     showCloseButton={false}
-                    className="h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-none! overflow-visible! border border-white/5 p-0.5! sm:h-[75dvh]! sm:w-[75vw]! sm:max-w-250!"
+                    className="h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-none! overflow-visible! border border-white/5 p-0.5! outline-none! sm:h-[75dvh]! sm:w-[75vw]! sm:max-w-250!"
                 >
                     <DialogTitle className="sr-only">{title}</DialogTitle>
                     {description ? <DialogDescription className="sr-only">{description}</DialogDescription> : null}
 
                     <Tab orientation="vertical" value={activeTab} onValueChange={onValueChange} className="relative flex! h-full! w-full! flex-col!">
-                        <div className="flex items-center justify-between gap-2 p-2 sm:absolute sm:top-1/2 sm:left-0 sm:max-w-75 sm:-translate-x-full sm:-translate-y-1/2 sm:flex-col sm:items-end sm:p-10">
+                        <div
+                            ref={navigationRef}
+                            className="flex items-center justify-between gap-2 p-2 sm:absolute sm:top-1/2 sm:left-0 sm:max-w-75 sm:-translate-x-full sm:-translate-y-1/2 sm:flex-col sm:items-end sm:p-10"
+                        >
                             {showTabs ? (
                                 <SegmentedControl
                                     type="single"
@@ -76,7 +89,7 @@ export function LicenseDialog({ closeLabel, description, onClose, onValueChange,
                                     {visibleTabs.map((tab) => (
                                         <Tooltip key={tab.value}>
                                             <TooltipTrigger asChild>
-                                                <SegmentedControlItem value={tab.value} aria-label={tab.label}>
+                                                <SegmentedControlItem value={tab.value} aria-label={tab.label} data-license-tab-active={tab.value === activeTab ? "" : undefined}>
                                                     <tab.icon aria-hidden style={{ minWidth: "16px", minHeight: "16px" }} size={16} />
                                                 </SegmentedControlItem>
                                             </TooltipTrigger>

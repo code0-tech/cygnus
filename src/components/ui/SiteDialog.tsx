@@ -61,7 +61,8 @@ export function SiteDialogContent({
         <DialogPortal>
             <DialogOverlay className={cn("backdrop-blur-sm", className)} />
             <DialogContent
-                autoFocus
+                tabIndex={-1}
+                onOpenAutoFocus={(event) => event.preventDefault()}
                 showCloseButton={false}
                 className={cn(
                     SITE_DIALOG_FRAME_CLASS_NAME,

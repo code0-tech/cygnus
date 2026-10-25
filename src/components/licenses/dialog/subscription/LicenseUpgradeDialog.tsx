@@ -159,6 +159,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
     const planSelection =
         upgradeTargets.length > 1 ? (
             <SegmentedControl
+                tabIndex={-1}
                 type="single"
                 color={"tertiary"}
                 value={plan}
@@ -168,7 +169,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                 }}
             >
                 {upgradeTargets.map((option) => (
-                    <SegmentedControlItem style={{
+                    <SegmentedControlItem tabIndex={-1} style={{
                         padding: ".422rem .563rem"
                     }} key={option} value={option}>
                             <Text>{subscriptionConfig.plan[option].title}</Text>
