@@ -17,7 +17,7 @@ import {
     MenuTrigger,
 } from "@code0-tech/pictor"
 import { SiteDialogContent } from "@/components/ui/SiteDialog"
-import { Slider } from "@/components/ui/Slider"
+import { PackageSlider } from "@/components/ui/PackageSlider"
 import { snapToUsagePackage } from "@/lib/subscription/usagePackages"
 import { IconCheck, IconChevronDown, IconSearch } from "@tabler/icons-react"
 import { type ReactNode, useEffect, useState } from "react"
@@ -59,23 +59,21 @@ interface WorkflowCalculatorDialogProps {
 export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, value, packages, suffix, centerLabelSuffix, onApply }: WorkflowCalculatorDialogProps) {
     const [businessTypeMenuOpen, setBusinessTypeMenuOpen] = useState(false)
     const [selectedBusinessTypeIndex, setSelectedBusinessTypeIndex] = useState(0)
-    const [runsPerDay, setRunsPerDay] = useState(value)
-    const [runsPerDayPreview, setRunsPerDayPreview] = useState(value)
+    const [runsPerDay, setRunsPerDay] = useState(() => snapToUsagePackage(value, packages))
+    const [runsPerDayPreview, setRunsPerDayPreview] = useState(() => snapToUsagePackage(value, packages))
     const selectedBusinessType = content.types[selectedBusinessTypeIndex] ?? content.types[0]
     const rawEstimate = runsPerDay * (selectedBusinessType?.conversion_rate ?? 1)
     const estimatedExecutions = Math.max(0, Math.round(rawEstimate))
     const applicableExecutions = snapToUsagePackage(estimatedExecutions, packages)
-    const min = packages[0] ?? 0
-    const max = packages[packages.length - 1] ?? min
-    const step = Math.max(1, min)
     const formatterLocale = locale === "de" ? "de-DE" : "en-US"
     const unit = selectedBusinessType?.conversion_unit
     const unitLabel = unit ? `${unit.charAt(0).toUpperCase()}${unit.slice(1)} per month` : content.runsPerDayLabel
 
     useEffect(() => {
-        setRunsPerDay(value)
-        setRunsPerDayPreview(value)
-    }, [value])
+        const selectedPackage = snapToUsagePackage(value, packages)
+        setRunsPerDay(selectedPackage)
+        setRunsPerDayPreview(selectedPackage)
+    }, [packages, value])
 
     return (
         <Dialog>
@@ -136,11 +134,8 @@ export function WorkflowCalculatorDialog({ locale, content, businessTypeIcons, v
                     </div>
 
                     <div className="min-w-0 pb-2">
-                        <Slider
-                            min={min}
-                            max={max}
-                            majorValues={packages}
-                            step={step}
+                        <PackageSlider
+                            packages={packages}
                             value={runsPerDayPreview}
                             onChange={setRunsPerDayPreview}
                             onValueCommit={setRunsPerDay}
