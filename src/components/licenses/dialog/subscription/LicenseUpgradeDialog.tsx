@@ -24,7 +24,7 @@ import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { normalizeUsagePackages, snapToUsagePackage, type CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { getLicenseBenefitGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
 import { cn } from "@/lib/utils"
-import { Alert, Badge, Button, Card, SegmentedControl, SegmentedControlItem, Spacing, Text } from "@code0-tech/pictor"
+import { Alert, Badge, Button, Card, getSize, SegmentedControl, SegmentedControlItem, Spacing, Text } from "@code0-tech/pictor"
 import { IconArrowRight, IconTrendingUp } from "@tabler/icons-react"
 import BorderBeam, { type BorderBeamColorVariant } from "border-beam"
 import { useRouter } from "next/navigation"
@@ -169,10 +169,8 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                 }}
             >
                 {upgradeTargets.map((option) => (
-                    <SegmentedControlItem tabIndex={-1} style={{
-                        padding: ".422rem .563rem"
-                    }} key={option} value={option}>
-                            <Text>{subscriptionConfig.plan[option].title}</Text>
+                    <SegmentedControlItem tabIndex={-1} key={option} value={option} style={{ padding: `${getSize("xxs")} ${getSize("xs")}` }}>
+                        <Text>{subscriptionConfig.plan[option].title}</Text>
                     </SegmentedControlItem>
                 ))}
             </SegmentedControl>

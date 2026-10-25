@@ -10,6 +10,7 @@ import {
     DialogOverlay,
     DialogPortal,
     DialogTitle,
+    getSize,
     ScrollArea,
     ScrollAreaScrollbar,
     ScrollAreaThumb,
@@ -83,13 +84,19 @@ export function LicenseDialog({ closeLabel, description, onClose, onValueChange,
                                     color="secondary"
                                     aria-label={title}
                                     className="sm:flex-col!"
+                                    style={{ padding: `calc(${getSize("xxs")} / 2)`, gap: getSize("xxs") }}
                                     value={activeTab}
                                     onValueChange={(nextValue) => nextValue && onValueChange?.(nextValue)}
                                 >
                                     {visibleTabs.map((tab) => (
                                         <Tooltip key={tab.value}>
                                             <TooltipTrigger asChild>
-                                                <SegmentedControlItem value={tab.value} aria-label={tab.label} data-license-tab-active={tab.value === activeTab ? "" : undefined}>
+                                                <SegmentedControlItem
+                                                    value={tab.value}
+                                                    aria-label={tab.label}
+                                                    data-license-tab-active={tab.value === activeTab ? "" : undefined}
+                                                    style={{ padding: getSize("xxs"), display: "flex", alignItems: "center", justifyContent: "center" }}
+                                                >
                                                     <tab.icon aria-hidden style={{ minWidth: "16px", minHeight: "16px" }} size={16} />
                                                 </SegmentedControlItem>
                                             </TooltipTrigger>
