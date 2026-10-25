@@ -27,7 +27,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
     return (
         <ConsentManager locale={locale}>
-            <div className="relative bg-primary overflow-x-hidden">
+            <div className="relative bg-primary overflow-x-clip">
                 <Navigation locale={locale} items={items} buttons={buttons} logo={navigation?.logo} />
                 <main id="main-content" className="bg-primary">
                     {children}

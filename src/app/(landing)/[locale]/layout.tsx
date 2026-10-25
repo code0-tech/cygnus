@@ -23,7 +23,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     return (
         <ConsentManager locale={locale}>
             <StripeProvider key={stripePublicKey} publicKey={stripePublicKey}>
-                <div className="relative bg-primary overflow-x-hidden">
+                <div className="relative bg-primary overflow-x-clip">
                     <main id="main-content" className="bg-primary">
                         {children}
                     </main>

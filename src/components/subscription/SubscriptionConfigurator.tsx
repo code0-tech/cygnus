@@ -137,7 +137,6 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
         const updateViewportState = () => {
             const viewportHeight = window.innerHeight
             const configuratorRect = configurator.getBoundingClientRect()
-            const configuratorEndRect = configuratorEnd.getBoundingClientRect()
             const configuratorIsVisible = configuratorRect.top < viewportHeight && configuratorRect.bottom > 0
             const stepElements = Array.from(configurator.querySelectorAll<HTMLElement>("[data-subscription-step]"))
             const activeIndex = stepElements.reduce(
@@ -148,7 +147,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                 { index: 0, distance: Number.POSITIVE_INFINITY }
             ).index
 
-            setShowBottomBlur(configuratorIsVisible && configuratorEndRect.bottom > viewportHeight)
+            setShowBottomBlur(configuratorIsVisible && configuratorRect.bottom > viewportHeight)
             setShowStepIndicator(configuratorIsVisible)
             setActiveStepIndex(activeIndex)
         }
@@ -326,7 +325,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                 </div>
             </div>
 
-            <div ref={configuratorEndRef}>
+            <div ref={configuratorEndRef} className="sticky bottom-0 z-50 pb-6">
                 <div className="mb-3 flex min-w-0 flex-col items-end text-right">
                     <div className="flex min-w-0 items-baseline justify-end gap-2">
                         {selection.paymentPeriod !== "monthly" && monthlyBaseline !== monthlyPrice && (
@@ -377,7 +376,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
             <div
                 aria-hidden="true"
                 className={cn(
-                    "pointer-events-none fixed inset-x-0 bottom-0 z-40 h-56 bg-linear-to-t from-primary via-primary/50 to-transparent backdrop-blur-[2px] mask-[linear-gradient(to_top,black_0%,black_30%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,black_30%,transparent_100%)] transition-opacity duration-200",
+                    "pointer-events-none fixed inset-x-0 bottom-0 z-40 h-64 bg-linear-to-t from-primary via-primary/80 to-transparent backdrop-blur-[2px] mask-[linear-gradient(to_top,black_0%,black_50%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,black_50%,transparent_100%)] transition-opacity duration-200",
                     showBottomBlur ? "opacity-100" : "opacity-0"
                 )}
             />
