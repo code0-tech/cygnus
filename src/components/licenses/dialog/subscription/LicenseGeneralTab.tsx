@@ -5,7 +5,7 @@ import { type PaymentPeriod, PAYMENT_PERIOD_OPTIONS } from "@/lib/subscription/t
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { CustomerPaymentMethodCardSkeleton } from "@/components/licenses/dialog/customer/CustomerPaymentMethodCard"
-import { getLicenseStatusBadgeColor, isLicenseStatusActive, isLicenseStatusCanceled } from "@/components/licenses/shared/LicenseStatusDot"
+import { getLicenseStatusBadgeColor, isLicenseStatusActive, isLicenseStatusCanceled, LICENSE_STATUS_ERROR_BADGE_COLOR } from "@/components/licenses/shared/LicenseStatusDot"
 import { LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
@@ -17,6 +17,7 @@ import { formatPendingUpdateSelection, parseLicenseDate, resolvePendingUpdateDat
 import type { CustomerPaymentMethodSummary, LicenseDashboardLicense, PaymentMethodDisplayDetails } from "@/lib/licenses/types"
 import { cancelLicenseSubscription, resumeLicenseSubscription } from "@/lib/licenses/client"
 import { updateSubscription } from "@/lib/subscription/client"
+import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadge"
 import { Alert, Badge, Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport, Text } from "@code0-tech/pictor"
 import { IconChevronDown } from "@tabler/icons-react"
 import { useState } from "react"
@@ -215,9 +216,9 @@ export function LicenseGeneralTab({
                             title={content.dashboard.statusLabel}
                             description={content.billing.statusDescription}
                             action={
-                                <Badge color={isLicenseStatusActive(status) ? getLicenseStatusBadgeColor(status) : "error"}>
+                                <StableBadge color={isLicenseStatusActive(status) ? getLicenseStatusBadgeColor(status) : LICENSE_STATUS_ERROR_BADGE_COLOR} className={PICTOR_BADGE_CLASS_NAME}>
                                     <Text c="inherit">{formatLicenseDisplayValue(status, "status", content.values)}</Text>
-                                </Badge>
+                                </StableBadge>
                             }
                         />
                         <LicenseTabRow

@@ -12,7 +12,7 @@ import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue, formatLicenseEdition } from "@/lib/licenses/displayValues"
 import { createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
-import { AutoScrollArea, Badge, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
+import { AutoScrollArea, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text, type DataTableFilterProps } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment, useLayoutEffect, useRef, useState } from "react"
 
@@ -218,7 +218,9 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
                                             </Flex>
                                         </DataTableColumn>
                                         <DataTableColumn>
-                                            <Badge color={getLicenseStatusBadgeColor(license.status)}>{formatLicenseDisplayValue(license.status, "status", content.values)}</Badge>
+                                            <StableBadge color={getLicenseStatusBadgeColor(license.status)} className={PICTOR_BADGE_CLASS_NAME}>
+                                                {formatLicenseDisplayValue(license.status, "status", content.values)}
+                                            </StableBadge>
                                         </DataTableColumn>
                                         <DataTableColumn>
                                             <Text size="sm" hierarchy="tertiary">

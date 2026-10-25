@@ -12,7 +12,7 @@ test("distinguishes payment failures, terminal states and pending access", () =>
         assert.equal(getLicenseStatusTone(status), "error")
         assert.equal(isLicenseStatusError(status), true)
     }
-    for (const status of ["CANCELED", "INCOMPLETE_EXPIRED"]) assert.equal(getLicenseStatusTone(status), "muted")
+    for (const status of ["CANCELED", "INCOMPLETE_EXPIRED"]) assert.equal(getLicenseStatusTone(status), "canceled")
     for (const status of ["INCOMPLETE", "PAUSED", "pending", undefined]) {
         assert.equal(getLicenseStatusTone(status), "warning")
         assert.equal(isLicenseStatusError(status), false)

@@ -2,19 +2,22 @@ import { cn } from "@/lib/utils"
 import type { Color } from "@code0-tech/pictor"
 import type { HTMLAttributes } from "react"
 
-type StatusTone = "brand" | "error" | "muted" | "warning"
+type StatusTone = "brand" | "error" | "canceled" | "warning"
+
+export const LICENSE_STATUS_ERROR_BADGE_COLOR = "#ff4d5e"
+const LICENSE_STATUS_CANCELED_COLOR = "#ff8c42"
 
 const statusToneDotClass: Record<StatusTone, string> = {
     brand: "bg-brand",
     error: "bg-error",
-    muted: "bg-tertiary",
+    canceled: "bg-[#ff8c42]",
     warning: "bg-warning",
 }
 
-const statusToneBadgeColor: Record<StatusTone, Color> = {
+const statusToneBadgeColor: Record<StatusTone, Color | string> = {
     brand: "info",
-    error: "error",
-    muted: "tertiary",
+    error: LICENSE_STATUS_ERROR_BADGE_COLOR,
+    canceled: LICENSE_STATUS_CANCELED_COLOR,
     warning: "warning",
 }
 
@@ -44,7 +47,7 @@ export function getLicenseStatusTone(status?: string): StatusTone {
             return "error"
         case "canceled":
         case "incomplete_expired":
-            return "muted"
+            return "canceled"
         default:
             return "warning"
     }
