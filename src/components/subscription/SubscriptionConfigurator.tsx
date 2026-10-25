@@ -96,7 +96,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const startingPrice = (fixed: Parameters<typeof getSubscriptionStartingMonthlyAmount>[0]): SubscriptionOptionPrice | undefined => {
         const amount = getSubscriptionStartingMonthlyAmount(fixed, catalog)
         if (amount === null) return undefined
-        return { label: locale === "de" ? "ab" : "from", amount: startingPriceFormatter.format(amount / 100), suffix: locale === "de" ? "/Monat" : "/mo" }
+        return { label: content.startingPrice.label, amount: startingPriceFormatter.format(amount / 100), suffix: content.startingPrice.suffix }
     }
     const configuratorSteps = [
         content.customerType.label,

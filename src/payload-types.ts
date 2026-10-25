@@ -2901,6 +2901,13 @@ export interface SubscriptionConfig {
     label: string;
     href: string;
   };
+  /**
+   * Cheapest monthly price shown on the customer type, plan and deployment options, for example: from €8.95/mo.
+   */
+  startingPrice: {
+    label: string;
+    suffix: string;
+  };
   deployment: {
     label: string;
     description?: string | null;
@@ -3652,6 +3659,12 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         prompt?: T;
         label?: T;
         href?: T;
+      };
+  startingPrice?:
+    | T
+    | {
+        label?: T;
+        suffix?: T;
       };
   deployment?:
     | T

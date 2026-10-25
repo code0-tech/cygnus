@@ -188,6 +188,7 @@ import * as migration_20261018_130000_checkout_rate_limit_error from './20261018
 import * as migration_20261019_120000_shorten_array_database_names from './20261019_120000_shorten_array_database_names';
 import * as migration_20261024_120000_checkout_tax_labels from './20261024_120000_checkout_tax_labels';
 import * as migration_20261025_120000_remove_subscription_option_icons from './20261025_120000_remove_subscription_option_icons';
+import * as migration_20261025_130000_subscription_starting_price_labels from './20261025_130000_subscription_starting_price_labels';
 
 export const migrations = [
   {
@@ -1114,5 +1115,10 @@ export const migrations = [
     up: migration_20261025_120000_remove_subscription_option_icons.up,
     down: migration_20261025_120000_remove_subscription_option_icons.down,
     name: '20261025_120000_remove_subscription_option_icons',
+  },
+  {
+    up: migration_20261025_130000_subscription_starting_price_labels.up,
+    down: migration_20261025_130000_subscription_starting_price_labels.down,
+    name: '20261025_130000_subscription_starting_price_labels',
   },
 ];

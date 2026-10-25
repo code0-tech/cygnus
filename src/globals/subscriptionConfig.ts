@@ -126,6 +126,15 @@ export const SubscriptionCollection: GlobalConfig = {
                                 { name: "href", type: "text", required: true, defaultValue: "/contact" },
                             ],
                         },
+                        {
+                            name: "startingPrice",
+                            label: "Starting Price",
+                            type: "group",
+                            admin: {
+                                description: "Cheapest monthly price shown on the customer type, plan and deployment options, for example: from €8.95/mo.",
+                            },
+                            fields: [localizedText("label", "from", "ab"), localizedText("suffix", "/mo", "/Monat")],
+                        },
                     ],
                 },
                 {
