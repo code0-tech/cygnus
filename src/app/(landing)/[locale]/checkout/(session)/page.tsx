@@ -33,7 +33,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
     const currentYear = new Date().getUTCFullYear()
 
     return (
-        <div className="flex min-h-full flex-col gap-8">
+        <div className="flex flex-1 flex-col gap-8">
             <CheckoutPageContent
                 checkoutPackages={checkoutPackages}
                 currentYear={currentYear}

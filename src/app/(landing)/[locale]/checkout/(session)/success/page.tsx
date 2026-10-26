@@ -39,7 +39,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     const checkoutSearchParams = toSearchParams(query).toString()
 
     return (
-        <div className="flex min-h-full flex-col gap-8">
+        <div className="flex flex-1 flex-col gap-8">
             <div className="flex flex-1 items-center justify-center">
                 <div className="flex flex-col gap-4 max-w-2xl text-center">
                     <div className="relative z-10 space-y-4">
