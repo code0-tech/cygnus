@@ -3,6 +3,7 @@
 import { Alert, Button, Card, Flex, type Sizes, Spacing, Text } from "@code0-tech/pictor"
 import CardSection from "@code0-tech/pictor/dist/components/card/CardSection"
 import { cn } from "@/lib/utils"
+import { IconAlertTriangle } from "@tabler/icons-react"
 import type { ComponentProps, ReactNode } from "react"
 
 export function LicenseTabHeader({ action, description, title }: { action?: ReactNode; description?: ReactNode; title: ReactNode }) {
@@ -61,11 +62,12 @@ export function LicenseTabRow({
     title?: ReactNode
     tone?: "warning"
 }) {
-    const content = (
-        <>
+    return (
+        <CardSection border className={cn(tone === "warning" && "bg-[#201813]", className)}>
             {title || description || action ? (
                 <Flex justify="space-between" align="center" style={{ gap: "1rem" }}>
                     <Flex align="center" style={{ gap: "0.75rem" }} className="min-w-0">
+                        {tone === "warning" ? <IconAlertTriangle aria-hidden="true" size={16} color="#ffbe0b" className="shrink-0" /> : null}
                         <Flex style={{ gap: "0.15rem", flexDirection: "column" }} className="min-w-0">
                             {title ? (
                                 <Text size="md" hierarchy="primary">
@@ -88,18 +90,6 @@ export function LicenseTabRow({
                     {children}
                 </>
             ) : null}
-        </>
-    )
-
-    return (
-        <CardSection border className={className}>
-            {tone === "warning" ? (
-                <Alert color="warning" className="[&>div]:min-w-0 [&>div]:flex-1">
-                    {content}
-                </Alert>
-            ) : (
-                content
-            )}
         </CardSection>
     )
 }
