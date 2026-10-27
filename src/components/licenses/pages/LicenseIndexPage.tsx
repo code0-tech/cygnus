@@ -27,7 +27,6 @@ export function LicenseIndexPage({ content, locale }: LicenseIndexPageProps) {
     const recentLicenses = sidebarLicenses.toSorted((left, right) => (Date.parse(right.updatedAt ?? "") || 0) - (Date.parse(left.updatedAt ?? "") || 0)).slice(0, RECENT_LICENSE_COUNT)
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" })
 
-    // The sidebar list carries every subscription of every customer with its status, so the active ones are counted from it.
     const activeLicenseCounts = new Map<string, number>()
     for (const license of sidebarLicenses) {
         if (isLicenseStatusActive(license.subscriptionStatus ?? license.status)) activeLicenseCounts.set(license.customerId, (activeLicenseCounts.get(license.customerId) ?? 0) + 1)
