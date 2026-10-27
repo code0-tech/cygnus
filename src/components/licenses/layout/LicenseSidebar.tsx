@@ -382,7 +382,15 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                             return (
                                                 <li key={license.id}>
                                                     <Link href={licenseHref} aria-current={licenseIsActive ? "page" : undefined} className="block w-full" prefetch>
-                                                        <Button variant="none" w="100%" justify="flex-start" paddingSize="xxs" active={licenseIsActive}>
+                                                        <Button
+                                                            variant="none"
+                                                            w="100%"
+                                                            justify="flex-start"
+                                                            paddingSize="xxs"
+                                                            active={licenseIsActive}
+                                                            // Pictor has no style for button--active, so the open license keeps the hover background of this button.
+                                                            className={licenseIsActive ? "bg-[#23212e]! shadow-[inset_0_1px_1px_#bfbfbf1a]!" : undefined}
+                                                        >
                                                             <span className="relative shrink-0">
                                                                 {license.deploymentType === "self_hosted" ? <IconServer aria-hidden="true" size={13} /> : <IconCloud aria-hidden="true" size={13} />}
                                                                 {isLicenseStatusError(license.status) ? (
@@ -395,7 +403,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                                                 ) : null}
                                                             </span>
                                                             <span className="flex min-w-0 items-center gap-1">
-                                                                <Text className="truncate">{getLicenseSidebarName(license, content.values)}</Text>
+                                                                <Text className={cn("truncate", licenseIsActive && "text-white!")}>{getLicenseSidebarName(license, content.values)}</Text>
                                                                 <Text hierarchy="tertiary" className="shrink-0">
                                                                     {getShortLicenseId(license.id)}
                                                                 </Text>
