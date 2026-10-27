@@ -19,7 +19,7 @@ import {
     TooltipPortal,
     TooltipTrigger,
 } from "@code0-tech/pictor"
-import { IconAdjustmentsFilled, IconApps, IconArrowAutofitLeft, IconUser } from "@tabler/icons-react"
+import { IconApps, IconArrowAutofitLeft, IconUser } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 
 interface LicensePrimarySidebarProps {
@@ -44,7 +44,6 @@ function NavigationTooltip({ children, label }: { children: ReactNode; label: st
 
 export function LicensePrimarySidebar({ content, isLoggingOut, onLogout, onOpenMainApplication }: LicensePrimarySidebarProps) {
     const labels = {
-        applicationSettings: content.applicationSettingsLabel,
         home: content.homeLabel,
         profile: content.profileLabel,
         settings: content.settingsLabel,
@@ -108,12 +107,6 @@ export function LicensePrimarySidebar({ content, isLoggingOut, onLogout, onOpenM
                     </MenuContent>
                 </MenuPortal>
             </Menu>
-
-            <NavigationTooltip label={labels.applicationSettings}>
-                <Button type="button" variant="none" style={buttonStyle} onClick={() => onOpenMainApplication("/settings", true)} aria-label={labels.applicationSettings}>
-                    <IconAdjustmentsFilled aria-hidden="true" color="#fff" size={16} />
-                </Button>
-            </NavigationTooltip>
         </aside>
     )
 }
