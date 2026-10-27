@@ -54,6 +54,7 @@ export const Licenses: GlobalConfig = {
                 localizedText("emptyCustomers", "No customers yet", "Noch keine Kunden"),
                 localizedText("recentLicensesLabel", "Recently edited licenses", "Zuletzt bearbeitete Lizenzen"),
                 localizedText("recentLicensesDescription", "The five licenses changed most recently across all customers.", "Die fünf zuletzt geänderten Lizenzen aller Kunden.", { type: "textarea" }),
+                localizedText("activeLicensesLabel", "Active licenses", "Aktive Lizenzen"),
                 localizedText("typeLabel", "Type", "Typ"),
                 localizedText("customerLabel", "Customer", "Kunde"),
                 localizedText("nameLabel", "Name", "Name"),

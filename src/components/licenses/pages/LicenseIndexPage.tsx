@@ -1,7 +1,7 @@
 "use client"
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
-import { getLicenseStatusBadgeColor } from "@/components/licenses/shared/LicenseStatusDot"
+import { getLicenseStatusBadgeColor, isLicenseStatusActive } from "@/components/licenses/shared/LicenseStatusDot"
 import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
 import { LicenseDataTableSkeleton } from "@/components/licenses/table/LicenseDataTableSkeleton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
@@ -27,12 +27,18 @@ export function LicenseIndexPage({ content, locale }: LicenseIndexPageProps) {
     const recentLicenses = sidebarLicenses.toSorted((left, right) => (Date.parse(right.updatedAt ?? "") || 0) - (Date.parse(left.updatedAt ?? "") || 0)).slice(0, RECENT_LICENSE_COUNT)
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" })
 
+    // The sidebar list carries every subscription of every customer with its status, so the active ones are counted from it.
+    const activeLicenseCounts = new Map<string, number>()
+    for (const license of sidebarLicenses) {
+        if (isLicenseStatusActive(license.subscriptionStatus ?? license.status)) activeLicenseCounts.set(license.customerId, (activeLicenseCounts.get(license.customerId) ?? 0) + 1)
+    }
+
     const customerTableHeader = (
         <DataTableHeader>
             <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.customerLabel}</DataTableHeaderColumn>
             <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.typeLabel}</DataTableHeaderColumn>
             <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.emailLabel}</DataTableHeaderColumn>
-            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.licenses}</DataTableHeaderColumn>
+            <DataTableHeaderColumn className="text-xs font-normal text-tertiary">{content.dashboard.activeLicensesLabel}</DataTableHeaderColumn>
         </DataTableHeader>
     )
 
@@ -94,9 +100,15 @@ export function LicenseIndexPage({ content, locale }: LicenseIndexPageProps) {
                                             </Text>
                                         </DataTableColumn>
                                         <DataTableColumn>
-                                            <Text size="sm" hierarchy="tertiary">
-                                                {formatLicenseDisplayValue(customer.customerType, "customerType", content.values)}
-                                            </Text>
+                                            {customer.customerType ? (
+                                                <StableBadge color={customer.customerType === "business" ? "aqua" : "pink"} className={PICTOR_BADGE_CLASS_NAME}>
+                                                    {formatLicenseDisplayValue(customer.customerType, "customerType", content.values)}
+                                                </StableBadge>
+                                            ) : (
+                                                <Text size="sm" hierarchy="tertiary">
+                                                    —
+                                                </Text>
+                                            )}
                                         </DataTableColumn>
                                         <DataTableColumn>
                                             <Text size="sm" hierarchy="tertiary">
@@ -105,7 +117,7 @@ export function LicenseIndexPage({ content, locale }: LicenseIndexPageProps) {
                                         </DataTableColumn>
                                         <DataTableColumn>
                                             <Text size="sm" hierarchy="tertiary" className="tabular-nums">
-                                                {customer.subscriptionCount}
+                                                {activeLicenseCounts.get(customer.id) ?? 0}
                                             </Text>
                                         </DataTableColumn>
                                     </Fragment>

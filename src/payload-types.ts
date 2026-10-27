@@ -3173,6 +3173,7 @@ export interface License {
     emptyCustomers: string;
     recentLicensesLabel: string;
     recentLicensesDescription: string;
+    activeLicensesLabel: string;
     typeLabel: string;
     customerLabel: string;
     nameLabel: string;
@@ -3966,6 +3967,7 @@ export interface LicensesSelect<T extends boolean = true> {
         emptyCustomers?: T;
         recentLicensesLabel?: T;
         recentLicensesDescription?: T;
+        activeLicensesLabel?: T;
         typeLabel?: T;
         customerLabel?: T;
         nameLabel?: T;
