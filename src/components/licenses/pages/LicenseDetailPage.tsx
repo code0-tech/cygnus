@@ -12,7 +12,7 @@ import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/li
 import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { formatInvoiceNumber, formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
-import { formatPendingUpdateSelection } from "@/lib/licenses/pendingUpdate"
+import { formatPendingUpdateSelection, resolvePendingUpdateDate } from "@/lib/licenses/pendingUpdate"
 import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/types"
 import {
@@ -89,7 +89,12 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
     const formatDate = (value?: string) => (value ? dateFormatter.format(new Date(value)) : "—")
     const hasNextBilling = Boolean(license && !license.cancelAt && !license.canceledAt && license.subscriptionStatus?.trim().toLowerCase() !== "canceled")
     const showNamespaceWarning = license?.deploymentType === "cloud" && !license.namespaceId
-    const pendingSelection = formatPendingUpdateSelection(license?.pendingUpdate, content, locale)
+    const pendingSelection = formatPendingUpdateSelection(license?.pendingUpdate, content, locale, license)
+    const pendingChangeDate = hasNextBilling && pendingSelection ? resolvePendingUpdateDate(license?.pendingUpdate, license?.currentPeriodEnd) : null
+    const pendingChangeMessage =
+        pendingSelection && pendingChangeDate
+            ? content.billing.currentPeriodEndPendingDescription.replaceAll("{selection}", pendingSelection).replaceAll("{date}", dateFormatter.format(pendingChangeDate))
+            : null
     const licenseDetails: LicenseDetailItem[] = license
         ? [
               {
@@ -108,8 +113,6 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
               {
                   label: content.dashboard.nextBillingDateLabel,
                   value: hasNextBilling ? formatDate(license.currentPeriodEnd) : "—",
-                  // A scheduled change only matters while the subscription still renews.
-                  ...(hasNextBilling && pendingSelection ? { note: content.billing.pendingChangeNote.replaceAll("{selection}", pendingSelection) } : {}),
               },
           ]
         : []
@@ -191,6 +194,13 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                         </Text>
                     )}
                 </Card>
+
+                {pendingChangeMessage ? (
+                    <>
+                        <Spacing spacing="md" />
+                        <LicenseAlert color="info" description={pendingChangeMessage} />
+                    </>
+                ) : null}
 
                 {showNamespaceWarning ? (
                     <>

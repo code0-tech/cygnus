@@ -23,6 +23,14 @@ test("a scheduled change is summarized with plan, period and quantities", () => 
     assert.equal(formatPendingUpdateSelection({ paymentPeriod: "quarterly" }, content, "en"), "Quarterly")
 })
 
+test("a scheduled change only names what differs from the current selection", () => {
+    const update = { plan: "pro", paymentPeriod: "yearly", aiTokens: 10_000_000, workflowExecutions: 100_000 }
+    const current = { plan: "PRO", paymentPeriod: "monthly", aiTokens: 10_000_000, workflowExecutions: 100_000 }
+
+    assert.equal(formatPendingUpdateSelection(update, content, "en", current), "Yearly")
+    assert.equal(formatPendingUpdateSelection(update, content, "en", { ...current, paymentPeriod: "yearly" }), null)
+})
+
 test("without a scheduled change there is nothing to summarize", () => {
     assert.equal(formatPendingUpdateSelection(null, content, "en"), null)
     assert.equal(formatPendingUpdateSelection({}, content, "en"), null)

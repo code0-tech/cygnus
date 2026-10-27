@@ -104,9 +104,8 @@ export function LicenseGeneralTab({
     const status = license?.subscriptionStatus ?? license?.status
     const isCanceled = isLicenseStatusCanceled(status)
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" })
-    const pendingSelection = formatPendingUpdateSelection(license?.pendingUpdate, content, locale)
+    const pendingSelection = formatPendingUpdateSelection(license?.pendingUpdate, content, locale, license)
     const pendingDate = pendingSelection ? resolvePendingUpdateDate(license?.pendingUpdate, license?.currentPeriodEnd) : null
-    // A canceled subscription has nothing scheduled any more, so its row dates the end of the period that is still paid for.
     const currentPeriodEndDate = isCanceled ? parseLicenseDate(license?.currentPeriodEnd) : (pendingDate ?? parseLicenseDate(license?.currentPeriodEnd))
     // All three texts mark the date with {date}; a canceled subscription does not renew, and while a change is scheduled the date is the day it applies and the text also names the new selection.
     const currentPeriodEndText = isCanceled
@@ -272,7 +271,9 @@ export function LicenseGeneralTab({
                                                                     <>
                                                                         <SelectValue placeholder={content.invoices.unavailableLabel}>
                                                                             <span className="capitalize">
-                                                                            {selectedPaymentMethod ? formatPaymentMethodSummary(selectedPaymentMethod, content.invoices.unavailableLabel) : content.invoices.unavailableLabel}
+                                                                                {selectedPaymentMethod
+                                                                                    ? formatPaymentMethodSummary(selectedPaymentMethod, content.invoices.unavailableLabel)
+                                                                                    : content.invoices.unavailableLabel}
                                                                             </span>
                                                                         </SelectValue>
                                                                         <IconChevronDown aria-hidden="true" size={13} />
@@ -299,8 +300,7 @@ export function LicenseGeneralTab({
                                                 <Text size="md">{content.invoices.unavailableLabel}</Text>
                                             )
                                         }
-                                    >
-                                    </LicenseTabRow>
+                                    ></LicenseTabRow>
                                 )}
                                 <LicenseTabRow
                                     title={content.billing.periodLabel}
@@ -342,9 +342,7 @@ export function LicenseGeneralTab({
                                         <LicenseTabRow title={content.subscriptionPreview.totalLabel} description={content.subscriptionPreview.loadingLabel} />
                                     ) : previewError ? (
                                         <LicenseTabRow>
-                                            <Alert color="error">
-                                                {previewError}
-                                            </Alert>
+                                            <Alert color="error">{previewError}</Alert>
                                         </LicenseTabRow>
                                     ) : preview ? (
                                         <>
@@ -454,7 +452,16 @@ export function LicenseGeneralTab({
                                                 <Button type="button" variant="normal" paddingSize="xxs" w="100%" justify="center" disabled={isCanceling} onClick={() => setConfirming(null)}>
                                                     {content.cancel.immediateConfirmBackLabel}
                                                 </Button>
-                                                <Button type="button" variant="normal" color="error" paddingSize="xxs" w="100%" justify="center" disabled={isCanceling} onClick={() => void cancel(true)}>
+                                                <Button
+                                                    type="button"
+                                                    variant="normal"
+                                                    color="error"
+                                                    paddingSize="xxs"
+                                                    w="100%"
+                                                    justify="center"
+                                                    disabled={isCanceling}
+                                                    onClick={() => void cancel(true)}
+                                                >
                                                     {isCanceling ? <ButtonLoader label={content.cancel.immediateConfirmSubmitLabel} /> : content.cancel.immediateConfirmSubmitLabel}
                                                 </Button>
                                             </div>
