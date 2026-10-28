@@ -91,7 +91,7 @@
         "uuid": "14.0.2",
         "nodemailer": "10.0.16",
         "lodash": "4.18.1",
-        "dompurify": "3.4.16",
+        "dompurify": "3.4.17",
         "undici": "8.11.2",
         "yaml": "2.9.1",
         "@esbuild-kit/core-utils": {
