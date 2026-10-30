@@ -16,6 +16,7 @@ import { buildSubscriptionSelectionSearchParams, parseSubscriptionSelectionFromS
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { normalizeUsagePackages, type CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { cn } from "@/lib/utils"
+import { Text } from "@code0-tech/pictor"
 import NumberFlow from "@number-flow/react"
 import { usePathname, useSearchParams } from "next/navigation"
 import type { ReactNode } from "react"
@@ -83,8 +84,16 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const paymentPeriodOptions = PAYMENT_PERIOD_OPTIONS
     const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod) || (locale === "de" ? "pro Monat" : "per month")
     const quote = calculateSubscriptionQuote(selection, catalog)
-    const { monthlyPrice } = getSubscriptionDisplayPrices(quote.total, selection.paymentPeriod)
+    const { monthlyPrice, paymentPeriodPrice } = getSubscriptionDisplayPrices(quote.total, selection.paymentPeriod)
     const monthlyBaseline = calculateSubscriptionQuote({ ...selection, paymentPeriod: "monthly" }, catalog).total / 100
+    // The struck-through reference is always what the same span would cost when paid monthly.
+    const paymentPeriodReference = quote.subtotal / 100
+    const isMonthly = selection.paymentPeriod === "monthly"
+    const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod) || monthlyPeriodSuffix
+    const numberLocale = locale === "de" ? "de-DE" : "en-US"
+    const currencyFormat = { style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" } as const
+    // NumberFlow renders into a shadow root that text-decoration does not reach, so the struck-through references are plain text.
+    const formatReferencePrice = (amount: number) => new Intl.NumberFormat(numberLocale, currencyFormat).format(amount)
     const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection).toString()
     const configurationUrl = `${pathname}?${selectionSearchParamsString}`
     const subscribeSearchParams = new URLSearchParams(selectionSearchParamsString)
@@ -320,26 +329,33 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
             </div>
 
             <div ref={configuratorEndRef} className="sticky bottom-0 z-50 pb-6">
-                <div className="mb-3 flex min-w-0 flex-col items-end text-right">
+                <div className="mb-3 flex min-w-0 flex-col items-end gap-0.5 text-right">
                     <div className="flex min-w-0 items-baseline justify-end gap-2">
-                        {selection.paymentPeriod !== "monthly" && monthlyBaseline !== monthlyPrice && (
-                            <span className="relative inline-flex text-sm text-tertiary">
-                                <NumberFlow
-                                    value={monthlyBaseline}
-                                    locales={locale === "de" ? "de-DE" : "en-US"}
-                                    format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
-                                />
-                                <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/2 h-px bg-current" />
-                            </span>
+                        {!isMonthly && (
+                            <Text size="sm" hierarchy="tertiary" className="line-through">
+                                {formatReferencePrice(paymentPeriodReference)}
+                            </Text>
                         )}
-                        <NumberFlow
-                            value={monthlyPrice}
-                            locales={locale === "de" ? "de-DE" : "en-US"}
-                            format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
-                            className="text-2xl font-semibold text-brand"
-                        />
-                        <span className="max-w-28 truncate text-base text-tertiary">{monthlyPeriodSuffix}</span>
+                        <Text size="lg" className="font-semibold text-brand!">
+                            <NumberFlow value={paymentPeriodPrice} locales={numberLocale} format={currencyFormat} />
+                        </Text>
+                        <Text size="md" hierarchy="tertiary" className="max-w-32 truncate">
+                            {paymentPeriodSuffix}
+                        </Text>
                     </div>
+                    {!isMonthly && (
+                        <div className="flex min-w-0 items-baseline justify-end gap-1.5">
+                            <Text size="sm" hierarchy="tertiary" className="line-through">
+                                {formatReferencePrice(monthlyBaseline)}
+                            </Text>
+                            <Text size="sm" hierarchy="secondary">
+                                <NumberFlow value={monthlyPrice} locales={numberLocale} format={currencyFormat} />
+                            </Text>
+                            <Text size="sm" hierarchy="tertiary" className="max-w-28 truncate">
+                                {monthlyPeriodSuffix}
+                            </Text>
+                        </div>
+                    )}
                 </div>
                 <HapticButtonLink href={subscribeHref} variant="filled" className="h-10! w-full! bg-white/80! font-semibold! text-primary! hover:bg-white!">
                     {content.subscribe.label}
