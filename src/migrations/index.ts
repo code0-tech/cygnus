@@ -191,6 +191,7 @@ import * as migration_20261025_120000_remove_subscription_option_icons from './2
 import * as migration_20261025_130000_subscription_starting_price_labels from './20261025_130000_subscription_starting_price_labels';
 import * as migration_20261027_120000_active_licenses_label from './20261027_120000_active_licenses_label';
 import * as migration_20261030_120000_subscription_category_colors from './20261030_120000_subscription_category_colors';
+import * as migration_20261030_130000_users_reset_password_requested_at from './20261030_130000_users_reset_password_requested_at';
 
 export const migrations = [
   {
@@ -1132,5 +1133,10 @@ export const migrations = [
     up: migration_20261030_120000_subscription_category_colors.up,
     down: migration_20261030_120000_subscription_category_colors.down,
     name: '20261030_120000_subscription_category_colors',
+  },
+  {
+    up: migration_20261030_130000_users_reset_password_requested_at.up,
+    down: migration_20261030_130000_users_reset_password_requested_at.down,
+    name: '20261030_130000_users_reset_password_requested_at',
   },
 ];
