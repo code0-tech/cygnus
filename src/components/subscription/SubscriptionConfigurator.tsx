@@ -1,0 +1,402 @@
+"use client"
+
+import { PAYMENT_PERIOD_OPTIONS, type SubscriptionSelection, type SubscriptionSelectionAction } from "@/lib/subscription/types"
+import { WorkflowCalculatorDialog } from "@/components/subscription/WorkflowCalculatorDialog"
+import { SubscriptionOptionCard, SubscriptionOptionGroup, type SubscriptionOptionPrice } from "@/components/subscription/SubscriptionOptionCard"
+import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
+import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
+import { Card } from "@/components/ui/Card"
+import { PackageSlider } from "@/components/ui/PackageSlider"
+import type { SubscriptionConfiguratorContent } from "@/lib/cms"
+import { localizeHref, type AppLocale } from "@/lib/i18n"
+import { calculateSubscriptionQuote, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionMonthlySavings, getSubscriptionSelectionPriceDifference } from "@/lib/subscription/calculator"
+import { formatMinorCurrency } from "@/lib/formatters"
+import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
+import { buildSubscriptionSelectionSearchParams, parseSubscriptionSelectionFromSearchParams, reduceSubscriptionSelection } from "@/lib/subscription/configurator"
+import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
+import { normalizeUsagePackages, type CheckoutPackages } from "@/lib/subscription/usagePackages"
+import { cn } from "@/lib/utils"
+import { Text } from "@code0-tech/pictor"
+import NumberFlow from "@number-flow/react"
+import { usePathname, useSearchParams } from "next/navigation"
+import type { ReactNode } from "react"
+import { useEffect, useRef, useState } from "react"
+import { LinkButton } from "../ui/LinkButton"
+
+export interface SubscriptionIcons {
+    workflowBusinessTypes: ReactNode[]
+}
+
+export type SubscriptionOptionImageKey = "b2b" | "b2c" | "pro" | "max" | "custom" | "selfHosted" | "cloud"
+
+function SubscriptionOptionCategoryLabel({ label, description }: { label: string; description?: string | null }) {
+    return (
+        <div>
+            <p className={cn("text-2xl font-semibold", hasHighlightedText(label) ? "text-secondary" : "text-white")}>
+                <FormattedText text={label} />
+            </p>
+            {description && <p className="mt-2 text-base text-tertiary">{description}</p>}
+        </div>
+    )
+}
+
+interface SubscriptionConfiguratorProps {
+    locale: AppLocale
+    content: SubscriptionConfiguratorContent
+    icons: SubscriptionIcons
+    onActiveImageChangeAction?: (key: SubscriptionOptionImageKey) => void
+    subscriptionPrices: SubscriptionPriceCatalog
+    checkoutPackages: CheckoutPackages
+}
+
+export function SubscriptionConfigurator({ locale, content, icons, onActiveImageChangeAction, subscriptionPrices, checkoutPackages }: SubscriptionConfiguratorProps) {
+    const workflowExecutions = content.workflowExecutions
+    const aiTokens = content.aiTokens
+    const catalog = getSubscriptionCatalog(content, subscriptionPrices, checkoutPackages)
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+    const configuratorRef = useRef<HTMLDivElement>(null)
+    const configuratorEndRef = useRef<HTMLDivElement>(null)
+
+    const [selection, setSelection] = useState<SubscriptionSelection>(() => parseSubscriptionSelectionFromSearchParams(searchParams, catalog))
+    const [aiTokensPreview, setAiTokensPreview] = useState(selection.aiTokens)
+    const [workflowExecutionsPreview, setWorkflowExecutionsPreview] = useState(selection.workflowExecutions)
+    const [activeStepIndex, setActiveStepIndex] = useState(0)
+    const [showBottomBlur, setShowBottomBlur] = useState(false)
+    const [showStepIndicator, setShowStepIndicator] = useState(false)
+    const workflowExecutionPackages = normalizeUsagePackages(checkoutPackages.quantitySteps[selection.customerType].workflowExecutions)
+    const aiTokenPackages = normalizeUsagePackages(checkoutPackages.quantitySteps[selection.customerType].aiTokens)
+    const formatQuantity = (value: number) => new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US").format(value)
+    const planPackageSizes = (plan: "pro" | "max") => {
+        const quantities = checkoutPackages.planQuantities[plan]
+        return (
+            <div className="mt-1.5 flex flex-wrap gap-x-3 text-xs text-tertiary">
+                <p>{formatQuantity(quantities.aiTokens)} AI Tokens</p>
+                <p>{formatQuantity(quantities.workflowExecutions)} Workflow Executions</p>
+            </div>
+        )
+    }
+    const dispatch = (action: SubscriptionSelectionAction) => setSelection((current) => reduceSubscriptionSelection(current, action, catalog))
+    const selectOption = (action: SubscriptionSelectionAction, imageKey: SubscriptionOptionImageKey) => {
+        dispatch(action)
+        onActiveImageChangeAction?.(imageKey)
+    }
+    const paymentPeriodOptions = PAYMENT_PERIOD_OPTIONS
+    const monthlyPeriodSuffix = getPaymentPeriodSuffix("monthly", content.paymentPeriod) || (locale === "de" ? "pro Monat" : "per month")
+    const quote = calculateSubscriptionQuote(selection, catalog)
+    const { monthlyPrice, paymentPeriodPrice } = getSubscriptionDisplayPrices(quote.total, selection.paymentPeriod)
+    const monthlyBaseline = calculateSubscriptionQuote({ ...selection, paymentPeriod: "monthly" }, catalog).total / 100
+    // The struck-through reference is always what the same span would cost when paid monthly.
+    const paymentPeriodReference = quote.subtotal / 100
+    const isMonthly = selection.paymentPeriod === "monthly"
+    const paymentPeriodSuffix = getPaymentPeriodSuffix(selection.paymentPeriod, content.paymentPeriod) || monthlyPeriodSuffix
+    const numberLocale = locale === "de" ? "de-DE" : "en-US"
+    const currencyFormat = { style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" } as const
+    // NumberFlow renders into a shadow root that text-decoration does not reach, so the struck-through references are plain text.
+    const formatReferencePrice = (amount: number) => new Intl.NumberFormat(numberLocale, currencyFormat).format(amount)
+    const selectionSearchParamsString = buildSubscriptionSelectionSearchParams(selection).toString()
+    const configurationUrl = `${pathname}?${selectionSearchParamsString}`
+    const subscribeSearchParams = new URLSearchParams(selectionSearchParamsString)
+    subscribeSearchParams.set("configurationUrl", configurationUrl)
+    const checkoutBaseUrl = localizeHref(content.subscribe.baseUrl.trim() || "/checkout", locale)
+    const checkoutLoginUrl = checkoutBaseUrl.endsWith("/login") ? checkoutBaseUrl : `${checkoutBaseUrl.replace(/\/$/, "")}/login`
+    const subscribeHref = `${checkoutLoginUrl}?${subscribeSearchParams.toString()}`
+    const signedPriceFormatter = new Intl.NumberFormat(numberLocale, { ...currencyFormat, signDisplay: "exceptZero" })
+
+    const optionPrice = (action: SubscriptionSelectionAction, active: boolean): SubscriptionOptionPrice | undefined => {
+        if (active) return { amount: formatReferencePrice(paymentPeriodPrice), suffix: paymentPeriodSuffix }
+        const difference = getSubscriptionSelectionPriceDifference(selection, reduceSubscriptionSelection(selection, action, catalog), catalog)
+        if (difference === 0) return undefined
+        return { amount: signedPriceFormatter.format(difference / 100), suffix: paymentPeriodSuffix, relative: true }
+    }
+
+    const absoluteOptionPrice = (action: SubscriptionSelectionAction): SubscriptionOptionPrice => {
+        const next = reduceSubscriptionSelection(selection, action, catalog)
+        return { amount: formatReferencePrice(calculateSubscriptionQuote(next, catalog).total / 100), suffix: paymentPeriodSuffix }
+    }
+    const configuratorSteps = [
+        content.customerType.label,
+        content.plan.title,
+        content.deployment.label,
+        ...(selection.plan === "custom" ? [aiTokens.title, workflowExecutions.title] : []),
+        content.paymentPeriod.label,
+    ]
+
+    useEffect(() => {
+        const nextUrl = `${pathname}?${selectionSearchParamsString}`
+        if (`${window.location.pathname}${window.location.search}` === nextUrl) return
+
+        window.history.replaceState(window.history.state, "", nextUrl)
+    }, [pathname, selectionSearchParamsString])
+
+    useEffect(() => {
+        setAiTokensPreview(selection.aiTokens)
+    }, [selection.aiTokens])
+
+    useEffect(() => {
+        setWorkflowExecutionsPreview(selection.workflowExecutions)
+    }, [selection.workflowExecutions])
+
+    useEffect(() => {
+        const configurator = configuratorRef.current
+        const configuratorEnd = configuratorEndRef.current
+        if (!configurator || !configuratorEnd) return
+
+        let animationFrame = 0
+        const updateViewportState = () => {
+            const viewportHeight = window.innerHeight
+            const configuratorRect = configurator.getBoundingClientRect()
+            const configuratorIsVisible = configuratorRect.top < viewportHeight && configuratorRect.bottom > 0
+            const stepElements = Array.from(configurator.querySelectorAll<HTMLElement>("[data-subscription-step]"))
+            const activeIndex = stepElements.reduce(
+                (closest, step, index) => {
+                    const distance = Math.abs(step.getBoundingClientRect().top - viewportHeight * 0.35)
+                    return distance < closest.distance ? { index, distance } : closest
+                },
+                { index: 0, distance: Number.POSITIVE_INFINITY }
+            ).index
+
+            setShowBottomBlur(configuratorIsVisible && configuratorRect.bottom > viewportHeight)
+            setShowStepIndicator(configuratorIsVisible)
+            setActiveStepIndex(activeIndex)
+        }
+        const scheduleUpdate = () => {
+            cancelAnimationFrame(animationFrame)
+            animationFrame = requestAnimationFrame(updateViewportState)
+        }
+        const resizeObserver = new ResizeObserver(scheduleUpdate)
+
+        resizeObserver.observe(configurator)
+        resizeObserver.observe(configuratorEnd)
+        window.addEventListener("resize", scheduleUpdate)
+        window.addEventListener("scroll", scheduleUpdate, { passive: true })
+        scheduleUpdate()
+
+        return () => {
+            cancelAnimationFrame(animationFrame)
+            resizeObserver.disconnect()
+            window.removeEventListener("resize", scheduleUpdate)
+            window.removeEventListener("scroll", scheduleUpdate)
+        }
+    }, [])
+
+    return (
+        <div ref={configuratorRef} className="relative z-10 flex min-w-0 flex-col gap-8 lg:col-span-2 lg:pt-30">
+            <div className="space-y-48">
+                <div className="space-y-8 scroll-mt-48" data-subscription-step="customerType">
+                    <SubscriptionOptionCategoryLabel label={content.customerType.label} description={content.customerType.description} />
+                    <SubscriptionOptionGroup>
+                        <SubscriptionOptionCard
+                            title={content.customerType.b2b.title}
+                            description={content.customerType.b2b.description}
+                            accent={content.customerType.color}
+                            price={absoluteOptionPrice({ type: "customerTypeChanged", value: "b2b" })}
+                            active={selection.customerType === "b2b"}
+                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2b" }, "b2b")}
+                        />
+                        <SubscriptionOptionCard
+                            title={content.customerType.b2c.title}
+                            description={content.customerType.b2c.description}
+                            accent={content.customerType.color}
+                            price={absoluteOptionPrice({ type: "customerTypeChanged", value: "b2c" })}
+                            active={selection.customerType === "b2c"}
+                            onClick={() => selectOption({ type: "customerTypeChanged", value: "b2c" }, "b2c")}
+                        />
+                    </SubscriptionOptionGroup>
+                </div>
+
+                <div className="space-y-8 scroll-mt-48" data-subscription-step="plan">
+                    <SubscriptionOptionCategoryLabel label={content.plan.title} description={content.plan.description} />
+                    <SubscriptionOptionGroup>
+                        <SubscriptionOptionCard
+                            title={content.plan.pro.title}
+                            description={content.plan.pro.description}
+                            accent={content.plan.color}
+                            price={optionPrice({ type: "planChanged", value: "pro" }, selection.plan === "pro")}
+                            active={selection.plan === "pro"}
+                            onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro")}
+                        >
+                            {planPackageSizes("pro")}
+                        </SubscriptionOptionCard>
+                        <SubscriptionOptionCard
+                            title={content.plan.max.title}
+                            description={content.plan.max.description}
+                            accent={content.plan.color}
+                            price={optionPrice({ type: "planChanged", value: "max" }, selection.plan === "max")}
+                            active={selection.plan === "max"}
+                            onClick={() => selectOption({ type: "planChanged", value: "max" }, "max")}
+                        >
+                            {planPackageSizes("max")}
+                        </SubscriptionOptionCard>
+                        <SubscriptionOptionCard
+                            title={content.plan.custom.title}
+                            description={content.plan.custom.description}
+                            accent={content.plan.color}
+                            price={optionPrice({ type: "planChanged", value: "custom" }, selection.plan === "custom")}
+                            active={selection.plan === "custom"}
+                            onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom")}
+                        />
+                    </SubscriptionOptionGroup>
+                </div>
+
+                <div className="space-y-8 scroll-mt-48" data-subscription-step="deployment">
+                    <SubscriptionOptionCategoryLabel label={content.deployment.label} description={content.deployment.description} />
+                    <SubscriptionOptionGroup>
+                        <SubscriptionOptionCard
+                            title={content.deployment.selfHosted.title}
+                            description={content.deployment.selfHosted.description}
+                            accent={content.deployment.color}
+                            price={absoluteOptionPrice({ type: "deploymentChanged", value: "self_hosted" })}
+                            active={selection.deployment === "self_hosted"}
+                            onClick={() => selectOption({ type: "deploymentChanged", value: "self_hosted" }, "selfHosted")}
+                        />
+                        <SubscriptionOptionCard
+                            title={content.deployment.cloud.title}
+                            description={content.deployment.cloud.description}
+                            accent={content.deployment.color}
+                            price={absoluteOptionPrice({ type: "deploymentChanged", value: "cloud" })}
+                            active={selection.deployment === "cloud"}
+                            onClick={() => selectOption({ type: "deploymentChanged", value: "cloud" }, "cloud")}
+                        />
+                    </SubscriptionOptionGroup>
+                </div>
+
+                {selection.plan === "custom" && (
+                    <div className="space-y-8 scroll-mt-48" data-subscription-step="aiTokens">
+                        <SubscriptionOptionCategoryLabel label={aiTokens.title} description={aiTokens.description} />
+                        <Card variant="light" className="overflow-visible rounded-2xl p-4">
+                            <PackageSlider
+                                packages={aiTokenPackages}
+                                value={aiTokensPreview}
+                                onChange={setAiTokensPreview}
+                                onValueCommit={(aiTokensValue) => dispatch({ type: "aiTokensChanged", value: aiTokensValue })}
+                                ariaLabel={aiTokens.title}
+                                valueLabelSuffix={aiTokens.suffix}
+                                centerLabelSuffix={monthlyPeriodSuffix}
+                            />
+                        </Card>
+                    </div>
+                )}
+
+                {selection.plan === "custom" && (
+                    <div className="space-y-8 scroll-mt-48" data-subscription-step="workflowExecutions">
+                        <SubscriptionOptionCategoryLabel label={workflowExecutions.title} description={workflowExecutions.description} />
+                        <Card variant="light" className="overflow-visible rounded-2xl p-4">
+                            <PackageSlider
+                                packages={workflowExecutionPackages}
+                                value={workflowExecutionsPreview}
+                                onChange={setWorkflowExecutionsPreview}
+                                onValueCommit={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
+                                ariaLabel={workflowExecutions.title}
+                                valueLabelSuffix={workflowExecutions.suffix}
+                                centerLabelSuffix={monthlyPeriodSuffix}
+                            />
+                        </Card>
+                        <div className="flex w-full items-center justify-between gap-4">
+                            <WorkflowCalculatorDialog
+                                locale={locale}
+                                content={content.workflowCalculator}
+                                businessTypeIcons={icons.workflowBusinessTypes}
+                                value={selection.workflowExecutions}
+                                packages={workflowExecutionPackages}
+                                suffix="Workflow Executions"
+                                centerLabelSuffix={monthlyPeriodSuffix}
+                                onApply={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
+                            />
+                            <div className="flex flex-wrap items-start justify-end gap-2">
+                                <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
+                                <LinkButton href={content.contactSales.href} className="border-b-0 py-0 text-sm text-secondary" showArrow={false}>
+                                    {content.contactSales.label}
+                                </LinkButton>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="space-y-8 scroll-mt-48" data-subscription-step="paymentPeriod">
+                    <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} description={content.paymentPeriod.description} />
+                    <SubscriptionOptionGroup>
+                        {paymentPeriodOptions.map((period) => {
+                            const savings = getSubscriptionMonthlySavings({ ...selection, paymentPeriod: period }, catalog)
+
+                            return (
+                                <SubscriptionOptionCard
+                                    key={period}
+                                    title={content.paymentPeriod[`${period}Text`]}
+                                    description={content.paymentPeriod[`${period}PeriodSuffix`]}
+                                    accent={content.paymentPeriod.color}
+                                    badge={savings > 0 ? `${content.paymentPeriod.savingsLabel} ${formatMinorCurrency(savings, "EUR", locale)}` : undefined}
+                                    active={selection.paymentPeriod === period}
+                                    onClick={() => dispatch({ type: "paymentPeriodChanged", value: period })}
+                                />
+                            )
+                        })}
+                    </SubscriptionOptionGroup>
+                </div>
+            </div>
+
+            <div ref={configuratorEndRef} className="sticky bottom-0 z-50 pb-6">
+                <div className="mb-3 flex min-w-0 flex-col items-end gap-0.5 text-right">
+                    <div className="flex min-w-0 items-baseline justify-end gap-2">
+                        {!isMonthly && (
+                            <Text size="sm" hierarchy="tertiary" className="line-through">
+                                {formatReferencePrice(paymentPeriodReference)}
+                            </Text>
+                        )}
+                        <Text size="lg" className="font-semibold text-brand!">
+                            <NumberFlow value={paymentPeriodPrice} locales={numberLocale} format={currencyFormat} />
+                        </Text>
+                        <Text size="md" hierarchy="tertiary" className="max-w-32 truncate">
+                            {paymentPeriodSuffix}
+                        </Text>
+                    </div>
+                    {!isMonthly && (
+                        <div className="flex min-w-0 items-baseline justify-end gap-1.5">
+                            <Text size="sm" hierarchy="tertiary" className="line-through">
+                                {formatReferencePrice(monthlyBaseline)}
+                            </Text>
+                            <Text size="sm" hierarchy="secondary">
+                                <NumberFlow value={monthlyPrice} locales={numberLocale} format={currencyFormat} />
+                            </Text>
+                            <Text size="sm" hierarchy="tertiary" className="max-w-28 truncate">
+                                {monthlyPeriodSuffix}
+                            </Text>
+                        </div>
+                    )}
+                </div>
+                <HapticButtonLink href={subscribeHref} variant="filled" className="h-10! w-full! bg-white/80! font-semibold! text-primary! hover:bg-white!">
+                    {content.subscribe.label}
+                </HapticButtonLink>
+            </div>
+
+            <nav
+                aria-label="Configuration progress"
+                className={cn(
+                    "fixed right-4 top-1/2 z-50 hidden -translate-y-1/2 flex-col items-center gap-2 transition-opacity duration-200 lg:flex",
+                    showStepIndicator ? "opacity-100" : "pointer-events-none opacity-0"
+                )}
+            >
+                {configuratorSteps.map((step, index) => (
+                    <button
+                        key={`${step}-${index}`}
+                        type="button"
+                        aria-label={step.replaceAll("**", "")}
+                        onClick={() => configuratorRef.current?.querySelectorAll<HTMLElement>("[data-subscription-step]").item(index)?.scrollIntoView({ behavior: "smooth", block: "center" })}
+                        className={cn(
+                            "block cursor-pointer rounded-full transition-all duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+                            index === activeStepIndex ? "h-6 w-2 bg-white" : "size-2 bg-tertiary"
+                        )}
+                    />
+                ))}
+            </nav>
+
+            <div
+                aria-hidden="true"
+                className={cn(
+                    "pointer-events-none fixed inset-x-0 bottom-0 z-40 h-64 bg-linear-to-t from-primary via-primary/80 to-transparent backdrop-blur-[2px] mask-[linear-gradient(to_top,black_0%,black_50%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_top,black_0%,black_50%,transparent_100%)] transition-opacity duration-200",
+                    showBottomBlur ? "opacity-100" : "opacity-0"
+                )}
+            />
+        </div>
+    )
+}

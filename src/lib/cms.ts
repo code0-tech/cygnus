@@ -2,9 +2,9 @@ import "server-only"
 
 import { extractActionModuleInfo, fetchMediaJson } from "@/lib/actionExtraction"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
+import type { NavigationData } from "@/lib/navigation"
 import { getPayloadClient } from "@/lib/payloadClient"
-import type { Action, Blog, CookieBanner, Footer, Job, Media, Navigation, Page, TeamMember } from "@/payload-types"
-import type { NavigationData, NavbarButtonData, NavbarItemData } from "@/lib/navigation"
+import type { Action, Blog, Checkout, Config, CookieBanner, Footer, Job, Media, Navigation, Page, SubscriptionConfig, TeamMember } from "@/payload-types"
 import { cache } from "react"
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
@@ -60,12 +60,6 @@ export interface PaginatedActionsResult {
 }
 type ActionDetailItem = ActionItem
 
-interface SubscriptionUsageRange {
-    step: number
-    min: number
-    max: number
-}
-
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
 type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order" | "content">
 export type TeamMemberItem = Pick<TeamMember, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
@@ -90,172 +84,27 @@ function sortBlogPosts(posts: BlogPostItem[]): BlogPostItem[] {
     })
 }
 
-export interface SubscriptionConfigData {
-    id: number
-    title: string
-    optionsPanelHeading: string
-    defaults: {
-        deployment: "self-hosted" | "cloud"
-        customerType: "b2b" | "b2c"
-        paymentPeriod: "monthly" | "quarterly" | "yearly"
-        workflowExecutions: {
-            b2b: number
-            b2c: number
-        }
-        aiTokens: {
-            b2b: number
-            b2c: number
-        }
-    }
-    deployment: {
-        label: string
-        selfHosted: {
-            title: string
-            description: string
-            icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        }
-        cloud: {
-            title: string
-            description: string
-            icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        }
-    }
-    customerType: {
-        label: string
-        b2b: {
-            title: string
-            description: string
-            icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        }
-        b2c: {
-            title: string
-            description: string
-            icon: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        }
-    }
-    packages: {
-        pro: {
-            title: string
-            description: string
-            prices: {
-                monthly: number
-                quarterly: number
-                yearly: number
-            }
-        }
-        max: {
-            title: string
-            description: string
-            prices: {
-                monthly: number
-                quarterly: number
-                yearly: number
-            }
-        }
-        custom: {
-            title: string
-            description: string
-        }
-    }
-    paymentPeriod: {
-        label: string
-        description: string
-        monthlyText: string
-        quarterlyText: string
-        yearlyText: string
-        monthlyPeriodSuffix: string
-        quarterlyPeriodSuffix: string
-        yearlyPeriodSuffix: string
-        quarterlyDiscount: number
-        yearlyDiscount: number
-    }
-    workflowExecutions: {
-        title: string
-        description: string
-        b2b: SubscriptionUsageRange
-        b2c: SubscriptionUsageRange
-        suffix: string
-    }
-    workflowCalculator: {
-        triggerLabel: string
-        title: string
-        description: string
-        closeLabel: string
-        businessTypeLabel: string
-        businessTypeSearchPlaceholder: string
-        noBusinessTypesFoundLabel: string
-        activeWorkflowsLabel: string
-        runsPerDayLabel: string
-        daysPerMonthLabel: string
-        estimateLabel: string
-        cancelLabel: string
-        applyLabel: string
-        businessTypes: {
-            name: string
-            conversion_rate: number
-            conversion_unit: string
-            icon: string
-            id?: string | null
-        }[]
-    }
-    workflowExecutionPriceFactor: number
-    aiTokens: {
-        title: string
-        description: string
-        b2b: SubscriptionUsageRange
-        b2c: SubscriptionUsageRange
-        suffix: string
-    }
-    aiTokenPriceFactor: number
-    contactSales: {
-        prompt: string
-        label: string
-        href: string
-    }
-    subscribe: {
-        label: string
-        baseUrl: string
-    }
-    price: {
-        heading: string
-        caption: string
-    }
-    additionalFeaturesLabel?: string | null
-    additionalFeatures?:
-        | {
-              icon: string
-              title: string
-              description: string
-              price: number
-              id?: string | null
-          }[]
-        | null
-}
+export type SubscriptionConfigData = SubscriptionConfig
 
 export interface SubscriptionConfiguratorBlockData {
     pageIntro: {
         heading: string
         description: string
     }
-    featureOverview: {
-        title: string
-        description: string
-        icon: string
-        id?: string | null
-    }[]
-    buttons: {
-        label: string
-        url: string
-        variant?: "none" | "normal" | "outlined" | "filled" | null
-        id?: string | null
-    }[]
 }
 
 export type SubscriptionConfiguratorContent = SubscriptionConfigData & SubscriptionConfiguratorBlockData
+
+// The CMS content types come straight from the generated Payload types (run `npm run generate` after changing a global).
+type GlobalSlug = keyof Config["globals"]
+type GlobalContent<S extends GlobalSlug> = Omit<Config["globals"][S], "id" | "updatedAt" | "createdAt">
+
+export type IconColor = Checkout["summary"]["deploymentIconColor"]
+export type CheckoutData = Checkout
+export type ErrorsContent = GlobalContent<"errors">
+export type LicenseToastsContent = GlobalContent<"license-toasts">
+type LicenseDialogsContent = GlobalContent<"license-dialogs">
+export type LicenseContent = GlobalContent<"licenses"> & LicenseDialogsContent
 
 function isMissingPayloadTablesError(error: unknown): boolean {
     if (!error || typeof error !== "object") {
@@ -337,7 +186,7 @@ async function cmsFindSlugs(operation: string, locale: AppLocale, collection: st
         fallbackLocale: DEFAULT_LOCALE,
         pagination: false,
         limit: 1000,
-        depth: 0,
+        depth: 1,
         select: { slug: true },
     })
     const slugs: string[] = []
@@ -466,14 +315,13 @@ async function enrichActions(actions: Action[], sortByTitle = true): Promise<Act
     const enrichedActions = await Promise.all(actions.map((action) => enrichAction(action)))
     const enrichedActionsById = new Map(enrichedActions.map((action) => [action.id, action]))
 
-    const resolvedActions = enrichedActions
-        .map((action) => ({
-            ...action,
-            references:
-                action.references
-                    ?.map((reference) => enrichedActionsById.get(typeof reference === "number" ? reference : reference.id))
-                    .filter((reference): reference is ActionItem => Boolean(reference)) ?? null,
-        }))
+    const resolvedActions = enrichedActions.map((action) => ({
+        ...action,
+        references:
+            action.references
+                ?.map((reference) => enrichedActionsById.get(typeof reference === "number" ? reference : reference.id))
+                .filter((reference): reference is ActionItem => Boolean(reference)) ?? null,
+    }))
 
     return sortByTitle ? resolvedActions.sort((a, b) => a.title.localeCompare(b.title)) : resolvedActions
 }
@@ -498,66 +346,60 @@ const getActionsCached = cache(async (locale: AppLocale): Promise<ActionItem[]> 
     return enrichActions(actions)
 })
 
-const getPaginatedActionsCached = cache(
-    async (locale: AppLocale, page: number, limit: number, search: string, tag: ActionTag | null, sortOrder: ActionSortOrder): Promise<PaginatedActionsResult> => {
-        const normalizedSearch = search.trim().toLowerCase()
+const getPaginatedActionsCached = cache(async (locale: AppLocale, page: number, limit: number, search: string, tag: ActionTag | null, sortOrder: ActionSortOrder): Promise<PaginatedActionsResult> => {
+    const normalizedSearch = search.trim().toLowerCase()
 
-        if (normalizedSearch) {
-            const matchingActions = (await getActionsCached(locale))
-                .filter((action) => {
-                    const searchable = [action.title, action.shortDescription, action.description, ...(action.tags ?? [])].filter(Boolean).join(" ").toLowerCase()
-                    return searchable.includes(normalizedSearch) && (!tag || action.tags?.includes(tag))
-                })
-                .toSorted((left, right) => {
-                    const difference = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
-                    return sortOrder === "newest" ? difference : -difference
-                })
-            const offset = (page - 1) * limit
-            const actions = matchingActions.slice(offset, offset + limit)
-            const nextPage = offset + actions.length < matchingActions.length ? page + 1 : null
+    if (normalizedSearch) {
+        const matchingActions = (await getActionsCached(locale))
+            .filter((action) => {
+                const searchable = [action.title, action.shortDescription, action.description, ...(action.tags ?? [])].filter(Boolean).join(" ").toLowerCase()
+                return searchable.includes(normalizedSearch) && (!tag || action.tags?.includes(tag))
+            })
+            .toSorted((left, right) => {
+                const difference = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+                return sortOrder === "newest" ? difference : -difference
+            })
+        const offset = (page - 1) * limit
+        const actions = matchingActions.slice(offset, offset + limit)
+        const nextPage = offset + actions.length < matchingActions.length ? page + 1 : null
 
-            return {
-                actions,
-                hasNextPage: nextPage !== null,
-                nextPage,
-                totalDocs: matchingActions.length,
-            }
+        return {
+            actions,
+            hasNextPage: nextPage !== null,
+            nextPage,
+            totalDocs: matchingActions.length,
         }
-
-        return withCmsFallback(
-            `getPaginatedActions(${locale}, ${page}, ${limit}, ${tag ?? "all"}, ${sortOrder})`,
-            { actions: [], hasNextPage: false, nextPage: null, totalDocs: 0 },
-            async () => {
-                const payload = await getPayloadClient()
-                const result = await payload.find({
-                    collection: "actions",
-                    locale,
-                    fallbackLocale: DEFAULT_LOCALE,
-                    sort: sortOrder === "newest" ? "-createdAt" : "createdAt",
-                    page,
-                    limit,
-                    pagination: true,
-                    depth: 1,
-                    where: tag ? { tags: { contains: tag } } : undefined,
-                    select: {
-                        module: true,
-                        identifier: true,
-                        tags: true,
-                        references: true,
-                        createdAt: true,
-                    },
-                })
-
-                return {
-                    actions: await enrichActions(result.docs as Action[], false),
-                    hasNextPage: result.hasNextPage,
-                    nextPage: result.nextPage ?? null,
-                    totalDocs: result.totalDocs,
-                }
-            }
-        )
     }
-)
+
+    return withCmsFallback(`getPaginatedActions(${locale}, ${page}, ${limit}, ${tag ?? "all"}, ${sortOrder})`, { actions: [], hasNextPage: false, nextPage: null, totalDocs: 0 }, async () => {
+        const payload = await getPayloadClient()
+        const result = await payload.find({
+            collection: "actions",
+            locale,
+            fallbackLocale: DEFAULT_LOCALE,
+            sort: sortOrder === "newest" ? "-createdAt" : "createdAt",
+            page,
+            limit,
+            pagination: true,
+            depth: 1,
+            where: tag ? { tags: { contains: tag } } : undefined,
+            select: {
+                module: true,
+                identifier: true,
+                tags: true,
+                references: true,
+                createdAt: true,
+            },
+        })
+
+        return {
+            actions: await enrichActions(result.docs as Action[], false),
+            hasNextPage: result.hasNextPage,
+            nextPage: result.nextPage ?? null,
+            totalDocs: result.totalDocs,
+        }
+    })
+})
 
 const getJobBySlugCached = cache(async (slug: string, locale: AppLocale): Promise<JobDetailItem | null> => {
     return cmsFindOne(`getJobBySlug(${slug}, ${locale})`, null, {
@@ -661,13 +503,23 @@ const getBlogSlugsCached = cache(async (locale: AppLocale): Promise<string[]> =>
     return cmsFindSlugs(`getBlogSlugs(${locale})`, locale, "blog")
 })
 
-const getSubscriptionConfigCached = cache(async (locale: AppLocale): Promise<SubscriptionConfigData | null> => {
-    return cmsFindGlobal(`getSubscriptionConfig(${locale})`, null, {
-        slug: "subscriptionConfig",
+const GLOBAL_DEPTH: Partial<Record<GlobalSlug, number>> = { subscriptionConfig: 1 }
+
+const getGlobalCached = cache(async (slug: GlobalSlug, locale: AppLocale) => {
+    return cmsFindGlobal<Config["globals"][GlobalSlug]>(`getGlobal(${slug}, ${locale})`, null, {
+        slug,
         locale,
         fallbackLocale: DEFAULT_LOCALE,
-        depth: 0,
+        depth: GLOBAL_DEPTH[slug] ?? 0,
     })
+})
+
+const getLicenseContentCached = cache(async (locale: AppLocale): Promise<LicenseContent | null> => {
+    const [licenses, dialogs] = await Promise.all([getGlobal("licenses", locale), getGlobal("license-dialogs", locale)])
+    if (!licenses || !dialogs) return null
+
+    const { editor, subscriptionPreview, billing, cancel, upgrade } = dialogs
+    return { ...licenses, editor, subscriptionPreview, billing, cancel, upgrade }
 })
 
 export async function getLandingPage(slug = "main", locale: AppLocale = DEFAULT_LOCALE): Promise<Page | null> {
@@ -737,6 +589,10 @@ export async function getBlogSlugs(locale: AppLocale = DEFAULT_LOCALE): Promise<
     return getBlogSlugsCached(locale)
 }
 
-export async function getSubscriptionConfig(locale: AppLocale = DEFAULT_LOCALE): Promise<SubscriptionConfigData | null> {
-    return getSubscriptionConfigCached(locale)
+export async function getGlobal<S extends GlobalSlug>(slug: S, locale: AppLocale = DEFAULT_LOCALE): Promise<Config["globals"][S] | null> {
+    return (await getGlobalCached(slug, locale)) as Config["globals"][S] | null
+}
+
+export async function getLicenseContent(locale: AppLocale = DEFAULT_LOCALE): Promise<LicenseContent | null> {
+    return getLicenseContentCached(locale)
 }

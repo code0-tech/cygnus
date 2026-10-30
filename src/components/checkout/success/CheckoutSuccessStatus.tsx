@@ -1,0 +1,348 @@
+"use client"
+
+import { parseCheckoutCompletionStatus, type CheckoutCompletionStatus } from "@/lib/checkout/completionStatus"
+import { checkoutFetch, getCheckoutCompletionStatus, getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/client"
+import { LinkButton } from "@/components/ui/LinkButton"
+import { ButtonLoader } from "@/components/ui/Loader"
+import { CheckoutPricingOverview } from "@/components/checkout/summary/CheckoutPricingOverview"
+import { CheckoutConfetti } from "@/components/checkout/success/CheckoutConfetti"
+import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
+import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
+import type { AppLocale } from "@/lib/i18n"
+import { downloadLicenseFile } from "@/lib/licenses/client"
+import { getPaymentPeriodSuffix } from "@/lib/subscription/calculator"
+import type { SubscriptionPlan } from "@/lib/subscription/types"
+import { Alert, Button } from "@code0-tech/pictor"
+import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
+import { AnimatePresence, m as motion, useReducedMotion, type Variants } from "motion/react"
+import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useRef, useState } from "react"
+
+type SuccessContent = CheckoutData["success"]
+type CheckoutStatus = CheckoutCompletionStatus["state"] | "LOADING" | "DELAYED" | "ERROR" | "INVALID"
+
+interface CheckoutSuccessStatusProps {
+    checkoutSearchParams: string
+    content: SuccessContent
+    errorMessage: string
+    locale: AppLocale
+    pricingContent: CheckoutData["summary"]
+    sculptorUrl?: string | null
+    sessionId: string
+    subscriptionConfig: SubscriptionConfigData
+}
+
+interface CheckoutSuccessStatusViewProps extends Omit<CheckoutSuccessStatusProps, "checkoutSearchParams" | "sessionId"> {
+    status: CheckoutStatus
+    completion: CheckoutCompletionStatus | null
+    isGuestCheckout: boolean
+    isDownloadingLicense: boolean
+    licenseDownloadError: boolean
+    onDownloadLicense: () => void
+    onRetry: () => void
+}
+
+const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
+const LINK_BUTTON_CLASS_NAME = "button button--secondary button--xs after:hidden"
+
+export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, pricingContent, sculptorUrl, sessionId, subscriptionConfig }: CheckoutSuccessStatusProps) {
+    const isGuestCheckout = new URLSearchParams(checkoutSearchParams).has("guestCheckout")
+    const router = useRouter()
+    const [status, setStatus] = useState<CheckoutStatus>("LOADING")
+    const [completion, setCompletion] = useState<CheckoutCompletionStatus | null>(null)
+    const [attempt, setAttempt] = useState(0)
+    const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
+    const [licenseDownloadError, setLicenseDownloadError] = useState(false)
+    const pollAttemptRef = useRef(0)
+    const pollingStartedAtRef = useRef(Date.now())
+    const pollTimeoutRef = useRef<number | null>(null)
+
+    const checkStatus = useCallback(
+        async (signal: AbortSignal) => {
+            const { body, ok } = await getCheckoutCompletionStatus(sessionId, signal)
+
+            if (!ok) {
+                const errorCode = body && typeof body === "object" && "errorCode" in body ? body.errorCode : undefined
+                if (errorCode === "INVALID_CHECKOUT_STATUS_SESSION") {
+                    setStatus("INVALID")
+                    return
+                }
+                throw new Error("Could not check the checkout completion status.")
+            }
+
+            const nextCompletion = parseCheckoutCompletionStatus(body)
+            if (!nextCompletion) throw new Error("Crater returned an invalid checkout completion status.")
+
+            setCompletion(nextCompletion)
+            setStatus(nextCompletion.state)
+            if (SETTLED_STATES.has(nextCompletion.state)) clearCheckoutContactDraft()
+
+            if (nextCompletion.state === "CHECKOUT_PENDING" || nextCompletion.state === "PAYMENT_PENDING" || nextCompletion.state === "FULFILLMENT_PENDING") {
+                if (hasCheckoutStatusPollingExpired(pollingStartedAtRef.current, Date.now())) {
+                    setStatus("DELAYED")
+                    return
+                }
+
+                const delay = getCheckoutStatusPollDelay(pollAttemptRef.current)
+                pollAttemptRef.current += 1
+                pollTimeoutRef.current = window.setTimeout(() => setAttempt((current) => current + 1), delay)
+            }
+        },
+        [sessionId]
+    )
+
+    useEffect(() => {
+        if (status === "READY" || status === "FAILED" || status === "INVALID") return
+        const controller = new AbortController()
+
+        void checkStatus(controller.signal).catch((error: unknown) => {
+            if (error instanceof DOMException && error.name === "AbortError") return
+            setStatus("ERROR")
+        })
+
+        return () => {
+            controller.abort()
+            if (pollTimeoutRef.current !== null) window.clearTimeout(pollTimeoutRef.current)
+        }
+    }, [attempt, checkStatus])
+
+    useEffect(() => {
+        if (status !== "FAILED") return
+
+        const nextParams = new URLSearchParams(checkoutSearchParams)
+        nextParams.delete("session_id")
+        nextParams.set("paymentFailed", "1")
+        router.replace(`/${locale}/checkout?${nextParams.toString()}`)
+    }, [checkoutSearchParams, locale, router, status])
+
+    const downloadSelfHostedLicense = async () => {
+        if (!completion?.licenseId || isDownloadingLicense) return
+
+        setIsDownloadingLicense(true)
+        setLicenseDownloadError(false)
+        try {
+            await downloadLicenseFile(completion.licenseId, checkoutFetch)
+        } catch {
+            setLicenseDownloadError(true)
+        } finally {
+            setIsDownloadingLicense(false)
+        }
+    }
+
+    return (
+        <CheckoutSuccessStatusView
+            completion={completion}
+            content={content}
+            errorMessage={errorMessage}
+            isDownloadingLicense={isDownloadingLicense}
+            isGuestCheckout={isGuestCheckout}
+            licenseDownloadError={licenseDownloadError}
+            locale={locale}
+            onDownloadLicense={() => void downloadSelfHostedLicense()}
+            onRetry={() => {
+                pollingStartedAtRef.current = Date.now()
+                pollAttemptRef.current = 0
+                setStatus("LOADING")
+                setAttempt((current) => current + 1)
+            }}
+            pricingContent={pricingContent}
+            sculptorUrl={sculptorUrl}
+            status={status}
+            subscriptionConfig={subscriptionConfig}
+        />
+    )
+}
+
+function CheckoutSuccessStatusView({
+    completion,
+    content,
+    errorMessage,
+    isDownloadingLicense,
+    isGuestCheckout,
+    licenseDownloadError,
+    locale,
+    onDownloadLicense,
+    onRetry,
+    pricingContent,
+    sculptorUrl,
+    status,
+    subscriptionConfig,
+}: CheckoutSuccessStatusViewProps) {
+    const reducedMotion = useReducedMotion()
+    const stagger: Variants = {
+        hidden: {},
+        show: { transition: { staggerChildren: reducedMotion ? 0 : 0.12, delayChildren: reducedMotion ? 0 : 0.08 } },
+    }
+    const reveal: Variants = {
+        hidden: { opacity: 0, y: reducedMotion ? 0 : 12, filter: reducedMotion ? "none" : "blur(4px)" },
+        show: { opacity: 1, y: 0, filter: "none", transition: { duration: reducedMotion ? 0.15 : 0.5, ease: [0.22, 1, 0.36, 1] } },
+    }
+    const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY" || (status === "DELAYED" && completion?.state === "FULFILLMENT_PENDING")
+    const statusFailed = status === "FAILED" || status === "INVALID"
+    const heading =
+        status === "DELAYED" ? content.delayedHeading : status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
+    const description =
+        status === "DELAYED"
+            ? fulfillmentConfirmed
+                ? content.delayedConfirmedDescription
+                : content.delayedPendingDescription
+            : status === "FAILED"
+              ? content.failedDescription
+              : status === "INVALID"
+                ? content.invalidDescription
+                : fulfillmentConfirmed
+                  ? content.description
+                  : null
+    const licenseAccessUrl =
+        status === "READY" && completion?.licenseId ? `/api/crater/licenses/access?${new URLSearchParams({ locale, customerId: completion.customerId, licenseId: completion.licenseId })}` : null
+    const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
+    const confirmedPricing = fulfillmentConfirmed ? completion?.pricing : null
+    const paymentPeriod = confirmedConfiguration?.paymentPeriod ?? undefined
+    const planKey = confirmedConfiguration?.plan
+    const plan: SubscriptionPlan = planKey === "pro" || planKey === "max" ? planKey : "custom"
+    const currencyDivisor = confirmedPricing
+        ? 10 ** (new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: confirmedPricing.currency.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2)
+        : 100
+
+    return (
+        <>
+            {status === "READY" && !reducedMotion ? <CheckoutConfetti /> : null}
+            <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                    key={fulfillmentConfirmed ? "confirmed" : status === "ERROR" ? "error" : statusFailed ? "failed" : "pending"}
+                    variants={stagger}
+                    initial="hidden"
+                    animate="show"
+                    exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}
+                    className="flex flex-col items-center justify-center gap-2"
+                >
+                    {fulfillmentConfirmed || status === "ERROR" ? (
+                        <div className="mb-2 size-12 shrink-0">
+                            {status === "READY" || status === "ERROR" ? (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: reducedMotion ? 1 : 0.85 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ type: "spring", stiffness: 180, damping: 18 }}
+                                    className={`flex size-12 items-center justify-center rounded-2xl shadow-[inset_0_1px_1px_#bfbfbf1a] ${status === "READY" ? "bg-brand/10 text-brand" : "bg-error/10 text-error"}`}
+                                >
+                                    {status === "READY" ? <IconCheck aria-hidden="true" size={28} /> : <IconX aria-hidden="true" size={28} />}
+                                </motion.div>
+                            ) : null}
+                        </div>
+                    ) : null}
+                    {heading && (
+                        <motion.h1 variants={reveal} className="text-3xl font-semibold text-white">
+                            {heading}
+                        </motion.h1>
+                    )}
+                    {description && (
+                        <motion.div variants={reveal} className="max-w-lg">
+                            {status === "DELAYED" ? (
+                                <Alert color="info">{description}</Alert>
+                            ) : statusFailed ? (
+                                <Alert color="error">{description}</Alert>
+                            ) : (
+                                <p className="text-secondary">{description}</p>
+                            )}
+                        </motion.div>
+                    )}
+                    {fulfillmentConfirmed && isGuestCheckout && (
+                        <motion.div variants={reveal} className="my-2 max-w-lg">
+                            <Alert color="info">{content.guestAccountHint}</Alert>
+                        </motion.div>
+                    )}
+                    {confirmedConfiguration && confirmedPricing ? (
+                        <motion.div variants={reveal} className="my-2 w-full text-left">
+                            <CheckoutPricingOverview
+                                confirmedPricing={{
+                                    aiTokens: confirmedConfiguration.aiTokens,
+                                    currency: confirmedPricing.currency,
+                                    customerType:
+                                        confirmedConfiguration.customerType === "business" ? "b2b" : confirmedConfiguration.customerType === "personal" ? "b2c" : confirmedConfiguration.customerType,
+                                    deployment: confirmedConfiguration.deploymentType,
+                                    discountAmount: confirmedPricing.discount / currencyDivisor,
+                                    periodSuffix: paymentPeriod ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : "",
+                                    plan,
+                                    taxAmount: confirmedPricing.tax / currencyDivisor,
+                                    totalPrice: confirmedPricing.total / currencyDivisor,
+                                    workflowExecutions: confirmedConfiguration.workflowExecutions,
+                                }}
+                                content={pricingContent}
+                                locale={locale}
+                                subscriptionConfig={subscriptionConfig}
+                            />
+                        </motion.div>
+                    ) : null}
+                    {fulfillmentConfirmed && (
+                        <motion.p variants={reveal} className="text-sm text-tertiary mb-4">
+                            {content.receiptHint}
+                        </motion.p>
+                    )}
+                    {status === "ERROR" && (
+                        <motion.div variants={reveal}>
+                            <Alert color="error">{errorMessage}</Alert>
+                        </motion.div>
+                    )}
+                    <motion.div variants={reveal}>
+                        <AnimatePresence mode="wait" initial={false}>
+                            {status === "READY" && licenseAccessUrl ? (
+                                <motion.div key="ready" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-2">
+                                    <div className="flex flex-wrap items-center justify-center gap-2">
+                                        {!isGuestCheckout && (
+                                            <LinkButton
+                                                href={licenseAccessUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                prefetch={false}
+                                                showArrow={false}
+                                                className={`${LINK_BUTTON_CLASS_NAME} button--normal`}
+                                            >
+                                                {content.licenseDashboardLabel}
+                                            </LinkButton>
+                                        )}
+                                        {completion?.configuration?.deploymentType === "cloud" && sculptorUrl ? (
+                                            <LinkButton
+                                                href={sculptorUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                showArrow={false}
+                                                className={`${LINK_BUTTON_CLASS_NAME} button--filled bg-white/80! hover:bg-white! text-primary!`}
+                                            >
+                                                <IconCloud aria-hidden="true" size={17} />
+                                                <span className="ml-1">{content.sculptorLabel}</span>
+                                            </LinkButton>
+                                        ) : completion?.configuration?.deploymentType === "self_hosted" ? (
+                                            <Button type="button" variant="filled" className="bg-white/80! hover:bg-white! text-primary!" disabled={isDownloadingLicense} onClick={onDownloadLicense}>
+                                                {isDownloadingLicense ? <ButtonLoader label={content.licenseDownloadLabel} /> : <IconDownload aria-hidden="true" size={17} />}
+                                                {!isDownloadingLicense ? content.licenseDownloadLabel : null}
+                                            </Button>
+                                        ) : null}
+                                    </div>
+                                    {licenseDownloadError ? <Alert color="error">{content.licenseDownloadError}</Alert> : null}
+                                </motion.div>
+                            ) : status === "ERROR" || status === "DELAYED" ? (
+                                <motion.div key="retry" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                    <Button type="button" variant="normal" onClick={onRetry}>
+                                        {content.licenseStatusRetryLabel}
+                                    </Button>
+                                </motion.div>
+                            ) : statusFailed ? (
+                                <motion.div key="failed" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                    <LinkButton href={`/${locale}/checkout`} showArrow={false} className="border-b-0">
+                                        {content.checkoutRetryLabel}
+                                    </LinkButton>
+                                </motion.div>
+                            ) : (
+                                <motion.div key="pending" exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}>
+                                    <Button type="button" variant="normal" disabled>
+                                        <ButtonLoader label={content.licensePendingLabel} />
+                                    </Button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+                </motion.div>
+            </AnimatePresence>
+        </>
+    )
+}

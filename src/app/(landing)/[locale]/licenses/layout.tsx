@@ -1,0 +1,32 @@
+import { LicenseLayout } from "@/components/licenses/layout/LicenseLayout"
+import { getGlobal, getLicenseContent } from "@/lib/cms"
+import { isSupportedLocale } from "@/lib/i18n"
+import { getClientConfig } from "@/lib/clientConfig.server"
+import { notFound } from "next/navigation"
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
+
+export const metadata: Metadata = {
+    title: { absolute: "CodeZero | License Dashboard" },
+    robots: { index: false, follow: false },
+}
+
+interface LicensesLayoutProps {
+    children: ReactNode
+    modal: ReactNode
+    params: Promise<{ locale: string }>
+}
+
+export default async function LicensesLayout({ children, modal, params }: LicensesLayoutProps) {
+    const { locale } = await params
+    if (!isSupportedLocale(locale)) notFound()
+
+    const [content, errors, toasts] = await Promise.all([getLicenseContent(locale), getGlobal("errors", locale), getGlobal("license-toasts", locale)])
+    if (!content || !errors || !toasts) notFound()
+
+    return (
+        <LicenseLayout content={content} errors={errors} locale={locale} modal={modal} toasts={toasts} sculptorUrl={getClientConfig().sculptorUrl}>
+            {children}
+        </LicenseLayout>
+    )
+}

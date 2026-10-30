@@ -29,6 +29,8 @@ const consentTheme = {
         consentDialogTitle: "text-white!",
         consentDialogDescription: "text-secondary! [&_a]:text-brand!",
         consentDialogCard: "bg-primary! border-white/5!",
+        consentWidgetFooter: "w-full! flex-col! items-stretch! [&_button]:w-full!",
+        consentWidgetFooterSubGroup: "w-full! flex-col! items-stretch!",
         consentWidgetAccordion:
             "[--consent-widget-accordion-background-color:color-mix(in_oklab,var(--color-primary)_50%,transparent)] [--consent-widget-accordion-background-color-dark:color-mix(in_oklab,var(--color-primary)_50%,transparent)] [--consent-widget-accordion-background-hover:color-mix(in_oklab,var(--color-primary)_65%,transparent)] [--consent-widget-accordion-background-hover-dark:color-mix(in_oklab,var(--color-primary)_65%,transparent)] [--consent-widget-accordion-border-color:rgb(255_255_255_/0.05)] [--consent-widget-accordion-border-color-dark:rgb(255_255_255_/0.05)] [--consent-widget-accordion-text-color:rgb(255_255_255)] [--consent-widget-accordion-text-color-dark:rgb(255_255_255)] [--consent-widget-accordion-content-color:rgb(255_255_255_/0.75)] [--consent-widget-accordion-content-color-dark:rgb(255_255_255_/0.75)]",
         buttonPrimary:
