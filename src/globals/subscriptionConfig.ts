@@ -126,15 +126,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                 { name: "href", type: "text", required: true, defaultValue: "/contact" },
                             ],
                         },
-                        {
-                            name: "startingPrice",
-                            label: "Starting Price",
-                            type: "group",
-                            admin: {
-                                description: "Cheapest monthly price shown on the customer type, plan and deployment options, for example: from €8.95/mo.",
-                            },
-                            fields: [localizedText("label", "from", "ab"), localizedText("suffix", "/mo", "/Monat")],
-                        },
                     ],
                 },
                 {
@@ -147,6 +138,7 @@ export const SubscriptionCollection: GlobalConfig = {
                             fields: [
                                 localizedText("label", "Choose where your code0 instance will run.", "Wähle, wo deine code0-Instanz laufen soll."),
                                 sectionDescriptionField,
+                                { ...colorField, label: "Selected color", defaultValue: "aqua", admin: { description: "Highlight color of the selected option in this step." } },
                                 {
                                     name: "selfHosted",
                                     type: "group",
@@ -160,7 +152,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                                 type: "textarea",
                                             }
                                         ),
-                                        { ...colorField, defaultValue: "yellow" },
                                         optionImageField(),
                                     ],
                                 },
@@ -172,7 +163,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                         localizedText("description", "Use managed infrastructure with selectable runtime consumption.", "Nutze verwaltete Infrastruktur mit wählbarem Laufzeitverbrauch.", {
                                             type: "textarea",
                                         }),
-                                        { ...colorField, defaultValue: "aqua" },
                                         optionImageField(),
                                     ],
                                 },
@@ -184,6 +174,7 @@ export const SubscriptionCollection: GlobalConfig = {
                             fields: [
                                 localizedText("label", "Choose the customer model that best matches your use case.", "Wähle das Kundenmodell, das am besten zu deinem Anwendungsfall passt."),
                                 sectionDescriptionField,
+                                { ...colorField, label: "Selected color", defaultValue: "blue", admin: { description: "Highlight color of the selected option in this step." } },
                                 {
                                     name: "b2b",
                                     type: "group",
@@ -192,7 +183,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                         localizedText("description", "Organization purchase flow with tailored commercial handling.", "Kaufprozess für Organisationen mit individueller kaufmännischer Abwicklung.", {
                                             type: "textarea",
                                         }),
-                                        { ...colorField, defaultValue: "blue" },
                                         optionImageField(),
                                     ],
                                 },
@@ -204,7 +194,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                         localizedText("description", "Standardized subscription flow with directly selectable plans.", "Standardisierter Abo-Prozess mit direkt wählbaren Plänen.", {
                                             type: "textarea",
                                         }),
-                                        { ...colorField, defaultValue: "pink" },
                                         optionImageField(),
                                     ],
                                 },
@@ -227,9 +216,7 @@ export const SubscriptionCollection: GlobalConfig = {
                                 localizedText("monthlyPeriodSuffix", "per month", "pro Monat"),
                                 localizedText("quarterlyPeriodSuffix", "per quarter", "pro Quartal"),
                                 localizedText("yearlyPeriodSuffix", "per year", "pro Jahr"),
-                                { ...colorField, name: "monthlyColor", defaultValue: "brand" },
-                                { ...colorField, name: "quarterlyColor", defaultValue: "aqua" },
-                                { ...colorField, name: "yearlyColor", defaultValue: "magenta" },
+                                { ...colorField, label: "Selected color", defaultValue: "brand", admin: { description: "Highlight color of the selected option in this step." } },
                             ],
                         },
                     ],
@@ -245,6 +232,7 @@ export const SubscriptionCollection: GlobalConfig = {
                             fields: [
                                 localizedText("title", "Choose the plan that best matches your requirements.", "Wähle den Plan, der am besten zu deinen Anforderungen passt."),
                                 sectionDescriptionField,
+                                { ...colorField, label: "Selected color", defaultValue: "lime", admin: { description: "Highlight color of the selected option in this step." } },
                                 {
                                     name: "pro",
                                     label: "Pro",

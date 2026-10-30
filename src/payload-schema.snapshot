@@ -79,13 +79,10 @@ export const enum_subscription_config_defaults_deployment = pgEnum('enum_subscri
 export const enum_subscription_config_defaults_customer_type = pgEnum('enum_subscription_config_defaults_customer_type', ['b2b', 'b2c'])
 export const enum_subscription_config_defaults_payment_period_b2b = pgEnum('enum_subscription_config_defaults_payment_period_b2b', ['monthly', 'quarterly', 'yearly'])
 export const enum_subscription_config_defaults_payment_period_b2c = pgEnum('enum_subscription_config_defaults_payment_period_b2c', ['monthly', 'quarterly', 'yearly'])
-export const enum_subscription_config_deployment_self_hosted_color = pgEnum('enum_subscription_config_deployment_self_hosted_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_deployment_cloud_color = pgEnum('enum_subscription_config_deployment_cloud_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_customer_type_b2b_color = pgEnum('enum_subscription_config_customer_type_b2b_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_customer_type_b2c_color = pgEnum('enum_subscription_config_customer_type_b2c_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_payment_period_monthly_color = pgEnum('enum_subscription_config_payment_period_monthly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_payment_period_quarterly_color = pgEnum('enum_subscription_config_payment_period_quarterly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_payment_period_yearly_color = pgEnum('enum_subscription_config_payment_period_yearly_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_deployment_color = pgEnum('enum_subscription_config_deployment_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_customer_type_color = pgEnum('enum_subscription_config_customer_type_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_payment_period_color = pgEnum('enum_subscription_config_payment_period_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
+export const enum_subscription_config_plan_color = pgEnum('enum_subscription_config_plan_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_plan_pro_color = pgEnum('enum_subscription_config_plan_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_plan_max_color = pgEnum('enum_subscription_config_plan_max_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_plan_custom_color = pgEnum('enum_subscription_config_plan_custom_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
@@ -2324,25 +2321,22 @@ export const subscription_config = pgTable('subscription_config', {
   defaults_paymentPeriod_b2c: enum_subscription_config_defaults_payment_period_b2c('defaults_payment_period_b2c').notNull().default("monthly"),
   subscribe_baseUrl: varchar('subscribe_base_url').notNull().default("/checkout"),
   contactSales_href: varchar('contact_sales_href').notNull().default("/contact"),
-  deployment_selfHosted_color: enum_subscription_config_deployment_self_hosted_color('deployment_self_hosted_color').notNull().default("yellow"),
+  deployment_color: enum_subscription_config_deployment_color('deployment_color').notNull().default("aqua"),
   deployment_selfHosted_image: integer('deployment_self_hosted_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  deployment_cloud_color: enum_subscription_config_deployment_cloud_color('deployment_cloud_color').notNull().default("aqua"),
   deployment_cloud_image: integer('deployment_cloud_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  customerType_b2b_color: enum_subscription_config_customer_type_b2b_color('customer_type_b2b_color').notNull().default("blue"),
+  customerType_color: enum_subscription_config_customer_type_color('customer_type_color').notNull().default("blue"),
   customerType_b2b_image: integer('customer_type_b2b_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  customerType_b2c_color: enum_subscription_config_customer_type_b2c_color('customer_type_b2c_color').notNull().default("pink"),
   customerType_b2c_image: integer('customer_type_b2c_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  paymentPeriod_monthlyColor: enum_subscription_config_payment_period_monthly_color('payment_period_monthly_color').notNull().default("brand"),
-  paymentPeriod_quarterlyColor: enum_subscription_config_payment_period_quarterly_color('payment_period_quarterly_color').notNull().default("aqua"),
-  paymentPeriod_yearlyColor: enum_subscription_config_payment_period_yearly_color('payment_period_yearly_color').notNull().default("magenta"),
+  paymentPeriod_color: enum_subscription_config_payment_period_color('payment_period_color').notNull().default("brand"),
+  plan_color: enum_subscription_config_plan_color('plan_color').notNull().default("lime"),
   plan_pro_color: enum_subscription_config_plan_pro_color('plan_pro_color').notNull().default("lime"),
   plan_pro_image: integer('plan_pro_image_id').references(() => media.id, {
       onDelete: 'set null'
@@ -2367,8 +2361,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   subscribe_label: varchar('subscribe_label').notNull(),
   contactSales_prompt: varchar('contact_sales_prompt').notNull(),
   contactSales_label: varchar('contact_sales_label').notNull(),
-  startingPrice_label: varchar('starting_price_label').notNull(),
-  startingPrice_suffix: varchar('starting_price_suffix').notNull(),
   deployment_label: varchar('deployment_label').notNull(),
   deployment_description: varchar('deployment_description'),
   deployment_selfHosted_title: varchar('deployment_self_hosted_title').notNull(),
@@ -4283,13 +4275,10 @@ type DatabaseSchema = {
   enum_subscription_config_defaults_customer_type: typeof enum_subscription_config_defaults_customer_type
   enum_subscription_config_defaults_payment_period_b2b: typeof enum_subscription_config_defaults_payment_period_b2b
   enum_subscription_config_defaults_payment_period_b2c: typeof enum_subscription_config_defaults_payment_period_b2c
-  enum_subscription_config_deployment_self_hosted_color: typeof enum_subscription_config_deployment_self_hosted_color
-  enum_subscription_config_deployment_cloud_color: typeof enum_subscription_config_deployment_cloud_color
-  enum_subscription_config_customer_type_b2b_color: typeof enum_subscription_config_customer_type_b2b_color
-  enum_subscription_config_customer_type_b2c_color: typeof enum_subscription_config_customer_type_b2c_color
-  enum_subscription_config_payment_period_monthly_color: typeof enum_subscription_config_payment_period_monthly_color
-  enum_subscription_config_payment_period_quarterly_color: typeof enum_subscription_config_payment_period_quarterly_color
-  enum_subscription_config_payment_period_yearly_color: typeof enum_subscription_config_payment_period_yearly_color
+  enum_subscription_config_deployment_color: typeof enum_subscription_config_deployment_color
+  enum_subscription_config_customer_type_color: typeof enum_subscription_config_customer_type_color
+  enum_subscription_config_payment_period_color: typeof enum_subscription_config_payment_period_color
+  enum_subscription_config_plan_color: typeof enum_subscription_config_plan_color
   enum_subscription_config_plan_pro_color: typeof enum_subscription_config_plan_pro_color
   enum_subscription_config_plan_max_color: typeof enum_subscription_config_plan_max_color
   enum_subscription_config_plan_custom_color: typeof enum_subscription_config_plan_custom_color

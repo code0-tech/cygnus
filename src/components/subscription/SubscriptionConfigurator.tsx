@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/Card"
 import { PackageSlider } from "@/components/ui/PackageSlider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { calculateSubscriptionQuote, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionMonthlySavings, getSubscriptionStartingMonthlyAmount } from "@/lib/subscription/calculator"
+import { calculateSubscriptionQuote, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionMonthlySavings, getSubscriptionSelectionPriceDifference } from "@/lib/subscription/calculator"
 import { formatMinorCurrency } from "@/lib/formatters"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { buildSubscriptionSelectionSearchParams, parseSubscriptionSelectionFromSearchParams, reduceSubscriptionSelection } from "@/lib/subscription/configurator"
@@ -101,11 +101,18 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
     const checkoutBaseUrl = localizeHref(content.subscribe.baseUrl.trim() || "/checkout", locale)
     const checkoutLoginUrl = checkoutBaseUrl.endsWith("/login") ? checkoutBaseUrl : `${checkoutBaseUrl.replace(/\/$/, "")}/login`
     const subscribeHref = `${checkoutLoginUrl}?${subscribeSearchParams.toString()}`
-    const startingPriceFormatter = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" })
-    const startingPrice = (fixed: Parameters<typeof getSubscriptionStartingMonthlyAmount>[0]): SubscriptionOptionPrice | undefined => {
-        const amount = getSubscriptionStartingMonthlyAmount(fixed, catalog)
-        if (amount === null) return undefined
-        return { label: content.startingPrice.label, amount: startingPriceFormatter.format(amount / 100), suffix: content.startingPrice.suffix }
+    const signedPriceFormatter = new Intl.NumberFormat(numberLocale, { ...currencyFormat, signDisplay: "exceptZero" })
+
+    const optionPrice = (action: SubscriptionSelectionAction, active: boolean): SubscriptionOptionPrice | undefined => {
+        if (active) return { amount: formatReferencePrice(paymentPeriodPrice), suffix: paymentPeriodSuffix }
+        const difference = getSubscriptionSelectionPriceDifference(selection, reduceSubscriptionSelection(selection, action, catalog), catalog)
+        if (difference === 0) return undefined
+        return { amount: signedPriceFormatter.format(difference / 100), suffix: paymentPeriodSuffix, relative: true }
+    }
+
+    const absoluteOptionPrice = (action: SubscriptionSelectionAction): SubscriptionOptionPrice => {
+        const next = reduceSubscriptionSelection(selection, action, catalog)
+        return { amount: formatReferencePrice(calculateSubscriptionQuote(next, catalog).total / 100), suffix: paymentPeriodSuffix }
     }
     const configuratorSteps = [
         content.customerType.label,
@@ -182,16 +189,16 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         <SubscriptionOptionCard
                             title={content.customerType.b2b.title}
                             description={content.customerType.b2b.description}
-                            accent={content.customerType.b2b.color}
-                            startingPrice={startingPrice({ customerType: "b2b" })}
+                            accent={content.customerType.color}
+                            price={absoluteOptionPrice({ type: "customerTypeChanged", value: "b2b" })}
                             active={selection.customerType === "b2b"}
                             onClick={() => selectOption({ type: "customerTypeChanged", value: "b2b" }, "b2b")}
                         />
                         <SubscriptionOptionCard
                             title={content.customerType.b2c.title}
                             description={content.customerType.b2c.description}
-                            accent={content.customerType.b2c.color}
-                            startingPrice={startingPrice({ customerType: "b2c" })}
+                            accent={content.customerType.color}
+                            price={absoluteOptionPrice({ type: "customerTypeChanged", value: "b2c" })}
                             active={selection.customerType === "b2c"}
                             onClick={() => selectOption({ type: "customerTypeChanged", value: "b2c" }, "b2c")}
                         />
@@ -204,8 +211,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         <SubscriptionOptionCard
                             title={content.plan.pro.title}
                             description={content.plan.pro.description}
-                            accent="brand"
-                            startingPrice={startingPrice({ customerType: selection.customerType, plan: "pro" })}
+                            accent={content.plan.color}
+                            price={optionPrice({ type: "planChanged", value: "pro" }, selection.plan === "pro")}
                             active={selection.plan === "pro"}
                             onClick={() => selectOption({ type: "planChanged", value: "pro" }, "pro")}
                         >
@@ -214,8 +221,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         <SubscriptionOptionCard
                             title={content.plan.max.title}
                             description={content.plan.max.description}
-                            accent="magenta"
-                            startingPrice={startingPrice({ customerType: selection.customerType, plan: "max" })}
+                            accent={content.plan.color}
+                            price={optionPrice({ type: "planChanged", value: "max" }, selection.plan === "max")}
                             active={selection.plan === "max"}
                             onClick={() => selectOption({ type: "planChanged", value: "max" }, "max")}
                         >
@@ -224,8 +231,8 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         <SubscriptionOptionCard
                             title={content.plan.custom.title}
                             description={content.plan.custom.description}
-                            accent="aqua"
-                            startingPrice={startingPrice({ customerType: selection.customerType, plan: "custom" })}
+                            accent={content.plan.color}
+                            price={optionPrice({ type: "planChanged", value: "custom" }, selection.plan === "custom")}
                             active={selection.plan === "custom"}
                             onClick={() => selectOption({ type: "planChanged", value: "custom" }, "custom")}
                         />
@@ -238,16 +245,16 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                         <SubscriptionOptionCard
                             title={content.deployment.selfHosted.title}
                             description={content.deployment.selfHosted.description}
-                            accent={content.deployment.selfHosted.color}
-                            startingPrice={startingPrice({ customerType: selection.customerType, plan: selection.plan, deployment: "self_hosted" })}
+                            accent={content.deployment.color}
+                            price={absoluteOptionPrice({ type: "deploymentChanged", value: "self_hosted" })}
                             active={selection.deployment === "self_hosted"}
                             onClick={() => selectOption({ type: "deploymentChanged", value: "self_hosted" }, "selfHosted")}
                         />
                         <SubscriptionOptionCard
                             title={content.deployment.cloud.title}
                             description={content.deployment.cloud.description}
-                            accent={content.deployment.cloud.color}
-                            startingPrice={startingPrice({ customerType: selection.customerType, plan: selection.plan, deployment: "cloud" })}
+                            accent={content.deployment.color}
+                            price={absoluteOptionPrice({ type: "deploymentChanged", value: "cloud" })}
                             active={selection.deployment === "cloud"}
                             onClick={() => selectOption({ type: "deploymentChanged", value: "cloud" }, "cloud")}
                         />
@@ -317,7 +324,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                     key={period}
                                     title={content.paymentPeriod[`${period}Text`]}
                                     description={content.paymentPeriod[`${period}PeriodSuffix`]}
-                                    accent={content.paymentPeriod[`${period}Color`]}
+                                    accent={content.paymentPeriod.color}
                                     badge={savings > 0 ? `${content.paymentPeriod.savingsLabel} ${formatMinorCurrency(savings, "EUR", locale)}` : undefined}
                                     active={selection.paymentPeriod === period}
                                     onClick={() => dispatch({ type: "paymentPeriodChanged", value: period })}

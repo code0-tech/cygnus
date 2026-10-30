@@ -9,7 +9,7 @@ import {
     getPaymentPeriodSuffix,
     getSubscriptionDisplayPrices,
     getSubscriptionMonthlySavings,
-    getSubscriptionStartingMonthlyAmount,
+    getSubscriptionSelectionPriceDifference,
     resolveCheckoutPricing,
 } from "@/lib/subscription/calculator"
 import { SUBSCRIPTION_PRICE_LOOKUP_KEYS, type SubscriptionPriceCatalog, type SubscriptionPriceLookupKey } from "@/lib/subscription/prices"
@@ -62,37 +62,14 @@ test("monthly savings compare equivalent months and never advertise a negative s
     assert.equal(getSubscriptionMonthlySavings({ ...selection, paymentPeriod: "yearly" }, { subscriptionPrices: prices } as typeof catalog), 0)
 })
 
-test("starting prices fix the chosen options and take the cheapest remaining ones", () => {
-    const prices = createSubscriptionPrices({
-        pro_cloud_personal_monthly: "2000",
-        pro_cloud_personal_quarterly: "5400",
-        pro_cloud_personal_yearly: "19200",
-        max_cloud_personal_monthly: "4000",
-        max_cloud_personal_quarterly: "10800",
-        max_cloud_personal_yearly: "38400",
-        pro_cloud_business_monthly: "2600",
-        pro_cloud_business_quarterly: "7800",
-        pro_cloud_business_yearly: "31200",
-        max_cloud_business_monthly: "5000",
-        max_cloud_business_quarterly: "15000",
-        max_cloud_business_yearly: "60000",
-    })
-    const catalog = {
-        subscriptionPrices: prices,
-        aiTokens: { b2b: { packages: [1_000, 100] }, b2c: { packages: [] } },
-        workflowExecutions: { b2b: { packages: [200, 50] }, b2c: { packages: [] } },
-    } as unknown as Parameters<typeof calculateSubscriptionQuote>[1]
+test("option prices are the difference of the payment period total the selection would change to", () => {
+    const catalog = { subscriptionPrices } as Parameters<typeof calculateSubscriptionQuote>[1]
+    const pro = { deployment: "self_hosted", customerType: "b2b", plan: "pro", paymentPeriod: "quarterly", aiTokens: 0, workflowExecutions: 0 } as const
 
-    // Self-hosted pro costs 1500 / 4050 / 15000, so yearly is the cheapest period.
-    assert.equal(getSubscriptionStartingMonthlyAmount({ customerType: "b2c", plan: "pro" }, catalog), 1_250)
-    assert.equal(getSubscriptionStartingMonthlyAmount({ customerType: "b2c", plan: "pro", deployment: "cloud" }, catalog), 1_600)
-    assert.equal(getSubscriptionStartingMonthlyAmount({ customerType: "b2c", plan: "max", deployment: "cloud" }, catalog), 3_200)
-    // Custom uses the smallest packages: 100 tokens round to 0 cents, 50 executions cost 50 cents per year.
-    assert.equal(getSubscriptionStartingMonthlyAmount({ customerType: "b2b", plan: "custom", deployment: "self_hosted" }, catalog), 4)
-    assert.equal(getSubscriptionStartingMonthlyAmount({ customerType: "b2b" }, catalog), 4)
-    // Without packages a custom plan has no price, so it neither counts as the cheapest option nor gets a badge.
-    assert.equal(getSubscriptionStartingMonthlyAmount({ customerType: "b2c", plan: "custom" }, catalog), null)
-    assert.equal(getSubscriptionStartingMonthlyAmount({ customerType: "b2c" }, catalog), 1_250)
+    // Self-hosted business quarterly: Pro 4050, Max 8100.
+    assert.equal(getSubscriptionSelectionPriceDifference(pro, { ...pro, plan: "max" }, catalog), 4_050)
+    assert.equal(getSubscriptionSelectionPriceDifference({ ...pro, plan: "max" }, pro, catalog), -4_050)
+    assert.equal(getSubscriptionSelectionPriceDifference(pro, pro, catalog), 0)
 })
 
 test("custom monthly savings use both selected quantities and round the monthly price to cents", () => {
@@ -157,16 +134,14 @@ const paymentPeriod = {
     description: "Choose how often to pay.",
     label: "Payment period",
     title: "Payment period",
-    monthlyColor: "brand",
+    color: "brand",
     monthlyDiscount: 0.05,
     monthlyPeriodSuffix: "per month",
     monthlyText: "Monthly",
     savingsLabel: "Save",
-    quarterlyColor: "aqua",
     quarterlyDiscount: 0.1,
     quarterlyPeriodSuffix: "per quarter",
     quarterlyText: "Quarterly",
-    yearlyColor: "magenta",
     yearlyDiscount: 0.2,
     yearlyPeriodSuffix: "per year",
     yearlyText: "Yearly",

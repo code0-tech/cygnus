@@ -17,9 +17,10 @@ export function SubscriptionOptionGroup({ children }: { children: ReactNode }) {
 const mixAccent = (color: string, percent: number) => `color-mix(in oklab, ${color} ${percent}%, transparent)`
 
 export interface SubscriptionOptionPrice {
-    label: string
     amount: string
     suffix: string
+    // A difference to the current selection rather than the price of the selection itself.
+    relative?: boolean
 }
 
 interface SubscriptionOptionCardProps {
@@ -30,11 +31,11 @@ interface SubscriptionOptionCardProps {
     disabled?: boolean
     accent?: SubscriptionOptionAccent
     badge?: string
-    startingPrice?: SubscriptionOptionPrice
+    price?: SubscriptionOptionPrice
     children?: ReactNode
 }
 
-export function SubscriptionOptionCard({ title, description, active, onClick, disabled = false, accent = "aqua", badge, startingPrice, children }: SubscriptionOptionCardProps) {
+export function SubscriptionOptionCard({ title, description, active, onClick, disabled = false, accent = "aqua", badge, price, children }: SubscriptionOptionCardProps) {
     const accentColor = `var(--bg-${accent})`
     const activeStyle: CSSProperties = { background: `linear-gradient(to right, ${mixAccent(accentColor, 18)}, ${mixAccent(accentColor, 2)} 70%)` }
 
@@ -45,7 +46,7 @@ export function SubscriptionOptionCard({ title, description, active, onClick, di
             onClick={onClick}
             disabled={disabled}
             style={active ? activeStyle : undefined}
-            className={cn("flex w-full items-start gap-4 rounded-xl px-4 py-3.5 text-left transition-colors duration-200", !active && "hover:bg-white/4", disabled && "cursor-not-allowed opacity-45")}
+            className={cn("flex w-full items-start gap-4 rounded-xl px-4 py-3.5 text-left transition-colors duration-200", !active && "hover:bg-white/4", disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer")}
         >
             <span
                 aria-hidden="true"
@@ -65,11 +66,10 @@ export function SubscriptionOptionCard({ title, description, active, onClick, di
                 </div>
                 <p className="mt-0.5 text-sm text-secondary">{description}</p>
                 {children}
-                {startingPrice && (
+                {price && (
                     <p className="mt-2 flex items-baseline gap-1 whitespace-nowrap">
-                        <span className="text-xs text-tertiary">{startingPrice.label}</span>
-                        <span className="text-base font-semibold text-white">{startingPrice.amount}</span>
-                        <span className="text-xs text-tertiary">{startingPrice.suffix}</span>
+                        <span className={cn("text-base tabular-nums", price.relative ? "text-secondary" : "font-semibold text-white")}>{price.amount}</span>
+                        <span className="text-xs text-tertiary">{price.suffix}</span>
                     </p>
                 )}
             </div>

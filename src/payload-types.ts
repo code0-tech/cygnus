@@ -2901,42 +2901,39 @@ export interface SubscriptionConfig {
     label: string;
     href: string;
   };
-  /**
-   * Cheapest monthly price shown on the customer type, plan and deployment options, for example: from €8.95/mo.
-   */
-  startingPrice: {
-    label: string;
-    suffix: string;
-  };
   deployment: {
     label: string;
     description?: string | null;
+    /**
+     * Highlight color of the selected option in this step.
+     */
+    color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
     selfHosted: {
       title: string;
       description: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     cloud: {
       title: string;
       description: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
   };
   customerType: {
     label: string;
     description?: string | null;
+    /**
+     * Highlight color of the selected option in this step.
+     */
+    color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
     b2b: {
       title: string;
       description: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     b2c: {
       title: string;
       description: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
   };
@@ -2953,13 +2950,18 @@ export interface SubscriptionConfig {
     monthlyPeriodSuffix: string;
     quarterlyPeriodSuffix: string;
     yearlyPeriodSuffix: string;
-    monthlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
-    quarterlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
-    yearlyColor: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    /**
+     * Highlight color of the selected option in this step.
+     */
+    color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
   };
   plan: {
     title: string;
     description?: string | null;
+    /**
+     * Highlight color of the selected option in this step.
+     */
+    color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
     pro: {
       title: string;
       description: string;
@@ -3661,23 +3663,17 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         label?: T;
         href?: T;
       };
-  startingPrice?:
-    | T
-    | {
-        label?: T;
-        suffix?: T;
-      };
   deployment?:
     | T
     | {
         label?: T;
         description?: T;
+        color?: T;
         selfHosted?:
           | T
           | {
               title?: T;
               description?: T;
-              color?: T;
               image?: T;
             };
         cloud?:
@@ -3685,7 +3681,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
-              color?: T;
               image?: T;
             };
       };
@@ -3694,12 +3689,12 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | {
         label?: T;
         description?: T;
+        color?: T;
         b2b?:
           | T
           | {
               title?: T;
               description?: T;
-              color?: T;
               image?: T;
             };
         b2c?:
@@ -3707,7 +3702,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
           | {
               title?: T;
               description?: T;
-              color?: T;
               image?: T;
             };
       };
@@ -3723,15 +3717,14 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         monthlyPeriodSuffix?: T;
         quarterlyPeriodSuffix?: T;
         yearlyPeriodSuffix?: T;
-        monthlyColor?: T;
-        quarterlyColor?: T;
-        yearlyColor?: T;
+        color?: T;
       };
   plan?:
     | T
     | {
         title?: T;
         description?: T;
+        color?: T;
         pro?:
           | T
           | {
