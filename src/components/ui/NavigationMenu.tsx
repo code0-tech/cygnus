@@ -2,17 +2,25 @@ import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/naviga
 import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
 
+type NavigationMenuProps = NavigationMenuPrimitive.Root.Props &
+    Pick<NavigationMenuPrimitive.Positioner.Props, "align" | "alignOffset"> & {
+        embedded?: boolean
+        portalContainer?: NavigationMenuPrimitive.Portal.Props["container"]
+    }
+
 function NavigationMenu({
     align = "start",
     alignOffset = 0,
+    embedded = false,
+    portalContainer,
     className,
     children,
     ...props
-}: NavigationMenuPrimitive.Root.Props & Pick<NavigationMenuPrimitive.Positioner.Props, "align" | "alignOffset">) {
+}: NavigationMenuProps) {
     return (
         <NavigationMenuPrimitive.Root data-slot="navigation-menu" className={cn("group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", className)} {...props}>
             {children}
-            <NavigationMenuPositioner align={align} alignOffset={alignOffset} />
+            <NavigationMenuPositioner align={align} alignOffset={alignOffset} embedded={embedded} portalContainer={portalContainer} />
         </NavigationMenuPrimitive.Root>
     )
 }
@@ -61,9 +69,12 @@ function NavigationMenuContent({ className, ...props }: NavigationMenuPrimitive.
     )
 }
 
-function NavigationMenuPositioner({ className, side = "bottom", sideOffset = 8, align = "start", alignOffset = 0, ...props }: NavigationMenuPrimitive.Positioner.Props) {
+type NavigationMenuPositionerProps = NavigationMenuPrimitive.Positioner.Props &
+    Pick<NavigationMenuProps, "embedded" | "portalContainer">
+
+function NavigationMenuPositioner({ embedded = false, portalContainer, className, side = "bottom", sideOffset = 8, align = "start", alignOffset = 0, ...props }: NavigationMenuPositionerProps) {
     return (
-        <NavigationMenuPrimitive.Portal>
+        <NavigationMenuPrimitive.Portal container={portalContainer}>
             <NavigationMenuPrimitive.Positioner
                 side={side}
                 sideOffset={sideOffset}
@@ -71,11 +82,12 @@ function NavigationMenuPositioner({ className, side = "bottom", sideOffset = 8, 
                 alignOffset={alignOffset}
                 className={cn(
                     "isolate z-50 h-(--positioner-height) w-(--positioner-width) max-w-(--available-width) transition-[top,left,right,bottom] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] data-instant:transition-none data-[side=bottom]:before:-top-2.5 data-[side=bottom]:before:right-0 data-[side=bottom]:before:left-0",
+                    embedded && "relative! inset-auto! w-full! max-w-none! transform-none! transition-none",
                     className
                 )}
                 {...props}
             >
-                <NavigationMenuPrimitive.Popup className="xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-2xl border border-white/10 bg-primary/80 text-white backdrop-blur-lg transition-[opacity,transform,width,height,scale,translate] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] outline-none data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-[0.98] data-starting-style:opacity-0">
+                <NavigationMenuPrimitive.Popup className={cn("xs:w-(--popup-width) relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) rounded-2xl border border-white/10 bg-primary/80 text-white backdrop-blur-lg transition-[opacity,transform,width,height,scale,translate] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] outline-none data-ending-style:scale-[0.98] data-ending-style:opacity-0 data-ending-style:duration-150 data-starting-style:scale-[0.98] data-starting-style:opacity-0", embedded && "w-full! rounded-none border-0 bg-transparent backdrop-blur-none origin-top data-ending-style:scale-100 data-starting-style:scale-100")}>
                     <NavigationMenuPrimitive.Viewport className="relative size-full overflow-hidden" />
                 </NavigationMenuPrimitive.Popup>
             </NavigationMenuPrimitive.Positioner>
