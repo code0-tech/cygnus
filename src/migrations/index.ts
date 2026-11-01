@@ -82,6 +82,7 @@ import * as migration_20260806_122846_action_list_load_more_label from './202608
 import * as migration_20260823_163819_navigation_menu_groups from './20260823_163819_navigation_menu_groups';
 import * as migration_20260828_104452_add_playground_media_to_sections from './20260828_104452_add_playground_media_to_sections';
 import * as migration_20260903_110928_update_install_language_options from './20260903_110928_update_install_language_options';
+import * as migration_20261101_150000_users_password_reset_requested_at from './20261101_150000_users_password_reset_requested_at';
 
 export const migrations = [
   {
@@ -503,5 +504,10 @@ export const migrations = [
     up: migration_20260903_110928_update_install_language_options.up,
     down: migration_20260903_110928_update_install_language_options.down,
     name: '20260903_110928_update_install_language_options'
+  },
+  {
+    up: migration_20261101_150000_users_password_reset_requested_at.up,
+    down: migration_20261101_150000_users_password_reset_requested_at.down,
+    name: '20261101_150000_users_password_reset_requested_at',
   },
 ];
