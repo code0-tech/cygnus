@@ -9,12 +9,11 @@ import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadg
 import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue, formatLicenseEdition } from "@/lib/licenses/displayValues"
+import { selectRecentLicenses } from "@/lib/licenses/recentLicenses"
 import { createLicenseCustomerPath, createLicensePath } from "@/lib/licenses/routes"
 import { AutoScrollArea, Card, DataTable, DataTableColumn, DataTableHeader, DataTableHeaderColumn, Flex, Spacing, Text } from "@code0-tech/pictor"
 import { useRouter } from "next/navigation"
 import { Fragment } from "react"
-
-const RECENT_LICENSE_COUNT = 5
 
 interface LicenseIndexPageProps {
     content: LicenseContent
@@ -24,7 +23,7 @@ interface LicenseIndexPageProps {
 export function LicenseIndexPage({ content, locale }: LicenseIndexPageProps) {
     const router = useRouter()
     const { customers, isLoading, loadMore, loadingMore, pagination, sidebarLicenses } = useLicenseData()
-    const recentLicenses = sidebarLicenses.toSorted((left, right) => (Date.parse(right.updatedAt ?? "") || 0) - (Date.parse(left.updatedAt ?? "") || 0)).slice(0, RECENT_LICENSE_COUNT)
+    const recentLicenses = selectRecentLicenses(sidebarLicenses)
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" })
 
     const activeLicenseCounts = new Map<string, number>()

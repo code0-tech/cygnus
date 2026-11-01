@@ -7,6 +7,7 @@ import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels, getLicenseEditSectionLabels, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/editSections"
 import { downloadLicenseFile } from "@/lib/licenses/client"
+import { selectRecentLicenses } from "@/lib/licenses/recentLicenses"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardLicense } from "@/lib/licenses/types"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
@@ -259,8 +260,9 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
     // While a license page loads, its actions are already shown, disabled until the license is known.
     const showLicenseActions = Boolean(activeLicense) || (isLoading && isLicenseRoute)
     const customerId = customerRouteSegment ? resolveCustomerRouteId(customerRouteSegment) : undefined
-    // Licenses are listed per customer; the customer overview at /licenses has no license list.
-    const customerLicenses = customerId ? licenses.filter((license) => license.customerId === customerId) : []
+    // A customer page lists that customer's licenses; the customer overview at /licenses lists the most recently edited ones.
+    const listedLicenses = customerId ? licenses.filter((license) => license.customerId === customerId) : selectRecentLicenses(licenses)
+    const listLabel = customerId ? content.licenses : content.dashboard.recentLicensesLabel
     const contextMenu = activeLicense
         ? getLicenseContextMenu(activeLicense, content, locale)
         : customerRouteSegment
@@ -293,17 +295,17 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                             <span>{content.sidebar.backToCustomersLabel}</span>
                                         </MenuItem>
                                         <MenuSeparator />
-                                        <MenuLabel className="flex w-full! items-center justify-between gap-3">
-                                            <span>{content.licenses}</span>
-                                            {isLoading ? null : <span className="text-xs tabular-nums text-tertiary">{customerLicenses.length}</span>}
-                                        </MenuLabel>
                                     </>
                                 ) : null}
+                                <MenuLabel className="flex w-full! items-center justify-between gap-3">
+                                    <span>{listLabel}</span>
+                                    {isLoading ? null : <span className="text-xs tabular-nums text-tertiary">{listedLicenses.length}</span>}
+                                </MenuLabel>
 
-                                {!customerId ? null : isLoading ? (
+                                {isLoading ? (
                                     <LicenseMenuSkeleton />
-                                ) : customerLicenses.length > 0 ? (
-                                    customerLicenses.map((license) => {
+                                ) : listedLicenses.length > 0 ? (
+                                    listedLicenses.map((license) => {
                                         const status = formatLicenseDisplayValue(license.status, "status", content.values)
                                         const licenseHref = createLicensePath(locale, license.customerId, license.id)
                                         const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
@@ -336,7 +338,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                     </div>
                                 )}
 
-                                {customerId ? <MenuSeparator /> : null}
+                                <MenuSeparator />
                                 <MenuItem disabled={isLoggingOut} onSelect={onLogout} className="w-full! justify-start! text-left!">
                                     {isLoggingOut ? (
                                         <ButtonLoader label={content.sidebar.loggingOut} />
@@ -355,74 +357,70 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
 
             <aside className="hidden min-h-0 flex-col bg-transparent pr-4 lg:flex lg:h-full">
                 <Flex h="100%" pt={0.5} style={{ boxSizing: "border-box", flexDirection: "column", minHeight: 0 }}>
-                    {customerId ? (
-                        <>
-                            <Flex align="center" justify="space-between">
-                                <Text pl={0.7} hierarchy="tertiary">
-                                    {content.licenses}
-                                </Text>
-                                {isLoading ? null : (
-                                    <StableBadge color="secondary" className={PICTOR_BADGE_CLASS_NAME}>
-                                        {customerLicenses.length}
-                                    </StableBadge>
-                                )}
-                            </Flex>
-                            <Spacing spacing="xxs" />
-                            {/* A plain overflow container, not a ScrollArea: Radix wraps its viewport in a display:table div that collapses the rows to their text width. */}
-                            <nav aria-label={content.licenses} className="min-h-0 flex-1 overflow-y-auto">
-                                {isLoading ? (
-                                    <LicenseSidebarSkeleton />
-                                ) : customerLicenses.length > 0 ? (
-                                    <ul className="flex flex-col">
-                                        {customerLicenses.map((license) => {
-                                            const status = formatLicenseDisplayValue(license.status, "status", content.values)
-                                            const licenseHref = createLicensePath(locale, license.customerId, license.id)
-                                            const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
+                    <Flex align="center" justify="space-between">
+                        <Text pl={0.7} hierarchy="tertiary">
+                            {listLabel}
+                        </Text>
+                        {isLoading ? null : (
+                            <StableBadge color="secondary" className={PICTOR_BADGE_CLASS_NAME}>
+                                {listedLicenses.length}
+                            </StableBadge>
+                        )}
+                    </Flex>
+                    <Spacing spacing="xxs" />
+                    {/* A plain overflow container, not a ScrollArea: Radix wraps its viewport in a display:table div that collapses the rows to their text width. */}
+                    <nav aria-label={listLabel} className="min-h-0 flex-1 overflow-y-auto">
+                        {isLoading ? (
+                            <LicenseSidebarSkeleton />
+                        ) : listedLicenses.length > 0 ? (
+                            <ul className="flex flex-col">
+                                {listedLicenses.map((license) => {
+                                    const status = formatLicenseDisplayValue(license.status, "status", content.values)
+                                    const licenseHref = createLicensePath(locale, license.customerId, license.id)
+                                    const licenseIsActive = pathname === licenseHref || pathname?.startsWith(`${licenseHref}/`)
 
-                                            return (
-                                                <li key={license.id}>
-                                                    <Link href={licenseHref} aria-current={licenseIsActive ? "page" : undefined} className="block w-full" prefetch>
-                                                        <Button
-                                                            variant="none"
-                                                            w="100%"
-                                                            justify="flex-start"
-                                                            paddingSize="xxs"
-                                                            active={licenseIsActive}
-                                                            // Pictor has no style for button--active, so the open license keeps the hover background of this button.
-                                                            className={licenseIsActive ? "bg-[#23212e]! shadow-[inset_0_1px_1px_#bfbfbf1a]!" : undefined}
-                                                        >
-                                                            <span className="relative shrink-0">
-                                                                {license.deploymentType === "self_hosted" ? <IconServer aria-hidden="true" size={13} /> : <IconCloud aria-hidden="true" size={13} />}
-                                                                {isLicenseStatusError(license.status) ? (
-                                                                    <LicenseStatusDot
-                                                                        status={license.status}
-                                                                        aria-label={status}
-                                                                        title={status}
-                                                                        className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light"
-                                                                    />
-                                                                ) : null}
-                                                            </span>
-                                                            <span className="flex min-w-0 items-center gap-1">
-                                                                <Text className={cn("truncate", licenseIsActive && "text-white!")}>{getLicenseSidebarName(license, content.values)}</Text>
-                                                                <Text hierarchy="tertiary" className="shrink-0">
-                                                                    {getShortLicenseId(license.id)}
-                                                                </Text>
-                                                            </span>
-                                                        </Button>
-                                                    </Link>
-                                                </li>
-                                            )
-                                        })}
-                                    </ul>
-                                ) : (
-                                    <div className="flex items-center gap-2 rounded-xl border border-dashed border-white/10 p-2 text-tertiary">
-                                        <IconKey aria-hidden="true" size={16} />
-                                        <span className="text-xs">{content.emptyLicenses}</span>
-                                    </div>
-                                )}
-                            </nav>
-                        </>
-                    ) : null}
+                                    return (
+                                        <li key={license.id}>
+                                            <Link href={licenseHref} aria-current={licenseIsActive ? "page" : undefined} className="block w-full" prefetch>
+                                                <Button
+                                                    variant="none"
+                                                    w="100%"
+                                                    justify="flex-start"
+                                                    paddingSize="xxs"
+                                                    active={licenseIsActive}
+                                                    // Pictor has no style for button--active, so the open license keeps the hover background of this button.
+                                                    className={licenseIsActive ? "bg-[#23212e]! shadow-[inset_0_1px_1px_#bfbfbf1a]!" : undefined}
+                                                >
+                                                    <span className="relative shrink-0">
+                                                        {license.deploymentType === "self_hosted" ? <IconServer aria-hidden="true" size={13} /> : <IconCloud aria-hidden="true" size={13} />}
+                                                        {isLicenseStatusError(license.status) ? (
+                                                            <LicenseStatusDot
+                                                                status={license.status}
+                                                                aria-label={status}
+                                                                title={status}
+                                                                className="absolute -bottom-0.5 -right-0.5 ring-2 ring-light"
+                                                            />
+                                                        ) : null}
+                                                    </span>
+                                                    <span className="flex min-w-0 items-center gap-1">
+                                                        <Text className={cn("truncate", licenseIsActive && "text-white!")}>{getLicenseSidebarName(license, content.values)}</Text>
+                                                        <Text hierarchy="tertiary" className="shrink-0">
+                                                            {getShortLicenseId(license.id)}
+                                                        </Text>
+                                                    </span>
+                                                </Button>
+                                            </Link>
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        ) : (
+                            <div className="flex items-center gap-2 rounded-xl border border-dashed border-white/10 p-2 text-tertiary">
+                                <IconKey aria-hidden="true" size={16} />
+                                <span className="text-xs">{content.emptyLicenses}</span>
+                            </div>
+                        )}
+                    </nav>
                 </Flex>
                 <div className="mt-6 flex shrink-0 flex-col gap-3">
                     {activeLicense?.deploymentType === "self_hosted" ? <LicenseDownloadButton content={content} license={activeLicense} /> : null}
