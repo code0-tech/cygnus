@@ -162,7 +162,7 @@ test("hands the payment client secret of an upgrade that waits for 3D Secure to 
             )
 
             assert.equal(response.status, 200)
-            assert.match(graphQLServer.requests[0].body.query, /paymentClientSecret/)
+            assert.match(String(graphQLServer.requests[0].body.query), /paymentClientSecret/)
             const body = await response.json()
             assert.equal(body.paymentClientSecret, "pi_123_secret_456")
             // The upgrade is not applied yet: the plan stays the current one and the target waits in pendingUpdate.
