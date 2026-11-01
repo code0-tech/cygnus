@@ -12,6 +12,7 @@ import {
     createCheckoutCustomer,
     createCheckoutSession,
     getCheckoutCustomers,
+    sendCheckoutOffer,
     type CheckoutCustomerData,
     type CheckoutSessionData,
     type CheckoutStripePricingData,
@@ -35,6 +36,15 @@ function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
     if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return errors.customerTypeMismatch
     if (error.errorCode === "INVALID_CHECKOUT_CUSTOMER") return errors.checkoutCustomer
     return error.kind === "customer" ? errors.customerCreation : errors.checkoutSession
+}
+
+function getOfferErrorMessage(error: unknown, errors: ErrorsContent) {
+    if (!(error instanceof CheckoutSubmissionError)) return errors.offerSend
+    if (error.status === 429) return errors.checkoutRateLimit
+    if (error.errorCode === "QUOTE_DELIVERY_FAILED") return errors.offerDelivery
+    if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return errors.customerTypeMismatch
+    if (error.errorCode === "INVALID_QUOTE_CUSTOMER") return errors.checkoutCustomer
+    return error.kind === "customer" ? errors.customerCreation : errors.offerSend
 }
 
 export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsContent, locale: AppLocale) {
@@ -384,6 +394,40 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
         stripeEmailComplete,
     ])
 
+    const canSendOffer = Boolean(selectedCustomerId) || (stripeBillingAddressComplete && stripeEmailComplete)
+    const sendOffer = useCallback(
+        async (email: string) => {
+            try {
+                let customerId = selectedCustomerIdRef.current
+                if (!customerId) {
+                    const billingAddress = stripeBillingAddressRef.current
+                    const customerEmail = stripeEmailRef.current
+                    if (customerCreationPendingRef.current || !billingAddress || !stripeBillingAddressCompleteRef.current || !customerEmail || !stripeEmailCompleteRef.current) {
+                        throw new CheckoutSubmissionError("customer", null, "The billing details are incomplete.")
+                    }
+
+                    customerCreationPendingRef.current = true
+                    try {
+                        const customer = await createCheckoutCustomer({ customerType, email: customerEmail, billingAddress })
+                        customerId = customer.id
+                        setCustomers((current) => [...current.filter((candidate) => candidate.id !== customer.id), customer])
+                        setHasExistingCustomers(true)
+                        selectedCustomerIdRef.current = customerId
+                        setSelectedCustomerId(customerId)
+                    } finally {
+                        customerCreationPendingRef.current = false
+                    }
+                }
+
+                await sendCheckoutOffer({ customerId, email, searchParams: new URLSearchParams(searchParamsString) })
+            } catch (error) {
+                console.error("Failed to send the Crater offer:", error)
+                throw new Error(getOfferErrorMessage(error, errors))
+            }
+        },
+        [customerType, errors, searchParamsString]
+    )
+
     const selectCheckoutCustomer = useCallback(
         async (customerId: string | null) => {
             if (isLoading || isRefreshingSession) return
@@ -461,6 +505,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     }, [sessionError])
 
     return {
+        canSendOffer,
         checkoutSession,
         continueNewCustomer,
         content,
@@ -483,6 +528,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
         resolvedError,
         selectedCustomerId,
         selectCheckoutCustomer,
+        sendOffer,
         sessionError,
         setStripeBillingAddress,
         setStripeEmail,

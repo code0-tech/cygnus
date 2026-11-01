@@ -71,12 +71,14 @@ export function CheckoutPaymentFields({
     emailComplete,
     emailSyncedToStripe,
     isBusinessCustomer,
+    offerEmailLocked,
     onAddressChange,
     onEmailChange,
     onEmailSyncedChange,
     onTaxQuoteChange,
     onPaymentConfirmationChange,
     onPricingChange,
+    onSendOffer,
     onStripeCheckoutChange,
     onSessionExpired,
     onSessionLoadError,
@@ -329,7 +331,7 @@ export function CheckoutPaymentFields({
                         >
                             {isUpdatingBilling ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                         </Button>
-                        {isBusinessCustomer && <SendOfferDialog content={content} initialEmail={email} />}
+                        {isBusinessCustomer && <SendOfferDialog content={content} emailLocked={offerEmailLocked} initialEmail={email} onSend={onSendOffer} />}
                     </div>
                 </>
             ) : (

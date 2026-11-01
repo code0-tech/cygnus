@@ -19,12 +19,14 @@ export interface CheckoutPaymentFormProps {
     emailComplete: boolean
     emailSyncedToStripe: boolean
     isBusinessCustomer: boolean
+    offerEmailLocked: boolean
     onAddressChange: (address: StripeCheckoutContact | null, complete: boolean) => void
     onEmailChange: (email: string | null, complete: boolean) => void
     onEmailSyncedChange: (synced: boolean) => void
     onTaxQuoteChange: (taxQuote: CheckoutTaxQuoteData | null) => void
     onPaymentConfirmationChange: (confirming: boolean) => void
     onPricingChange: (pricing: CheckoutStripePricingData | null) => void
+    onSendOffer: (email: string) => Promise<void>
     onStripeCheckoutChange: (checkout: CheckoutPromotionCodeSdk | null) => void
     onSessionExpired: () => Promise<boolean>
     onSessionLoadError: () => Promise<boolean>

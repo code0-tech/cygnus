@@ -67,6 +67,12 @@ export const Errors: GlobalConfig = {
         ),
         localizedText("discountSessionRequired", "A checkout session is required to validate a discount.", "Eine Checkout-Sitzung ist erforderlich, um einen Rabatt zu validieren."),
         localizedText("discountValidation", "The discount code could not be validated.", "Der Rabattcode konnte nicht validiert werden."),
+        localizedText("offerSend", "The offer could not be sent. Please try again.", "Das Angebot konnte nicht gesendet werden. Bitte versuche es erneut."),
+        localizedText(
+            "offerDelivery",
+            "The offer was created, but the email could not be sent. Please try again later.",
+            "Das Angebot wurde erstellt, aber die E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut."
+        ),
         localizedText("checkoutLicenseStatus", "We could not check whether your license is ready.", "Wir konnten nicht prüfen, ob deine Lizenz bereit ist."),
     ],
 }

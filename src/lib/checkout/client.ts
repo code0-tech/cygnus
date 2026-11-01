@@ -101,7 +101,7 @@ export function hasCheckoutStatusPollingExpired(startedAt: number, now: number) 
 }
 
 type CheckoutErrorBody = { details?: unknown; error?: unknown; errorCode?: unknown }
-export type CheckoutSubmissionErrorKind = "customer" | "session"
+export type CheckoutSubmissionErrorKind = "customer" | "offer" | "session"
 
 export class CheckoutSubmissionError extends Error {
     constructor(
@@ -235,4 +235,14 @@ export async function createCheckoutSession({ customerId, locale, searchParams }
         expiresAt: "expiresAt" in checkout && typeof checkout.expiresAt === "number" ? checkout.expiresAt : null,
         id: "id" in checkout && typeof checkout.id === "string" ? checkout.id : null,
     } satisfies CheckoutSessionData
+}
+
+export async function sendCheckoutOffer({ customerId, email, searchParams }: { customerId: string; email: string; searchParams: URLSearchParams }) {
+    const response = await checkoutFetch("/api/crater/checkout/offer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), customerId, email }),
+        credentials: "same-origin",
+    })
+    if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to send the offer.", "offer")
 }

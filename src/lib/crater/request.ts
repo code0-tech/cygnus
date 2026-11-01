@@ -24,6 +24,13 @@ export function isValidEmail(value: string) {
     return value.length <= EMAIL_MAX_LENGTH && value.indexOf("@") <= EMAIL_LOCAL_PART_MAX_LENGTH && EMAIL_PATTERN.test(value)
 }
 
+export function parseCheckoutQuantity(value: unknown): number | undefined {
+    if (value == null || value === "") return undefined
+    if ((typeof value !== "string" && typeof value !== "number") || !/^\d+$/.test(String(value))) return NaN
+    const quantity = Number(value)
+    return Number.isInteger(quantity) && quantity > 0 && quantity <= 2_147_483_647 ? quantity : NaN
+}
+
 export function readOptionalAddress(value: unknown) {
     if (value === undefined || value === null) {
         return undefined

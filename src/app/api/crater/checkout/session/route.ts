@@ -1,6 +1,6 @@
 import { guestCheckoutId } from "@/lib/checkout/guestCheckoutSession"
 import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
-import { isCustomerId, optionalString, readJsonObject, type JsonObject } from "@/lib/crater/request"
+import { isCustomerId, optionalString, parseCheckoutQuantity, readJsonObject, type JsonObject } from "@/lib/crater/request"
 import { parseCraterPaymentPeriod, parseCraterPlan } from "@/lib/crater/values"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
@@ -14,13 +14,6 @@ type CheckoutCreateSessionData = Pick<Mutation, "checkoutCreateSession">
 // NamespaceID is opaque in Crater (Types::NamespaceIdType); the package incorrectly maps it to a Crater global ID.
 type CheckoutCreateSessionVariables = {
     input: Omit<MutationCheckoutCreateSessionArgs["input"], "namespaceId"> & { namespaceId?: string }
-}
-
-function parseQuantity(value: unknown): number | undefined {
-    if (value == null || value === "") return undefined
-    if ((typeof value !== "string" && typeof value !== "number") || !/^\d+$/.test(String(value))) return NaN
-    const quantity = Number(value)
-    return Number.isInteger(quantity) && quantity > 0 && quantity <= 2_147_483_647 ? quantity : NaN
 }
 
 const CHECKOUT_CREATE_SESSION: TypedDocumentNode<CheckoutCreateSessionData, CheckoutCreateSessionVariables> = gql`
@@ -54,8 +47,8 @@ export const POST = withCraterSession({ log: "Crater checkout session error", er
     const requestedLocale = optionalString(requestData.locale)
     const customerType = optionalString(requestData.customerType)
     const paymentPeriod = optionalString(requestData.paymentPeriod)
-    const workflowExecutions = parseQuantity(requestData.workflowExecutions)
-    const aiTokens = parseQuantity(requestData.aiTokens)
+    const workflowExecutions = parseCheckoutQuantity(requestData.workflowExecutions)
+    const aiTokens = parseCheckoutQuantity(requestData.aiTokens)
     if (requestedLocale && !isSupportedLocale(requestedLocale)) {
         return craterJson({ error: "locale must be a supported locale." }, 400)
     }

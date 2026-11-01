@@ -26,6 +26,7 @@ function CheckoutFormContent() {
     const stripePromise = useStripePromise("checkout")
     const { stage } = useCheckoutStage()
     const {
+        canSendOffer,
         checkoutSession,
         continueNewCustomer,
         content,
@@ -45,6 +46,7 @@ function CheckoutFormContent() {
         resolvedError,
         selectedCustomerId,
         selectCheckoutCustomer,
+        sendOffer,
         setStripeBillingAddress,
         setStripeEmail,
         setStripeEmailSynced,
@@ -88,12 +90,14 @@ function CheckoutFormContent() {
             emailComplete={stripeEmailComplete}
             emailSyncedToStripe={stripeEmailSynced}
             isBusinessCustomer={customerType === "business"}
+            offerEmailLocked={Boolean(guestEmail)}
             onAddressChange={setStripeBillingAddress}
             onEmailChange={setStripeEmail}
             onEmailSyncedChange={setStripeEmailSynced}
             onTaxQuoteChange={setTaxQuote}
             onPaymentConfirmationChange={setIsConfirmingPayment}
             onPricingChange={setStripePricing}
+            onSendOffer={sendOffer}
             onStripeCheckoutChange={setStripeCheckout}
             onSessionExpired={refreshExpiredCheckoutSession}
             onSessionLoadError={recoverCheckoutSessionLoad}
@@ -137,7 +141,15 @@ function CheckoutFormContent() {
                     >
                         {isLoading ? content.processingLabel : content.continueLabel}
                     </Button>
-                    {customerType === "business" && <SendOfferDialog content={content} initialEmail={stripeEmail} />}
+                    {customerType === "business" && (
+                        <SendOfferDialog
+                            content={content}
+                            disabled={!canSendOffer || isLoading}
+                            emailLocked={Boolean(guestEmail)}
+                            initialEmail={guestEmail ?? stripeEmail}
+                            onSend={sendOffer}
+                        />
+                    )}
                 </form>
             </Elements>
         )
