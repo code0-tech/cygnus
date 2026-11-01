@@ -22,7 +22,13 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
     const hasShortLinks = visibleShortLinkGroups.length > 0
 
     return (
-        <div className={cn("flex min-w-0 w-full flex-col rounded-xl", embedded ? "overflow-hidden" : "overflow-visible", hasNavigationItems && hasShortLinks && "@min-[48rem]:flex-row @min-[48rem]:gap-2")}>
+        <div
+            className={cn(
+                "flex min-w-0 w-full flex-col rounded-xl",
+                embedded ? "overflow-hidden" : "overflow-visible",
+                hasNavigationItems && hasShortLinks && "@min-[48rem]:flex-row @min-[48rem]:gap-2"
+            )}
+        >
             {hasNavigationItems && (
                 <div className={cn("min-w-0 flex-1 space-y-5", embedded ? "py-2 md:pb-0 md:pt-4" : "p-2 md:p-4")}>
                     {visibleGroups.map((group) => (
@@ -41,7 +47,7 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
                                         </div>
                                         <div className="flex min-w-0 flex-1 flex-col">
                                             <p className="truncate text-sm text-white">{subItem.title}</p>
-                                            <p className="line-clamp-2 text-xs text-secondary [overflow-wrap:anywhere]">{subItem.description}</p>
+                                            <p className="line-clamp-2 text-xs text-secondary wrap-anywhere">{subItem.description}</p>
                                         </div>
                                     </Link>
                                 ))}
@@ -52,7 +58,13 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
             )}
 
             {hasShortLinks && (
-                <aside className={cn("min-w-0 space-y-5 px-2 @min-[48rem]:w-64 @min-[48rem]:shrink-0 md:px-4", embedded ? "my-4" : "-my-2 py-6", !embedded && hasNavigationItems && "@min-[48rem]:border-l border-white/10")}>
+                <aside
+                    className={cn(
+                        "min-w-0 space-y-5 px-2 @min-[48rem]:w-64 @min-[48rem]:shrink-0 md:px-4",
+                        embedded ? "my-4" : "-my-2 py-6",
+                        !embedded && hasNavigationItems && "@min-[48rem]:border-l border-white/10"
+                    )}
+                >
                     {visibleShortLinkGroups.map((group) => (
                         <section key={group.key} aria-label={group.title} className="space-y-1.5">
                             <p className={GROUP_HEADING_CLASS}>{group.title}</p>
