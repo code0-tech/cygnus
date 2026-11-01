@@ -87,8 +87,12 @@ test("a guest checkout shows its own address without letting it be changed", () 
     assert.equal(input.disabled, true)
 })
 
-test("the trigger stays disabled until a billing customer can be made out", () => {
-    render(<SendOfferDialog content={content} disabled onSend={async () => {}} />)
+test("explains a missing billing address instead of hiding the dialog behind a disabled trigger", async () => {
+    const onSend = mock.fn(async (_email: string) => {})
+    render(<SendOfferDialog blockedReason="Fill in your billing address first." content={content} emailLocked initialEmail="guest@example.com" onSend={onSend} />)
 
-    assert.equal((screen.getAllByRole("button", { name: content.sendOfferLabel }) as HTMLButtonElement[])[0].disabled, true)
+    assert.equal((screen.getAllByRole("button", { name: content.sendOfferLabel }) as HTMLButtonElement[])[0].disabled, false)
+    assert.equal(screen.getByRole("status").textContent, "Fill in your billing address first.")
+    assert.equal(submitButton().disabled, true)
+    assert.equal(onSend.mock.callCount(), 0)
 })

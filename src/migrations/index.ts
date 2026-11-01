@@ -194,6 +194,7 @@ import * as migration_20261030_120000_subscription_category_colors from './20261
 import * as migration_20261030_130000_users_reset_password_requested_at from './20261030_130000_users_reset_password_requested_at';
 import * as migration_20261101_120000_invoice_payment_confirmation from './20261101_120000_invoice_payment_confirmation';
 import * as migration_20261101_130000_send_offer_messages from './20261101_130000_send_offer_messages';
+import * as migration_20261101_140000_send_offer_billing_required from './20261101_140000_send_offer_billing_required';
 
 export const migrations = [
   {
@@ -1150,5 +1151,10 @@ export const migrations = [
     up: migration_20261101_130000_send_offer_messages.up,
     down: migration_20261101_130000_send_offer_messages.down,
     name: '20261101_130000_send_offer_messages',
+  },
+  {
+    up: migration_20261101_140000_send_offer_billing_required.up,
+    down: migration_20261101_140000_send_offer_billing_required.down,
+    name: '20261101_140000_send_offer_billing_required',
   },
 ];

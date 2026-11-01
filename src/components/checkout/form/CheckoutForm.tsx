@@ -144,7 +144,7 @@ function CheckoutFormContent() {
                     {customerType === "business" && (
                         <SendOfferDialog
                             content={content}
-                            disabled={!canSendOffer || isLoading}
+                            blockedReason={canSendOffer ? null : content.sendOfferBillingRequired}
                             emailLocked={Boolean(guestEmail)}
                             initialEmail={guestEmail ?? stripeEmail}
                             onSend={sendOffer}

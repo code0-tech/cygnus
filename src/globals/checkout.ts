@@ -144,6 +144,12 @@ export const Checkout: GlobalConfig = {
                     "Wir haben das Angebot an {email} gesendet. Es schlüsselt die Kosten einzeln auf und ist unverbindlich.",
                     { type: "textarea", description: "Use {email} to insert the recipient address." }
                 ),
+                localizedText(
+                    "sendOfferBillingRequired",
+                    "Fill in your billing address first. The offer is made out to it and its taxes are calculated from it.",
+                    "Fülle zuerst deine Rechnungsadresse aus. Das Angebot wird auf sie ausgestellt und die Steuern werden danach berechnet.",
+                    { type: "textarea" }
+                ),
                 { name: "processingLabel", type: "text", required: true, localized: true, defaultValue: "Processing..." },
                 { name: "customerSelectLabel", type: "text", required: true, localized: true, defaultValue: "Billing customer" },
                 { name: "newCustomerLabel", type: "text", required: true, localized: true, defaultValue: "Create new customer" },

@@ -12,14 +12,15 @@ type SendOfferContent = Pick<
 >
 
 interface SendOfferDialogProps {
+    // Explains why no offer can be made out yet, for example a billing address that is still missing.
+    blockedReason?: string | null
     content: SendOfferContent
-    disabled?: boolean
     emailLocked?: boolean
     initialEmail?: string | null
     onSend: (email: string) => Promise<void>
 }
 
-export function SendOfferDialog({ content, disabled = false, emailLocked = false, initialEmail, onSend }: SendOfferDialogProps) {
+export function SendOfferDialog({ blockedReason = null, content, emailLocked = false, initialEmail, onSend }: SendOfferDialogProps) {
     const [open, setOpen] = useState(false)
     const [email, setEmail] = useState(initialEmail?.trim() ?? "")
     const [isSending, setIsSending] = useState(false)
@@ -41,7 +42,7 @@ export function SendOfferDialog({ content, disabled = false, emailLocked = false
 
     const submit = async (event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
-        if (!validEmail || isSending) return
+        if (!validEmail || isSending || blockedReason) return
 
         setIsSending(true)
         setError(null)
@@ -63,8 +64,7 @@ export function SendOfferDialog({ content, disabled = false, emailLocked = false
                     <Button
                         type="button"
                         variant="none"
-                        disabled={disabled}
-                        className="h-auto! w-auto! p-0! text-sm! text-brand! shadow-none! hover:bg-transparent! hover:underline! hover:text-brand! disabled:opacity-50!"
+                        className="h-auto! w-auto! p-0! text-sm! text-brand! shadow-none! hover:bg-transparent! hover:underline! hover:text-brand!"
                     >
                         {content.sendOfferLabel}
                     </Button>
@@ -86,9 +86,10 @@ export function SendOfferDialog({ content, disabled = false, emailLocked = false
                             onChange={(event) => setEmail(event.currentTarget.value)}
                             className="w-full!"
                         />
+                        {blockedReason ? <Alert color="warning">{blockedReason}</Alert> : null}
                         {error ? <Alert color="error">{error}</Alert> : null}
                         <DialogFooter>
-                            <Button type="submit" variant="filled" disabled={!validEmail || isSending} className="w-full!">
+                            <Button type="submit" variant="filled" disabled={!validEmail || isSending || Boolean(blockedReason)} className="w-full!">
                                 {isSending ? <ButtonLoader label={content.processingLabel} /> : content.sendOfferLabel}
                             </Button>
                         </DialogFooter>
