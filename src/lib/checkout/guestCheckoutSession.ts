@@ -12,7 +12,6 @@ interface GuestCheckoutSession {
     expiresAt: number
     startedAt?: number
     email?: string
-    claimToken?: string
     receipt?: { sessionId: string; licenseId: string }
 }
 
@@ -46,9 +45,9 @@ function writeSession(response: NextResponse, id: string, session: GuestCheckout
     return response
 }
 
-export function createGuestCheckoutSession(response: NextResponse, id: string, token: string, claimToken?: string | null, email?: string) {
+export function createGuestCheckoutSession(response: NextResponse, id: string, token: string, email?: string) {
     const now = Date.now()
-    return writeSession(response, id, { token, email, startedAt: now, expiresAt: now + GUEST_CHECKOUT_TTL_MS, ...(claimToken ? { claimToken } : {}) })
+    return writeSession(response, id, { token, email, startedAt: now, expiresAt: now + GUEST_CHECKOUT_TTL_MS })
 }
 
 function readCookies(request: Request) {

@@ -83,7 +83,7 @@ Session lists follow the GraphQL connection model with `nodes`, `edges`, cursors
 Clients can start with an email address before the user has a complete Sagittarius profile. `usersCreateGuestUser` can be called without a Crater session, as the only top-level selection in its GraphQL operation.
 
 1. Call `usersCreateGuestUser(input: { email })`. Crater creates the guest in Sagittarius using its server-side service credential, finds or creates the local user by `sagittarius_id`, and creates a Crater session.
-2. Keep the returned `claimToken` for completing the profile. Use `userSession.token` with `Authorization: Session <token>` for protected Crater operations. These are separate credentials: the claim token is not a Crater session token.
+2. The guest receives the `claimToken` for completing the profile by email; this application does not select or store it. Use `userSession.token` with `Authorization: Session <token>` for protected Crater operations. These are separate credentials: the claim token is not a Crater session token.
 3. Complete the guest profile through Sagittarius using the claim token. Crater no longer exposes a `usersCompleteGuestProfile` mutation; profile completion is outside its API.
 
 Guest creation does not create a Customer. The returned Crater session can be used for the separate customer and checkout mutations.

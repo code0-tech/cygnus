@@ -36,7 +36,6 @@ test("continuing as a guest creates a Sagittarius guest user for the entered ema
         {
             data: {
                 usersCreateGuestUser: {
-                    claimToken: "guest-claim-token",
                     errors: [],
                     userSession: { id: "gid://crater/UserSession/9", token: "crater-guest-session" },
                 },
@@ -69,14 +68,13 @@ test("continuing as a guest creates a Sagittarius guest user for the entered ema
         const cookie = setCookies[0]
         assert.match(cookie, /HttpOnly/i)
         assert.match(cookie, /Path=\/api\/crater/i)
-        assert.doesNotMatch(cookie, /crater_session=|crater_user_login=|guest-claim-token|crater-guest-session|Max-Age|Expires/i)
+        assert.doesNotMatch(cookie, /crater_session=|crater_user_login=|crater-guest-session|Max-Age|Expires/i)
         const session = readGuestCheckoutSession(
             new Request("https://example.com/api/crater/customer", {
                 headers: { "x-guest-checkout": body.checkoutId, cookie: cookie.split(";")[0] },
             })
         )
         assert.equal(session?.token, "crater-guest-session")
-        assert.equal(session?.claimToken, "guest-claim-token")
         assert.equal(session?.email, "guest@example.com")
     } finally {
         if (previousSecret === undefined) delete process.env.PAYLOAD_SECRET
@@ -124,7 +122,6 @@ test("guest creation forwards the Crater error code without a session cookie", a
         {
             data: {
                 usersCreateGuestUser: {
-                    claimToken: null,
                     errors: [{ errorCode: "GUEST_USER_CREATION_FAILED", details: [] }],
                     userSession: null,
                 },
@@ -378,7 +375,7 @@ test("logout clears local cookies even when Crater rejects revocation", async ()
 })
 
 function assertLogoutCookiesCleared(response: Response) {
-    for (const name of ["crater_session", "crater_user_login", "crater_guest_claim"]) {
+    for (const name of ["crater_session", "crater_user_login"]) {
         const cookie = response.headers.getSetCookie().find((value) => value.startsWith(`${name}=`))
         assert.ok(cookie, `Missing deletion cookie for ${name}`)
         assert.match(cookie, /Max-Age=0/i)

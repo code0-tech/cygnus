@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
         const checkoutId = randomBytes(16).toString("hex")
         const response = pruneGuestCheckoutSessions(craterJson({ authenticated: true, checkoutId }), request)
-        return createGuestCheckoutSession(response, checkoutId, payload.userSession.token, payload.claimToken, email)
+        return createGuestCheckoutSession(response, checkoutId, payload.userSession.token, email)
     } catch (error) {
         console.error("Crater guest user error:", error instanceof Error ? error.name : "UnknownError")
         return craterJson({ error: "Could not create a Crater guest user." }, 502)

@@ -28,7 +28,6 @@ const USERS_CREATE_GUEST_USER: TypedDocumentNode<UsersCreateGuestUserData, Mutat
     ${CRATER_ERROR_FIELDS}
     mutation UsersCreateGuestUser($input: UsersCreateGuestUserInput!) {
         usersCreateGuestUser(input: $input) {
-            claimToken
             userSession {
                 id
                 token

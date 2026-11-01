@@ -28,7 +28,7 @@ test("guest purchase isolation, expiry and completion", async (t) => {
     const previous = process.env.PAYLOAD_SECRET
     process.env.PAYLOAD_SECRET = "test-only-guest-checkout-secret"
     try {
-        const response = createGuestCheckoutSession(NextResponse.json({}), id, "guest-token", "claim-token", "guest@example.com")
+        const response = createGuestCheckoutSession(NextResponse.json({}), id, "guest-token", "guest@example.com")
         const cookies = cookie(response)
 
         await t.test("account and simultaneous purchases keep separate credentials", () => {
@@ -39,7 +39,7 @@ test("guest purchase isolation, expiry and completion", async (t) => {
                 status: "authenticated",
                 token: "account-token",
             })
-            assert.doesNotMatch(response.headers.get("set-cookie")!, /Max-Age|Expires|guest-token|claim-token/)
+            assert.doesNotMatch(response.headers.get("set-cookie")!, /Max-Age|Expires|guest-token/)
         })
 
         await t.test("missing, malformed and tampered guest credentials never fall back to the account", () => {
@@ -65,11 +65,10 @@ test("guest purchase isolation, expiry and completion", async (t) => {
             }
         })
 
-        await t.test("completion drops the claim and limits access to the receipt and its license", async () => {
+        await t.test("completion drops the email and limits access to the receipt and its license", async () => {
             const completed = completeGuestCheckoutSession(NextResponse.json({}), request(cookies), sessionId, licenseId)
             const receiptCookies = cookie(completed)
             const receipt = readGuestCheckoutSession(request(receiptCookies))!
-            assert.equal(receipt.claimToken, undefined)
             assert.equal(receipt.email, undefined)
             assert.ok(receipt.expiresAt <= Date.now() + 30 * 60 * 1000)
             assert.deepEqual(readCraterSessionAuthorization(request(receiptCookies)), { status: "invalid" })
