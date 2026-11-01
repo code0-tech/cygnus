@@ -259,7 +259,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                                 paddingLeft: SHELL_TRANSITION,
                                 paddingRight: SHELL_TRANSITION,
                             }}
-                            className="flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-y-contain"
+                            className="@container flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-y-contain"
                         >
                             <div ref={menuContentRef} className="flex shrink-0 flex-col gap-1">
                                 {navbarItems.map((item) => {

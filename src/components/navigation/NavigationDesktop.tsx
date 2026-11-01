@@ -20,7 +20,7 @@ type NavigationDesktopProps = {
     logo?: NavigationLogoData
 }
 
-const NAV_ITEM_CLASS_NAME = "relative z-50 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-1 font-medium"
+const NAV_ITEM_CLASS_NAME = "relative z-50 flex cursor-pointer items-center gap-2 rounded-xl px-2 py-1 font-medium xl:px-4"
 const NAV_TRIGGER_CLASS_NAME = cn(
     NAV_ITEM_CLASS_NAME,
     "h-auto pr-1 bg-transparent text-base text-white hover:bg-transparent focus:bg-transparent data-popup-open:bg-transparent data-open:bg-transparent"
@@ -151,7 +151,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                     alignOffset={-128}
                                     className="hidden md:flex max-w-none flex-none"
                                 >
-                                    <NavigationMenuList className="gap-2">
+                                    <NavigationMenuList className="gap-1 xl:gap-2">
                                         {navbarItems.map((item) => {
                                             const itemValue = item.id
                                             const hasSubMenu = Boolean(item.subMenuGroups?.length || item.shortLinkGroups?.length)
@@ -171,7 +171,7 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                                             >
                                                                 <NavigationMenuTrigger className={NAV_TRIGGER_CLASS_NAME}>{item.title}</NavigationMenuTrigger>
                                                             </div>
-                                                            <NavigationMenuContent className={isScrolled ? "p-0 pt-1" : "p-2"}>
+                                                            <NavigationMenuContent className={isScrolled ? "@container w-full p-0 pt-1" : "@container w-[min(56rem,calc(100vw-2rem),var(--available-width))] p-2"}>
                                                                 <NavigationSubMenu embedded={isScrolled} groups={item.subMenuGroups} shortLinkGroups={item.shortLinkGroups} onSelect={() => setActiveMenuValue(null)} />
                                                             </NavigationMenuContent>
                                                         </>
