@@ -2785,9 +2785,6 @@ export interface Navigation {
       order: number;
       subMenuGroups?:
         | {
-            /**
-             * Hidden in the navigation when this is the only submenu group.
-             */
             title: string;
             items: {
               key: string;
@@ -2802,9 +2799,6 @@ export interface Navigation {
         | null;
       shortLinkGroups?:
         | {
-            /**
-             * Hidden in the navigation when this is the only short-link group.
-             */
             title: string;
             links: {
               title: string;

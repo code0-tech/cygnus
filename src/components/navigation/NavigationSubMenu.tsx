@@ -18,7 +18,6 @@ const GROUP_HEADING_CLASS = "px-2 text-xs font-semibold uppercase tracking-wide 
 const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false, groups = [], shortLinkGroups = [], onSelect }) => {
     const visibleGroups = groups.filter((group) => group.items.length > 0)
     const visibleShortLinkGroups = shortLinkGroups.filter((group) => group.links.length > 0)
-    const showGroupHeadings = visibleGroups.length > 1
     const hasNavigationItems = visibleGroups.length > 0
     const hasShortLinks = visibleShortLinkGroups.length > 0
 
@@ -28,7 +27,7 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
                 <div className={cn("flex-1 space-y-5", embedded ? "py-2 md:pb-0 md:pt-4" : "p-2 md:p-4", hasShortLinks ? "md:min-w-xl" : "md:min-w-lg")}>
                     {visibleGroups.map((group) => (
                         <section key={group.key} aria-label={group.title} className="space-y-1.5">
-                            {showGroupHeadings && <p className={GROUP_HEADING_CLASS}>{group.title}</p>}
+                            <p className={GROUP_HEADING_CLASS}>{group.title}</p>
                             <div className="grid grid-cols-1 gap-1 md:grid-cols-2">
                                 {group.items.map((subItem) => (
                                     <Link
