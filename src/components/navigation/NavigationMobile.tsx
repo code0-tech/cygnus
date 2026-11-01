@@ -263,16 +263,16 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                         >
                             <div ref={menuContentRef} className="flex shrink-0 flex-col gap-1">
                                 {navbarItems.map((item) => {
-                                    const isOpenAcc = mobileOpenKey === item.title
+                                    const isOpenAcc = mobileOpenKey === item.id
 
                                     return (
                                         <NavigationMobileItem
-                                            key={item.title}
+                                            key={item.id}
                                             item={item}
                                             isOpen={isOpenAcc}
                                             onToggle={() => {
                                                 trigger("soft")
-                                                dispatch({ type: "toggleSubmenu", key: item.title })
+                                                dispatch({ type: "toggleSubmenu", key: item.id })
                                             }}
                                             onNavigate={closeMenu}
                                         />

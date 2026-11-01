@@ -153,11 +153,11 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                 >
                                     <NavigationMenuList className="gap-2">
                                         {navbarItems.map((item) => {
-                                            const itemValue = item.title
+                                            const itemValue = item.id
                                             const hasSubMenu = Boolean(item.subMenuGroups?.length || item.shortLinkGroups?.length)
 
                                             return (
-                                                <NavigationMenuItem key={item.title} value={itemValue}>
+                                                <NavigationMenuItem key={item.id} value={itemValue}>
                                                     {hasSubMenu ? (
                                                         <>
                                                             <div

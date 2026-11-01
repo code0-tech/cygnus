@@ -6,6 +6,7 @@ import { getIcon } from "@/components/ui/IconRenderer"
 import type { ReactNode } from "react"
 
 export type NavItem = {
+    id: string
     title: string
     href: string | null
     subMenuGroups?: SubNavGroup[]
@@ -67,10 +68,12 @@ function getSubMenuIcon(icon: string | null | undefined) {
 }
 
 export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavItem[] {
-    const sortedItems = items.toSorted((left, right) => left.order - right.order)
+    const sortedItems = items
+        .map((item, index) => ({ item, id: item.id ?? `navigation-item-${index}` }))
+        .toSorted((left, right) => left.item.order - right.item.order)
     const navbarItems: NavItem[] = []
 
-    for (const item of sortedItems) {
+    for (const { item, id } of sortedItems) {
         const subMenuGroups: SubNavGroup[] = (item.subMenuGroups ?? []).flatMap((group, groupIndex) => {
             const mappedItems: SubNavItem[] = (group.items ?? []).flatMap((sub) => {
                 if (!sub?.title || !sub.href || !sub.description) return []
@@ -104,6 +107,7 @@ export function mapNavbarItems(items: NavbarItemData[], locale: AppLocale): NavI
         })
 
         navbarItems.push({
+            id,
             title: item.title,
             href: item.href ? localizeHref(item.href, locale) : null,
             subMenuGroups: subMenuGroups.length > 0 ? subMenuGroups : undefined,
