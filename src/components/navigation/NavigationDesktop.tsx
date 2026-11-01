@@ -147,8 +147,8 @@ const NavigationDesktop: React.FC<NavigationDesktopProps> = ({ homeHref, items: 
                                     portalContainer={isScrolled ? embeddedMenuRef : undefined}
                                     delay={40}
                                     closeDelay={80}
-                                    align="start"
-                                    alignOffset={-128}
+                                    anchor={rootRef}
+                                    align="center"
                                     className="hidden md:flex max-w-none flex-none"
                                 >
                                     <NavigationMenuList className="gap-1 xl:gap-2">

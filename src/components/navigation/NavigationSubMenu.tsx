@@ -39,9 +39,9 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
                                         <div className="flex size-8 shrink-0 items-center justify-center text-secondary transition-colors group-hover:text-white group-hover:ring-white/10">
                                             {subItem.icon}
                                         </div>
-                                        <div className="flex min-w-0 flex-col">
-                                            <p className="text-sm text-white [overflow-wrap:anywhere]">{subItem.title}</p>
-                                            <p className="text-xs text-secondary [overflow-wrap:anywhere]">{subItem.description}</p>
+                                        <div className="flex min-w-0 flex-1 flex-col">
+                                            <p className="truncate text-sm text-white">{subItem.title}</p>
+                                            <p className="line-clamp-2 text-xs text-secondary [overflow-wrap:anywhere]">{subItem.description}</p>
                                         </div>
                                     </Link>
                                 ))}
@@ -52,7 +52,7 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
             )}
 
             {hasShortLinks && (
-                <aside className={cn("min-w-0 space-y-5 px-2 @min-[48rem]:w-64 @min-[48rem]:shrink-0 md:px-4", embedded ? "my-4" : "-my-2 py-6 @min-[48rem]:border-l border-white/10")}>
+                <aside className={cn("min-w-0 space-y-5 px-2 @min-[48rem]:w-64 @min-[48rem]:shrink-0 md:px-4", embedded ? "my-4" : "-my-2 py-6", !embedded && hasNavigationItems && "@min-[48rem]:border-l border-white/10")}>
                     {visibleShortLinkGroups.map((group) => (
                         <section key={group.key} aria-label={group.title} className="space-y-1.5">
                             <p className={GROUP_HEADING_CLASS}>{group.title}</p>
@@ -66,7 +66,7 @@ const NavigationSubMenu: React.FC<NavigationSubMenuProps> = ({ embedded = false,
                                         onClick={() => onSelect?.(link)}
                                         className="group flex min-w-0 items-center justify-between gap-3 rounded-lg p-1 pl-2 text-sm font-medium text-white transition-colors hover:bg-light hover:text-white"
                                     >
-                                        <span className="min-w-0 [overflow-wrap:anywhere]">{link.title}</span>
+                                        <span className="min-w-0 truncate">{link.title}</span>
                                         {link.newTab && <IconArrowUpRight aria-hidden="true" className="shrink-0 opacity-60" size={15} />}
                                     </Link>
                                 ))}

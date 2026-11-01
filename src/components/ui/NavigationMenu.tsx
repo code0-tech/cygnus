@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { IconChevronUp } from "@tabler/icons-react"
 
 type NavigationMenuProps = NavigationMenuPrimitive.Root.Props &
-    Pick<NavigationMenuPrimitive.Positioner.Props, "align" | "alignOffset"> & {
+    Pick<NavigationMenuPrimitive.Positioner.Props, "align" | "alignOffset" | "anchor"> & {
         embedded?: boolean
         portalContainer?: NavigationMenuPrimitive.Portal.Props["container"]
     }
@@ -11,6 +11,7 @@ type NavigationMenuProps = NavigationMenuPrimitive.Root.Props &
 function NavigationMenu({
     align = "start",
     alignOffset = 0,
+    anchor,
     embedded = false,
     portalContainer,
     className,
@@ -20,7 +21,7 @@ function NavigationMenu({
     return (
         <NavigationMenuPrimitive.Root data-slot="navigation-menu" className={cn("group/navigation-menu relative flex max-w-max flex-1 items-center justify-center", className)} {...props}>
             {children}
-            <NavigationMenuPositioner align={align} alignOffset={alignOffset} embedded={embedded} portalContainer={portalContainer} />
+            <NavigationMenuPositioner anchor={anchor} align={align} alignOffset={alignOffset} embedded={embedded} portalContainer={portalContainer} />
         </NavigationMenuPrimitive.Root>
     )
 }
