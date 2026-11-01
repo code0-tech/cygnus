@@ -2,8 +2,7 @@
 
 import { ConsentManagerProvider, type ConsentManagerOptions, useConsentManager } from "@c15t/nextjs/headless"
 
-import { ConsentBanner } from "@c15t/react/components/consent-banner"
-import type { Theme } from "@c15t/nextjs"
+import { type Theme, ConsentBanner } from "@c15t/nextjs"
 import dynamic from "next/dynamic"
 import { ReactNode } from "react"
 import { gtag } from "@c15t/scripts/google-tag"
