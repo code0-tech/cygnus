@@ -6,10 +6,10 @@ import { useOutsideClick } from "@/hooks/useOutsideClick"
 import type { NavButton, NavItem, NavigationLogoData } from "@/lib/navigation"
 import { Container } from "@code0-tech/pictor"
 import { IconMenu2, IconX } from "@tabler/icons-react"
-import { AnimatePresence, m as motion } from "motion/react"
+import { m as motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { useEffect, useLayoutEffect, useReducer, useRef } from "react"
+import React, { useEffect, useId, useLayoutEffect, useReducer, useRef } from "react"
 import { useWebHaptics } from "web-haptics/react"
 import { NavigationLink } from "./NavigationLink"
 import { NavigationMobileItem } from "./NavigationMobileItem"
@@ -62,12 +62,14 @@ function navigationMobileReducer(state: NavigationMobileState, action: Navigatio
             return {
                 ...state,
                 isOpen: action.isOpen,
+                mobileOpenKey: action.isOpen ? state.mobileOpenKey : null,
                 isMenuClosing: action.isOpen ? false : state.isOpen,
             }
         case "toggleOpen":
             return {
                 ...state,
                 isOpen: !state.isOpen,
+                mobileOpenKey: state.isOpen ? null : state.mobileOpenKey,
                 isMenuClosing: state.isOpen,
             }
         case "close":
@@ -96,6 +98,8 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
     const [state, dispatch] = useReducer(navigationMobileReducer, initialNavigationMobileState)
     const { isOpen, mobileOpenKey, isMenuClosing, shellInsetWidth, menuHeight } = state
     const menuRef = useOutsideClick<HTMLElement>(() => dispatch({ type: "setOpen", isOpen: false }))
+    const menuId = useId()
+    const menuButtonRef = useRef<HTMLButtonElement>(null)
     const rootRef = useRef<HTMLDivElement>(null)
     const menuContentRef = useRef<HTMLDivElement>(null)
     const isShellExpanded = isOpen || isMenuClosing
@@ -107,6 +111,21 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
     const menuInlinePadding = isShellExpanded ? 6 : 0
     const headerInlinePadding = isShellExpanded ? 6 : isScrolled ? scrolledHeaderInset : 0
     const headerRightPadding = isShellExpanded ? 6 : isScrolled ? scrolledHeaderInset : 0
+
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key !== "Escape" || event.defaultPrevented) return
+
+            event.preventDefault()
+            dispatch({ type: "close" })
+            menuButtonRef.current?.focus()
+        }
+
+        document.addEventListener("keydown", handleEscape)
+        return () => document.removeEventListener("keydown", handleEscape)
+    }, [isOpen])
 
     useEffect(() => {
         if (!isMenuClosing) return
@@ -183,9 +202,9 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                         style={{ transformOrigin: "center" }}
                         transition={SHELL_TRANSITION}
                     />
-                    <motion.div className="relative z-10 flex flex-col overflow-hidden rounded-2xl py-1.5" initial={false}>
+                    <motion.div className="relative z-10 flex max-h-[calc(100dvh-3.75rem)] flex-col overflow-hidden rounded-2xl py-1.5" initial={false}>
                         <motion.div
-                            className={"w-full flex items-center justify-between gap-2"}
+                            className={"w-full flex shrink-0 items-center justify-between gap-2"}
                             initial={false}
                             animate={{
                                 paddingLeft: headerInlinePadding,
@@ -205,11 +224,12 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                                 </div>
                             </Link>
                             <button
+                                ref={menuButtonRef}
                                 type="button"
                                 className="mr-1.5 border-0 bg-transparent transition-all"
                                 aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
                                 aria-expanded={isOpen}
-                                aria-controls="mobile-navigation-menu"
+                                aria-controls={menuId}
                                 onClick={() => {
                                     trigger("medium")
                                     dispatch({ type: "toggleOpen" })
@@ -218,56 +238,53 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                                 {isOpen ? <IconX className="text-secondary" /> : <IconMenu2 className="text-secondary" />}
                             </button>
                         </motion.div>
-                        <AnimatePresence initial={false}>
-                            {isOpen && (
-                                <motion.div
-                                    id="mobile-navigation-menu"
-                                    key="mobile-menu"
-                                    initial={{ opacity: 0, y: -4, height: 0 }}
-                                    animate={{
-                                        opacity: 1,
-                                        y: 0,
-                                        height: menuHeight,
-                                        paddingLeft: menuInlinePadding,
-                                        paddingRight: menuInlinePadding,
-                                    }}
-                                    exit={{ opacity: 0, y: -4, height: 0 }}
-                                    transition={{
-                                        height: MENU_TRANSITION,
-                                        opacity: { duration: 0.18, ease: "easeOut" },
-                                        y: MENU_TRANSITION,
-                                        paddingLeft: SHELL_TRANSITION,
-                                        paddingRight: SHELL_TRANSITION,
-                                    }}
-                                    style={{ overflow: "hidden" }}
-                                    className="flex flex-col gap-2 mt-2"
-                                >
-                                    <div ref={menuContentRef} className="flex flex-col gap-1">
-                                        {navbarItems.map((item) => {
-                                            const isOpenAcc = mobileOpenKey === item.title
+                        <motion.div
+                            id={menuId}
+                            inert={!isOpen}
+                            aria-hidden={!isOpen}
+                            key="mobile-menu"
+                            initial={false}
+                            animate={{
+                                opacity: isOpen ? 1 : 0,
+                                y: isOpen ? 0 : -4,
+                                height: isOpen ? menuHeight : 0,
+                                marginTop: isOpen ? 8 : 0,
+                                paddingLeft: menuInlinePadding,
+                                paddingRight: menuInlinePadding,
+                            }}
+                            transition={{
+                                height: MENU_TRANSITION,
+                                opacity: { duration: 0.18, ease: "easeOut" },
+                                y: MENU_TRANSITION,
+                                paddingLeft: SHELL_TRANSITION,
+                                paddingRight: SHELL_TRANSITION,
+                            }}
+                            className="flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-y-contain"
+                        >
+                            <div ref={menuContentRef} className="flex shrink-0 flex-col gap-1">
+                                {navbarItems.map((item) => {
+                                    const isOpenAcc = mobileOpenKey === item.title
 
-                                            return (
-                                                <NavigationMobileItem
-                                                    key={item.title}
-                                                    item={item}
-                                                    isOpen={isOpenAcc}
-                                                    onToggle={() => {
-                                                        trigger("soft")
-                                                        dispatch({ type: "toggleSubmenu", key: item.title })
-                                                    }}
-                                                    onNavigate={closeMenu}
-                                                />
-                                            )
-                                        })}
-                                        <div className="mt-4 w-full flex flex-col items-center gap-2 pb-2">
-                                            {navbarButtons.map((button) => (
-                                                <NavigationLink key={`${button.title}-${button.href}`} button={button} className="text-base!" onClick={closeMenu} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                                    return (
+                                        <NavigationMobileItem
+                                            key={item.title}
+                                            item={item}
+                                            isOpen={isOpenAcc}
+                                            onToggle={() => {
+                                                trigger("soft")
+                                                dispatch({ type: "toggleSubmenu", key: item.title })
+                                            }}
+                                            onNavigate={closeMenu}
+                                        />
+                                    )
+                                })}
+                                <div className="mt-4 w-full flex flex-col items-center gap-2 pb-2">
+                                    {navbarButtons.map((button) => (
+                                        <NavigationLink key={`${button.title}-${button.href}`} button={button} className="text-base!" onClick={closeMenu} />
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 </div>
             </Container>
