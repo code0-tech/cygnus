@@ -167,6 +167,7 @@ export const Licenses: GlobalConfig = {
                                 localizedText("downloadLabel", "Download", "Herunterladen"),
                                 localizedText("viewLabel", "View", "Ansehen"),
                                 localizedText("unavailableLabel", "Not available", "Nicht verfügbar"),
+                                localizedText("payLabel", "Pay now", "Jetzt bezahlen"),
                             ],
                         },
                         {

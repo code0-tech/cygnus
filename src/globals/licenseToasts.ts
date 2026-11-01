@@ -115,6 +115,24 @@ export const LicenseToasts: GlobalConfig = {
             ]
         ),
         toast(
+            "invoicePaid",
+            "Invoice paid",
+            ["Payment confirmed", "Zahlung bestätigt"],
+            [
+                "Stripe confirmed the payment. The invoice shows as paid in a moment.",
+                "Stripe hat die Zahlung bestätigt. Die Rechnung wird in Kürze als bezahlt angezeigt.",
+            ]
+        ),
+        toast(
+            "paymentProcessing",
+            "Payment processing",
+            ["Payment is being processed", "Zahlung wird verarbeitet"],
+            [
+                "Your bank is still processing the payment. Changes that depend on it apply once Stripe confirms it.",
+                "Deine Bank verarbeitet die Zahlung noch. Davon abhängige Änderungen gelten, sobald Stripe sie bestätigt.",
+            ]
+        ),
+        toast(
             "namespaceLinked",
             "Namespace linked",
             ["Namespace linked", "Namespace verknüpft"],

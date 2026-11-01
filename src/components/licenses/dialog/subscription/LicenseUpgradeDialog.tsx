@@ -4,6 +4,7 @@ import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotificati
 import type { PaymentPeriod, SubscriptionPlan } from "@/lib/subscription/types"
 
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { useStripePromise } from "@/components/providers/StripeProvider"
 import { LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { PackageSlider } from "@/components/ui/PackageSlider"
@@ -13,6 +14,7 @@ import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/li
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
 import NumberFlow from "@number-flow/react"
+import { confirmInvoicePayment, reloadAfterPayment } from "@/lib/licenses/paymentConfirmation"
 import { parseLicenseDate } from "@/lib/licenses/pendingUpdate"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
@@ -46,29 +48,10 @@ const PLAN_BEAM_COLOR_VARIANT: Record<SubscriptionPlan, BorderBeamColorVariant> 
 
 function PlanBadge({ config, muted, plan }: { config: SubscriptionConfigData["plan"][SubscriptionPlan]; muted?: boolean; plan: SubscriptionPlan }) {
     return (
-        <BorderBeam
-            active={!muted}
-            colorVariant={PLAN_BEAM_COLOR_VARIANT[plan]}
-            duration={5}
-            size="sm"
-            strength={1}
-            style={{ display: "inline-block" }}
-            theme="dark"
-        >
+        <BorderBeam active={!muted} colorVariant={PLAN_BEAM_COLOR_VARIANT[plan]} duration={5} size="sm" strength={1} style={{ display: "inline-block" }} theme="dark">
             {/* The square is fixed and sized for the longest plan name, so every badge reads at the same scale. */}
-            <Card
-                bg={"transparent"}
-                h="1.75rem"
-                display="flex"
-                align="center"
-                justify="center"
-                style={{ flexShrink: 0, minWidth: "2rem", padding: "0 1rem" }}
-            >
-                <Text
-                    hierarchy={muted ? "tertiary" : "primary"}
-                    className="uppercase"
-                    style={{ fontSize: "0.75rem", fontWeight: 700, lineHeight: 1, letterSpacing: "0.02em" }}
-                >
+            <Card bg={"transparent"} h="1.75rem" display="flex" align="center" justify="center" style={{ flexShrink: 0, minWidth: "2rem", padding: "0 1rem" }}>
+                <Text hierarchy={muted ? "tertiary" : "primary"} className="uppercase" style={{ fontSize: "0.75rem", fontWeight: 700, lineHeight: 1, letterSpacing: "0.02em" }}>
                     {config.title}
                 </Text>
             </Card>
@@ -82,7 +65,8 @@ const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
     const toasts = useLicenseToasts()
     const router = useRouter()
-    const { customers, licenses, updateLicense } = useLicenseData()
+    const { customers, licenses, reload, updateLicense } = useLicenseData()
+    const stripePromise = useStripePromise()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
@@ -99,10 +83,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
     const checkoutLimits = customers.find((candidate) => candidate.id === license?.customerId)?.checkoutLimits
     const aiTokenPackages = checkoutLimits?.aiTokens.length ? normalizeUsagePackages(checkoutLimits.aiTokens) : []
     const workflowExecutionPackages = checkoutLimits?.workflowExecutions.length ? normalizeUsagePackages(checkoutLimits.workflowExecutions) : []
-    const aiTokensDefault = snapToUsagePackage(
-        wasCustom && typeof license?.aiTokens === "number" ? license.aiTokens : (aiTokenPackages[0] ?? 0),
-        aiTokenPackages
-    )
+    const aiTokensDefault = snapToUsagePackage(wasCustom && typeof license?.aiTokens === "number" ? license.aiTokens : (aiTokenPackages[0] ?? 0), aiTokenPackages)
     const workflowExecutionsDefault = snapToUsagePackage(
         wasCustom && typeof license?.workflowExecutions === "number" ? license.workflowExecutions : (workflowExecutionPackages[0] ?? 0),
         workflowExecutionPackages
@@ -147,7 +128,15 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                 ...(typeof subscription.workflowExecutions === "number" ? { workflowExecutions: subscription.workflowExecutions } : {}),
                 ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
             })
-            toasts.success(subscription.pendingUpdate ? "changeScheduled" : "planUpdated", subscription.pendingUpdate?.effectiveAt)
+            if (subscription.paymentClientSecret) {
+                const outcome = await confirmInvoicePayment(await stripePromise, subscription.paymentClientSecret)
+                if (outcome === "succeeded") toasts.success("planUpdated")
+                else if (outcome === "processing") toasts.success("paymentProcessing")
+                else toasts.error(errors.upgradePaymentPending)
+                reloadAfterPayment(reload)
+            } else {
+                toasts.success(subscription.pendingUpdate ? "changeScheduled" : "planUpdated", subscription.pendingUpdate?.effectiveAt)
+            }
             close()
         } catch (error) {
             toasts.error(error instanceof Error ? error.message : errors.planUpgrade)
@@ -232,9 +221,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
             }
         }),
         // Without quantities from Crater the plan is described by its features instead.
-        ...(usageComparisons.length > 0
-            ? []
-            : planFeatures.slice(0, 2).map((feature) => ({ badge: null, current: null, key: feature.key, label: null, next: feature.text, value: null }))),
+        ...(usageComparisons.length > 0 ? [] : planFeatures.slice(0, 2).map((feature) => ({ badge: null, current: null, key: feature.key, label: null, next: feature.text, value: null }))),
     ]
     return (
         <>
@@ -295,11 +282,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                     }
                     contentSpacing="md"
                 >
-                    {previewError ? (
-                        <Alert color="error">
-                            {previewError}
-                        </Alert>
-                    ) : null}
+                    {previewError ? <Alert color="error">{previewError}</Alert> : null}
                 </LicenseTabRow>
                 {benefitCells.length > 0 ? (
                     <LicenseTabRow className="p-0!">
@@ -332,7 +315,9 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                                             <Text fw={400} title={cell.next === null ? undefined : String(cell.next)} className="truncate text-xl! leading-tight! text-white!">
                                                 {typeof cell.next === "number" ? (
                                                     <NumberFlow value={cell.next} locales="en-US" format={{ notation: "compact", maximumFractionDigits: 1 }} />
-                                                ) : cell.next}
+                                                ) : (
+                                                    cell.next
+                                                )}
                                             </Text>
                                         )}
                                     </div>
@@ -347,7 +332,11 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                     action={
                         <div className="text-right">
                             {isLoadingPreview ? (
-                                <span role="status" aria-label={content.subscriptionPreview.loadingLabel} className="inline-block h-5 w-20 animate-pulse rounded bg-white/10 motion-reduce:animate-none" />
+                                <span
+                                    role="status"
+                                    aria-label={content.subscriptionPreview.loadingLabel}
+                                    className="inline-block h-5 w-20 animate-pulse rounded bg-white/10 motion-reduce:animate-none"
+                                />
                             ) : (
                                 <Text size="md" hierarchy="tertiary">
                                     {formatMinorCurrency(localQuote.total, "EUR", locale)}
@@ -378,7 +367,6 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                     </Button>
                 </LicenseTabRow>
             </LicenseTabSection>
-
         </>
     )
 }

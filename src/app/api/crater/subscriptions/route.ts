@@ -4,7 +4,7 @@ import { parseSubscriptionChangeFields } from "@/lib/crater/request"
 import { readSubscriptionRequest } from "@/lib/crater/subscriptionRequests.server"
 import { normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/crater/values"
 import { mapSubscriptionPendingUpdate } from "@/lib/licenses/dashboardMapper"
-import type { Mutation, MutationSubscriptionsUpdateArgs } from "@code0-tech/crater-graphql-types"
+import type { Mutation, MutationSubscriptionsUpdateArgs, SubscriptionsUpdatePayload } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
@@ -32,6 +32,7 @@ const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationS
                 }
                 workflowExecutions
             }
+            paymentClientSecret
             errors {
                 ...CraterErrorFields
             }
@@ -41,7 +42,7 @@ const SUBSCRIPTIONS_UPDATE: TypedDocumentNode<SubscriptionsUpdateData, MutationS
 
 // The dashboard updates its licenses straight from this payload, so the CheckoutPlan and
 // CheckoutPaymentPeriod enums are normalized here just like in the license dashboard route.
-function normalizeSubscriptionEnums(subscription: NonNullable<NonNullable<SubscriptionsUpdateData["subscriptionsUpdate"]>["subscription"]>) {
+function normalizeSubscriptionEnums(subscription: NonNullable<SubscriptionsUpdatePayload["subscription"]>) {
     const plan = normalizeCraterPlan(subscription.plan)
     const paymentPeriod = normalizeCraterPaymentPeriod(subscription.paymentPeriod)
 
@@ -63,8 +64,10 @@ export const PATCH = withCraterSession({ log: "Crater subscription update error"
 
     return runCraterResourceMutation(token, SUBSCRIPTIONS_UPDATE, { input: { id, ...fields } }, (data) => data.subscriptionsUpdate, {
         rejectionMessage: "Crater could not update the subscription.",
-        selectResource: (payload) => payload.subscription,
+        // An immediate upgrade whose payment needs confirmation (3D Secure) comes back with a client secret; the
+        // selection then stays pending until the browser has confirmed the payment with Stripe.js.
+        selectResource: (payload) => (payload.subscription ? { subscription: payload.subscription, paymentClientSecret: payload.paymentClientSecret ?? null } : null),
         missingResourceMessage: "Crater returned no updated subscription.",
-        respond: (subscription) => craterJson(normalizeSubscriptionEnums(subscription)),
+        respond: ({ subscription, paymentClientSecret }) => craterJson({ ...normalizeSubscriptionEnums(subscription), paymentClientSecret }),
     })
 })

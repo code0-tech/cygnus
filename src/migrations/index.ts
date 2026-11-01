@@ -192,6 +192,7 @@ import * as migration_20261025_130000_subscription_starting_price_labels from '.
 import * as migration_20261027_120000_active_licenses_label from './20261027_120000_active_licenses_label';
 import * as migration_20261030_120000_subscription_category_colors from './20261030_120000_subscription_category_colors';
 import * as migration_20261030_130000_users_reset_password_requested_at from './20261030_130000_users_reset_password_requested_at';
+import * as migration_20261101_120000_invoice_payment_confirmation from './20261101_120000_invoice_payment_confirmation';
 
 export const migrations = [
   {
@@ -1138,5 +1139,10 @@ export const migrations = [
     up: migration_20261030_130000_users_reset_password_requested_at.up,
     down: migration_20261030_130000_users_reset_password_requested_at.down,
     name: '20261030_130000_users_reset_password_requested_at',
+  },
+  {
+    up: migration_20261101_120000_invoice_payment_confirmation.up,
+    down: migration_20261101_120000_invoice_payment_confirmation.down,
+    name: '20261101_120000_invoice_payment_confirmation',
   },
 ];

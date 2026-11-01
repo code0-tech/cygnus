@@ -3,6 +3,9 @@
 import { DataTableControls } from "@/components/licenses/table/DataTableControls"
 import { getLicenseDetailGridCellClassName } from "@/components/licenses/shared/licenseDetailGrid"
 import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
+import { useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
+import { useStripePromise } from "@/components/providers/StripeProvider"
+import { ButtonLoader } from "@/components/ui/Loader"
 import { LicenseLoadMoreButton } from "@/components/licenses/table/LicenseLoadMoreButton"
 import { LicenseDataTableSkeleton } from "@/components/licenses/table/LicenseDataTableSkeleton"
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
@@ -11,7 +14,9 @@ import { LicenseStatusDot } from "@/components/licenses/shared/LicenseStatusDot"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
+import { createInvoicePaymentSession } from "@/lib/licenses/client"
 import { formatInvoiceNumber, formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
+import { confirmInvoicePayment, reloadAfterPayment } from "@/lib/licenses/paymentConfirmation"
 import { formatPendingUpdateSelection, resolvePendingUpdateDate } from "@/lib/licenses/pendingUpdate"
 import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/types"
@@ -42,7 +47,7 @@ import {
     Spacing,
     Text,
 } from "@code0-tech/pictor"
-import { IconDotsVertical, IconDownload, IconEye, IconX } from "@tabler/icons-react"
+import { IconCreditCard, IconDotsVertical, IconDownload, IconEye, IconX } from "@tabler/icons-react"
 import { Fragment, useState } from "react"
 
 interface LicenseDetailPageProps {
@@ -78,7 +83,9 @@ function getInvoiceStatusBadgeColor(status?: string) {
 }
 
 export function LicenseDetailPage({ content, errors, customerId, licenseId, locale, namespaceHref, subscriptionConfig }: LicenseDetailPageProps) {
-    const { isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
+    const { isLoading, licenses, loadMore, loadingMore, pagination, reload } = useLicenseData()
+    const toasts = useLicenseToasts()
+    const stripePromise = useStripePromise()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
@@ -132,6 +139,26 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
               },
           }
         : undefined
+
+    const [payingInvoiceId, setPayingInvoiceId] = useState<string | null>(null)
+
+    const payInvoice = async (invoiceId: string) => {
+        if (payingInvoiceId) return
+        setPayingInvoiceId(invoiceId)
+
+        try {
+            const clientSecret = await createInvoicePaymentSession(invoiceId, errors.paymentConfirmation)
+            const outcome = await confirmInvoicePayment(await stripePromise, clientSecret)
+            if (outcome === "succeeded") toasts.success("invoicePaid")
+            else if (outcome === "processing") toasts.success("paymentProcessing")
+            else toasts.error(errors.paymentConfirmation)
+            reloadAfterPayment(reload)
+        } catch (error) {
+            toasts.error(error instanceof Error ? error.message : errors.paymentConfirmation)
+        } finally {
+            setPayingInvoiceId(null)
+        }
+    }
 
     const selectedInvoiceNumber = selectedInvoice ? formatInvoiceNumber(selectedInvoice.invoiceNumber, content.invoices) : null
     const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl
@@ -295,12 +322,18 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                                                     paddingSize="xxs"
                                                     aria-label={`${content.invoices.title}: ${formatInvoiceNumber(invoice.invoiceNumber, content.invoices)}`}
                                                 >
-                                                    <IconDotsVertical aria-hidden="true" size={16} />
+                                                    {payingInvoiceId === invoice.id ? <ButtonLoader /> : <IconDotsVertical aria-hidden="true" size={16} />}
                                                 </Button>
                                             </MenuTrigger>
                                             <MenuPortal>
                                                 <MenuContent align="end" sideOffset={8}>
                                                     <MenuLabel>{content.invoices.title}</MenuLabel>
+                                                    {invoice.tableStatus === "open" ? (
+                                                        <MenuItem disabled={payingInvoiceId !== null} onSelect={() => void payInvoice(invoice.id)}>
+                                                            <IconCreditCard aria-hidden="true" size={15} />
+                                                            {content.invoices.payLabel}
+                                                        </MenuItem>
+                                                    ) : null}
                                                     <MenuItem onSelect={() => setSelectedInvoice(invoice)}>
                                                         <IconEye aria-hidden="true" size={15} />
                                                         {content.invoices.viewLabel}

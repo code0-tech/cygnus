@@ -33,6 +33,11 @@ export const Errors: GlobalConfig = {
         localizedText("subscriptionCancel", "The subscription could not be cancelled.", "Das Abonnement konnte nicht gekündigt werden."),
         localizedText("subscriptionResume", "The cancellation could not be reversed.", "Die Kündigung konnte nicht zurückgenommen werden."),
         localizedText("planUpgrade", "The plan could not be upgraded.", "Der Plan konnte nicht aktualisiert werden."),
+        localizedText(
+            "upgradePaymentPending",
+            "The upgrade is waiting for its payment. Pay the open invoice of this license to apply it.",
+            "Das Upgrade wartet auf die Zahlung. Bezahle die offene Rechnung dieser Lizenz, damit es wirksam wird."
+        ),
         localizedText("paymentFallback", "An unexpected error occurred.", "Ein unerwarteter Fehler ist aufgetreten."),
         localizedText(
             "sessionUnavailable",

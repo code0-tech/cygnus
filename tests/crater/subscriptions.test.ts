@@ -122,12 +122,52 @@ test("upgrades a subscription to a higher plan", async () => {
                 currentPeriodEnd: "2026-09-01T00:00:00Z",
                 id: subscriptionId,
                 pendingUpdate: null,
+                paymentClientSecret: null,
                 paymentPeriod: "monthly",
                 plan: "max",
                 status: "ACTIVE",
                 updatedAt: "2026-08-17T10:00:00Z",
                 workflowExecutions: null,
             })
+        }
+    )
+})
+
+test("hands the payment client secret of an upgrade that waits for 3D Secure to the dashboard", async () => {
+    await withGraphQLServer(
+        [
+            {
+                data: {
+                    subscriptionsUpdate: {
+                        errors: [],
+                        paymentClientSecret: "pi_123_secret_456",
+                        subscription: {
+                            id: subscriptionId,
+                            paymentPeriod: "MONTHLY",
+                            pendingUpdate: { aiTokens: null, effectiveAt: "2026-11-01T12:00:00Z", paymentPeriod: "MONTHLY", plan: "MAX", workflowExecutions: null },
+                            plan: "PRO",
+                            status: "ACTIVE",
+                        },
+                    },
+                },
+            },
+        ],
+        async (graphQLServer) => {
+            const response = await updateSubscription(
+                new Request("https://example.com/api/crater/subscriptions", {
+                    method: "PATCH",
+                    headers: { ...sessionHeaders, authorization: "Session c_ust_three_d_secure" },
+                    body: JSON.stringify({ id: subscriptionId, plan: "max" }),
+                })
+            )
+
+            assert.equal(response.status, 200)
+            assert.match(graphQLServer.requests[0].body.query, /paymentClientSecret/)
+            const body = await response.json()
+            assert.equal(body.paymentClientSecret, "pi_123_secret_456")
+            // The upgrade is not applied yet: the plan stays the current one and the target waits in pendingUpdate.
+            assert.equal(body.plan, "pro")
+            assert.equal(body.pendingUpdate.plan, "max")
         }
     )
 })
@@ -355,6 +395,7 @@ test("returns a scheduled update separately from the active configuration", asyn
                 paymentPeriod: "monthly",
                 status: "ACTIVE",
                 pendingUpdate: { plan: "pro", paymentPeriod: "yearly", effectiveAt: "2026-11-01T00:00:00Z" },
+                paymentClientSecret: null,
             })
             const query = String(server.requests[0].body.query)
             assert.match(query, /pendingUpdate/)

@@ -131,6 +131,18 @@ export async function createPaymentMethodSetup(customerId: string, errorMessage:
     return result.clientSecret
 }
 
+export async function createInvoicePaymentSession(invoiceId: string, errorMessage: string) {
+    const response = await fetch("/api/crater/invoices/payment-session", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ invoiceId }),
+    })
+    const result: unknown = await response.json().catch(() => null)
+    if (!response.ok || !result || typeof result !== "object" || !("clientSecret" in result) || typeof result.clientSecret !== "string") throw new Error(errorMessage)
+    return result.clientSecret
+}
+
 export async function fetchCustomerPaymentMethods(customerId: string, signal: AbortSignal): Promise<CustomerPaymentMethodSummary[]> {
     const url = new URL("/api/crater/customer/payment-methods", window.location.origin)
     url.searchParams.set("customerId", customerId)

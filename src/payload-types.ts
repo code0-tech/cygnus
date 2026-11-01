@@ -3244,6 +3244,7 @@ export interface License {
     downloadLabel: string;
     viewLabel: string;
     unavailableLabel: string;
+    payLabel: string;
   };
   pagination: {
     loadMoreLabel: string;
@@ -3419,6 +3420,14 @@ export interface LicenseToast {
     title: string;
     description: string;
   };
+  invoicePaid: {
+    title: string;
+    description: string;
+  };
+  paymentProcessing: {
+    title: string;
+    description: string;
+  };
   namespaceLinked: {
     title: string;
     description: string;
@@ -3447,6 +3456,7 @@ export interface Error {
   subscriptionCancel: string;
   subscriptionResume: string;
   planUpgrade: string;
+  upgradePaymentPending: string;
   paymentFallback: string;
   sessionUnavailable: string;
   customerCreation: string;
@@ -4047,6 +4057,7 @@ export interface LicensesSelect<T extends boolean = true> {
         downloadLabel?: T;
         viewLabel?: T;
         unavailableLabel?: T;
+        payLabel?: T;
       };
   pagination?:
     | T
@@ -4232,6 +4243,18 @@ export interface LicenseToastsSelect<T extends boolean = true> {
         title?: T;
         description?: T;
       };
+  invoicePaid?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentProcessing?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
   namespaceLinked?:
     | T
     | {
@@ -4262,6 +4285,7 @@ export interface ErrorsSelect<T extends boolean = true> {
   subscriptionCancel?: T;
   subscriptionResume?: T;
   planUpgrade?: T;
+  upgradePaymentPending?: T;
   paymentFallback?: T;
   sessionUnavailable?: T;
   customerCreation?: T;

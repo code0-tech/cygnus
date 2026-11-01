@@ -14,5 +14,7 @@ export const licenseToastContent: LicenseToastsContent = {
     paymentAssigned: entry("Payment method updated"),
     paymentRemoved: entry("Payment method removed"),
     paymentConfirmed: entry("Payment method added"),
+    invoicePaid: entry("Payment confirmed"),
+    paymentProcessing: entry("Payment is being processed"),
     namespaceLinked: entry("Namespace linked", "Namespace verknüpft."),
 }

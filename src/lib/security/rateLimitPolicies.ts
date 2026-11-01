@@ -1,4 +1,4 @@
-export type RateLimitPolicyName = "login" | "guest" | "checkout" | "customer" | "paymentMethodSetup" | "subscription" | "subscriptionPreview" | "invoicePreview"
+export type RateLimitPolicyName = "login" | "guest" | "checkout" | "customer" | "paymentMethodSetup" | "subscription" | "subscriptionPreview" | "invoicePreview" | "invoicePayment"
 
 interface RateLimitPolicyDefinition {
     maxEnvKey: string
@@ -62,6 +62,12 @@ const policyDefinitions = {
         maxEnvKey: "CRATER_INVOICE_PREVIEW_RATE_LIMIT_MAX",
         defaultMax: 60,
         windowEnvKey: "CRATER_INVOICE_PREVIEW_RATE_LIMIT_WINDOW_SECONDS",
+        defaultWindowSeconds: 10 * 60,
+    },
+    invoicePayment: {
+        maxEnvKey: "CRATER_INVOICE_PAYMENT_RATE_LIMIT_MAX",
+        defaultMax: 10,
+        windowEnvKey: "CRATER_INVOICE_PAYMENT_RATE_LIMIT_WINDOW_SECONDS",
         defaultWindowSeconds: 10 * 60,
     },
 } satisfies Record<RateLimitPolicyName, RateLimitPolicyDefinition>

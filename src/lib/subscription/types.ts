@@ -59,6 +59,7 @@ export interface SubscriptionUpdateResult {
     immediateCancellationUntil?: string
     paymentMethodId?: string | null
     pendingUpdate?: SubscriptionPendingUpdate | null
+    paymentClientSecret?: string | null
     status?: DashboardSubscriptionStatus
     cancelAt?: string | null
     canceledAt?: string | null
