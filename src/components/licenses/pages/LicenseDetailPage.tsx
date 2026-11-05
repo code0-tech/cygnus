@@ -16,7 +16,7 @@ import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
 import { createInvoicePaymentSession } from "@/lib/licenses/client"
 import { formatInvoiceNumber, formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
-import { confirmInvoicePayment, reloadAfterPayment } from "@/lib/licenses/paymentConfirmation"
+import { confirmInvoicePayment, isInvoiceOpen } from "@/lib/licenses/paymentConfirmation"
 import { formatPendingUpdateSelection, resolvePendingUpdateDate } from "@/lib/licenses/pendingUpdate"
 import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardInvoice } from "@/lib/licenses/types"
@@ -83,7 +83,7 @@ function getInvoiceStatusBadgeColor(status?: string) {
 }
 
 export function LicenseDetailPage({ content, errors, customerId, licenseId, locale, namespaceHref, subscriptionConfig }: LicenseDetailPageProps) {
-    const { isLoading, licenses, loadMore, loadingMore, pagination, reload } = useLicenseData()
+    const { awaitingPayment, awaitPayment, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
     const toasts = useLicenseToasts()
     const stripePromise = useStripePromise()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
@@ -152,13 +152,16 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
             if (outcome === "succeeded") toasts.success("invoicePaid")
             else if (outcome === "processing") toasts.success("paymentProcessing")
             else toasts.error(errors.paymentConfirmation)
-            reloadAfterPayment(reload)
+            if (outcome !== "failed" && license) awaitPayment({ licenseId: license.id, invoiceId })
         } catch (error) {
             toasts.error(error instanceof Error ? error.message : errors.paymentConfirmation)
         } finally {
             setPayingInvoiceId(null)
         }
     }
+
+    const openInvoice = invoices.find(isInvoiceOpen)
+    const isPayingOpenInvoice = Boolean(openInvoice && (payingInvoiceId === openInvoice.id || awaitingPayment?.invoiceId === openInvoice.id))
 
     const selectedInvoiceNumber = selectedInvoice ? formatInvoiceNumber(selectedInvoice.invoiceNumber, content.invoices) : null
     const selectedInvoicePreviewUrl = selectedInvoice?.stripePdfUrl
@@ -221,6 +224,20 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                         </Text>
                     )}
                 </Card>
+
+                {openInvoice ? (
+                    <>
+                        <Spacing spacing="md" />
+                        <LicenseAlert
+                            description={content.invoices.pendingPaymentDescription}
+                            action={
+                                <Button type="button" paddingSize="xxs" color="tertiary" disabled={payingInvoiceId !== null || isPayingOpenInvoice} onClick={() => void payInvoice(openInvoice.id)}>
+                                    {isPayingOpenInvoice ? <ButtonLoader label={content.invoices.payLabel} /> : content.invoices.payLabel}
+                                </Button>
+                            }
+                        />
+                    </>
+                ) : null}
 
                 {pendingChangeMessage ? (
                     <>

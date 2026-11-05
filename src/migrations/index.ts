@@ -195,6 +195,7 @@ import * as migration_20261030_130000_users_reset_password_requested_at from './
 import * as migration_20261101_120000_invoice_payment_confirmation from './20261101_120000_invoice_payment_confirmation';
 import * as migration_20261101_130000_send_offer_messages from './20261101_130000_send_offer_messages';
 import * as migration_20261101_140000_send_offer_billing_required from './20261101_140000_send_offer_billing_required';
+import * as migration_20261105_120000_invoice_pending_payment_description from './20261105_120000_invoice_pending_payment_description';
 
 export const migrations = [
   {
@@ -1156,5 +1157,10 @@ export const migrations = [
     up: migration_20261101_140000_send_offer_billing_required.up,
     down: migration_20261101_140000_send_offer_billing_required.down,
     name: '20261101_140000_send_offer_billing_required',
+  },
+  {
+    up: migration_20261105_120000_invoice_pending_payment_description.up,
+    down: migration_20261105_120000_invoice_pending_payment_description.down,
+    name: '20261105_120000_invoice_pending_payment_description',
   },
 ];

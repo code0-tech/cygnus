@@ -4,6 +4,7 @@ import { fetchLicenseDashboard } from "@/lib/licenses/client"
 import { createLicenseDashboardLoginPath } from "@/lib/licenses/routes"
 import { EMPTY_LICENSE_DASHBOARD_DATA, type LicenseDashboardCustomerAddress, type LicenseDashboardData, type LicenseDashboardLicense } from "@/lib/licenses/types"
 import { deriveLicenseStatus } from "@/lib/licenses/dashboardMapper"
+import { type AwaitedPayment, getPaymentPollDelay, isAwaitedPaymentSettled, PAYMENT_POLL_MAX_DURATION_MS } from "@/lib/licenses/paymentConfirmation"
 import type { DashboardSubscriptionStatus, SubscriptionPendingUpdate } from "@/lib/licenses/types"
 import { usePathname } from "next/navigation"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useRef, useState } from "react"
@@ -11,6 +12,8 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useR
 const FOCUS_REFRESH_STALE_MS = 5 * 60_000
 
 interface LicenseDataContextValue extends LicenseDashboardData {
+    awaitPayment: (payment: AwaitedPayment) => void
+    awaitingPayment: AwaitedPayment | null
     error: string | null
     isLoading: boolean
     isRefreshing: boolean
@@ -79,6 +82,7 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
     const [error, setError] = useState<string | null>(null)
     const [needsLogin, setNeedsLogin] = useState(false)
     const [reloadKey, setReloadKey] = useState(0)
+    const [paymentPoll, setPaymentPoll] = useState<{ attempt: number; payment: AwaitedPayment; startedAt: number } | null>(null)
     const reload = useCallback(() => {
         if (requestInFlightRef.current) {
             queuedReloadRef.current = true
@@ -87,6 +91,14 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
 
         setReloadKey((current) => current + 1)
     }, [])
+
+    const awaitPayment = useCallback(
+        (payment: AwaitedPayment) => {
+            setPaymentPoll({ attempt: 0, payment, startedAt: Date.now() })
+            reload()
+        },
+        [reload]
+    )
 
     const updateCustomer: LicenseDataContextValue["updateCustomer"] = (id, values) => {
         setData((current) => ({
@@ -216,6 +228,20 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
     )
 
     useEffect(() => {
+        if (!paymentPoll || isLoading || isRefreshing) return
+        if (isAwaitedPaymentSettled(data.licenses, paymentPoll.payment) || Date.now() - paymentPoll.startedAt >= PAYMENT_POLL_MAX_DURATION_MS) {
+            setPaymentPoll(null)
+            return
+        }
+
+        const timer = window.setTimeout(() => {
+            setPaymentPoll((current) => (current ? { ...current, attempt: current.attempt + 1 } : current))
+            reload()
+        }, getPaymentPollDelay(paymentPoll.attempt))
+        return () => window.clearTimeout(timer)
+    }, [data.licenses, isLoading, isRefreshing, paymentPoll, reload])
+
+    useEffect(() => {
         const refreshWhenStale = () => {
             if (document.visibilityState !== "visible" || Date.now() - lastRequestStartedAtRef.current < FOCUS_REFRESH_STALE_MS) return
             reload()
@@ -233,6 +259,8 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
         <LicenseDataContext.Provider
             value={{
                 ...data,
+                awaitPayment,
+                awaitingPayment: paymentPoll?.payment ?? null,
                 error,
                 isLoading,
                 isRefreshing,

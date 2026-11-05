@@ -189,3 +189,40 @@ test("shows the session error instead of restarting a login that just failed", a
     assert.equal(window.location.search, "")
     assert.equal(requests.length, 1)
 })
+
+function AwaitedInvoiceState() {
+    const { awaitPayment, awaitingPayment, licenses } = useLicenseData()
+    return (
+        <div>
+            <span>{licenses[0]?.invoices?.[0]?.status ?? "none"}</span>
+            <span>{awaitingPayment ? "awaiting" : "idle"}</span>
+            <button type="button" onClick={() => awaitPayment({ licenseId: "gid://crater/Subscription/1", invoiceId: "gid://crater/Invoice/7" })}>
+                Paid
+            </button>
+        </div>
+    )
+}
+
+test("keeps reloading after a confirmed payment until the invoice shows up as paid", async () => {
+    const statuses = ["OPEN", "OPEN", "PAID"]
+    let requests = 0
+    globalThis.fetch = (async () => {
+        const status = statuses[Math.min(requests, statuses.length - 1)]
+        requests += 1
+        const licenses = [{ id: "gid://crater/Subscription/1", customerId: "gid://crater/Customer/1", invoices: [{ id: "gid://crater/Invoice/7", status }] }]
+        return new Response(JSON.stringify({ customers: [], licenses }), { status: 200, headers: { "content-type": "application/json" } })
+    }) as typeof fetch
+
+    render(
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
+            <AwaitedInvoiceState />
+        </LicenseDataProvider>
+    )
+
+    assert.ok(await screen.findByText("OPEN"))
+    fireEvent.click(screen.getByRole("button", { name: "Paid" }))
+    assert.ok(await screen.findByText("awaiting"))
+    await waitFor(() => assert.ok(screen.getByText("PAID")), { timeout: 4_000 })
+    await waitFor(() => assert.ok(screen.getByText("idle")))
+    assert.equal(requests, 3)
+})

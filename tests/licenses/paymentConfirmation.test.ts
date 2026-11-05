@@ -1,7 +1,8 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import type { Stripe } from "@stripe/stripe-js"
-import { confirmInvoicePayment } from "../../src/lib/licenses/paymentConfirmation"
+import { confirmInvoicePayment, getPaymentPollDelay, isAwaitedPaymentSettled, isInvoiceOpen } from "../../src/lib/licenses/paymentConfirmation"
+import type { LicenseDashboardLicense } from "../../src/lib/licenses/types"
 
 function fakeStripe(retrievedStatus: string | null, nextActionStatus: string | null = null) {
     const calls: string[] = []
@@ -48,4 +49,34 @@ test("a payment that needs no action is not confirmed again", async () => {
 test("a missing Stripe instance or an unreadable PaymentIntent fails without throwing", async () => {
     assert.equal(await confirmInvoicePayment(null, "pi_secret"), "failed")
     assert.equal(await confirmInvoicePayment(fakeStripe(null).stripe, "pi_secret"), "failed")
+})
+
+const license = (values: Partial<LicenseDashboardLicense>) => ({ id: "gid://crater/Subscription/1", customerId: "gid://crater/Customer/1", ...values }) as LicenseDashboardLicense
+
+test("the payment poll backs off up to ten seconds between reloads", () => {
+    assert.deepEqual([0, 1, 2, 3, 8].map(getPaymentPollDelay), [2_000, 4_000, 8_000, 10_000, 10_000])
+})
+
+test("a paid invoice only counts once the dashboard reports it as paid", () => {
+    const payment = { licenseId: "gid://crater/Subscription/1", invoiceId: "gid://crater/Invoice/7" }
+
+    assert.equal(isAwaitedPaymentSettled([license({ invoices: [{ id: "gid://crater/Invoice/7", status: "OPEN" }] })], payment), false)
+    assert.equal(isAwaitedPaymentSettled([license({ invoices: [{ id: "gid://crater/Invoice/7", status: "PAID" }] })], payment), true)
+    assert.equal(isAwaitedPaymentSettled([], payment), false)
+})
+
+test("a confirmed upgrade counts once Crater applied its pending selection", () => {
+    const payment = { licenseId: "gid://crater/Subscription/1", pendingUpdateApplied: true }
+    const pendingUpdate = { effectiveAt: "2026-11-05T12:00:00Z", paymentPeriod: "monthly", plan: "max" } as LicenseDashboardLicense["pendingUpdate"]
+
+    assert.equal(isAwaitedPaymentSettled([license({ pendingUpdate, plan: "pro" })], payment), false)
+    assert.equal(isAwaitedPaymentSettled([license({ pendingUpdate: null, plan: "max" })], payment), true)
+    // A failed confirmation only waits for the reload that brings in the open invoice.
+    assert.equal(isAwaitedPaymentSettled([license({ pendingUpdate, plan: "pro" })], { licenseId: payment.licenseId }), true)
+})
+
+test("only open invoices are offered for payment", () => {
+    assert.equal(isInvoiceOpen({ id: "1", status: " OPEN " }), true)
+    assert.equal(isInvoiceOpen({ id: "2", status: "PAID" }), false)
+    assert.equal(isInvoiceOpen({ id: "3" }), false)
 })

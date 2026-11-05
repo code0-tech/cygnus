@@ -168,6 +168,12 @@ export const Licenses: GlobalConfig = {
                                 localizedText("viewLabel", "View", "Ansehen"),
                                 localizedText("unavailableLabel", "Not available", "Nicht verfügbar"),
                                 localizedText("payLabel", "Pay now", "Jetzt bezahlen"),
+                                localizedText(
+                                    "pendingPaymentDescription",
+                                    "An invoice for this license is still waiting for payment. Changes that depend on it, such as an upgrade, apply once it is paid.",
+                                    "Eine Rechnung dieser Lizenz wartet noch auf die Zahlung. Davon abhängige Änderungen wie ein Upgrade gelten, sobald sie bezahlt ist.",
+                                    { type: "textarea" }
+                                ),
                             ],
                         },
                         {

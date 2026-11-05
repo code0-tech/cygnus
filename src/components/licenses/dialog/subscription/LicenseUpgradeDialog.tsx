@@ -14,7 +14,7 @@ import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/li
 import type { AppLocale } from "@/lib/i18n"
 import { formatMinorCurrency } from "@/lib/formatters"
 import NumberFlow from "@number-flow/react"
-import { confirmInvoicePayment, reloadAfterPayment } from "@/lib/licenses/paymentConfirmation"
+import { confirmInvoicePayment } from "@/lib/licenses/paymentConfirmation"
 import { parseLicenseDate } from "@/lib/licenses/pendingUpdate"
 import { createLicensePath, resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { resolveSubscriptionCustomerType } from "@/lib/crater/values"
@@ -65,7 +65,7 @@ const PLANS: SubscriptionPlan[] = ["pro", "max", "custom"]
 export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, errors, licenseId, locale, subscriptionConfig, subscriptionPrices }: LicenseUpgradeDialogProps) {
     const toasts = useLicenseToasts()
     const router = useRouter()
-    const { customers, licenses, reload, updateLicense } = useLicenseData()
+    const { awaitPayment, customers, licenses, updateLicense } = useLicenseData()
     const stripePromise = useStripePromise()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
@@ -133,7 +133,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                 if (outcome === "succeeded") toasts.success("planUpdated")
                 else if (outcome === "processing") toasts.success("paymentProcessing")
                 else toasts.error(errors.upgradePaymentPending)
-                reloadAfterPayment(reload)
+                awaitPayment({ licenseId: license.id, pendingUpdateApplied: outcome !== "failed" })
             } else {
                 toasts.success(subscription.pendingUpdate ? "changeScheduled" : "planUpdated", subscription.pendingUpdate?.effectiveAt)
             }

@@ -1,3 +1,4 @@
+import type { LicenseDashboardInvoice, LicenseDashboardLicense } from "@/lib/licenses/types"
 import type { PaymentIntent, Stripe } from "@stripe/stripe-js"
 
 export type PaymentConfirmationOutcome = "succeeded" | "processing" | "failed"
@@ -20,9 +21,34 @@ export async function confirmInvoicePayment(stripe: Stripe | null, clientSecret:
     return outcomeOf(result.paymentIntent?.status)
 }
 
-export const PAYMENT_WEBHOOK_SETTLE_MS = 3_000
+export interface AwaitedPayment {
+    invoiceId?: string
+    licenseId: string
+    pendingUpdateApplied?: boolean
+}
 
-export function reloadAfterPayment(reload: () => void) {
-    reload()
-    window.setTimeout(reload, PAYMENT_WEBHOOK_SETTLE_MS)
+const PAYMENT_POLL_INITIAL_DELAY_MS = 2_000
+const PAYMENT_POLL_MAX_DELAY_MS = 10_000
+export const PAYMENT_POLL_MAX_DURATION_MS = 60_000
+
+export function getPaymentPollDelay(attempt: number) {
+    return Math.min(PAYMENT_POLL_INITIAL_DELAY_MS * 2 ** Math.max(0, Math.floor(attempt)), PAYMENT_POLL_MAX_DELAY_MS)
+}
+
+export function isInvoiceOpen(invoice: LicenseDashboardInvoice) {
+    return invoice.status?.trim().toLowerCase() === "open"
+}
+
+export function isAwaitedPaymentSettled(licenses: LicenseDashboardLicense[], payment: AwaitedPayment) {
+    const license = licenses.find((candidate) => candidate.id === payment.licenseId)
+    if (!license) return false
+    if (
+        payment.invoiceId &&
+        license.invoices
+            ?.find((invoice) => invoice.id === payment.invoiceId)
+            ?.status?.trim()
+            .toLowerCase() !== "paid"
+    )
+        return false
+    return !payment.pendingUpdateApplied || !license.pendingUpdate
 }

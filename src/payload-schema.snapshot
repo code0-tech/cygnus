@@ -2602,6 +2602,7 @@ export const licenses_locales = pgTable('licenses_locales', {
   invoices_viewLabel: varchar('invoices_view_label').notNull(),
   invoices_unavailableLabel: varchar('invoices_unavailable_label').notNull(),
   invoices_payLabel: varchar('invoices_pay_label').notNull(),
+  invoices_pendingPaymentDescription: varchar('invoices_pending_payment_description').notNull(),
   pagination_loadMoreLabel: varchar('pagination_load_more_label').notNull(),
   pagination_loadingLabel: varchar('pagination_loading_label').notNull(),
   pagination_previousPageLabel: varchar('pagination_previous_page_label').notNull(),

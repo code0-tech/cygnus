@@ -3250,6 +3250,7 @@ export interface License {
     viewLabel: string;
     unavailableLabel: string;
     payLabel: string;
+    pendingPaymentDescription: string;
   };
   pagination: {
     loadMoreLabel: string;
@@ -4067,6 +4068,7 @@ export interface LicensesSelect<T extends boolean = true> {
         viewLabel?: T;
         unavailableLabel?: T;
         payLabel?: T;
+        pendingPaymentDescription?: T;
       };
   pagination?:
     | T
