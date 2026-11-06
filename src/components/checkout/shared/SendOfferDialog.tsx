@@ -70,7 +70,7 @@ export function SendOfferDialog({ blockedReason = null, content, emailLocked = f
                     </Button>
                 </DialogTrigger>
             </span>
-            <SiteDialogContent fitContent title={content.sendOfferTitle} description={content.sendOfferDescription}>
+            <SiteDialogContent compact title={content.sendOfferTitle} description={content.sendOfferDescription}>
                 {sentTo ? (
                     <Alert color="success">{content.sendOfferSuccess.replaceAll("{email}", sentTo)}</Alert>
                 ) : (

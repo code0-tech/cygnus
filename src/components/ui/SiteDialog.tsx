@@ -46,6 +46,7 @@ export function SiteDialogContent({
     children,
     className,
     closeLabel = "Close",
+    compact = false,
     description,
     fitContent = false,
     title,
@@ -53,10 +54,46 @@ export function SiteDialogContent({
     children: ReactNode
     className?: string
     closeLabel?: string
+    compact?: boolean
     description?: string
     fitContent?: boolean
     title: string
 }) {
+    if (compact) {
+        return (
+            <DialogPortal>
+                <DialogOverlay className={cn("backdrop-blur-sm", className)} />
+                <DialogContent
+                    tabIndex={-1}
+                    onOpenAutoFocus={(event) => event.preventDefault()}
+                    showCloseButton={false}
+                    className={cn("h-fit! max-h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-xl! overflow-visible! border border-white/5 p-0.5!", className)}
+                >
+                    <Card color="primary" p="0" paddingSize="md" h="auto" w="100%" className="min-h-0 min-w-0 overflow-hidden!">
+                        <AutoScrollArea mah="calc(100dvh - 2rem)" type="scroll">
+                            <div className="p-6 sm:p-8">
+                                <div className="flex items-start justify-between gap-4">
+                                    <DialogTitle className="text-[22px]! font-normal! leading-tight! text-white!">{title}</DialogTitle>
+                                    <DialogClose asChild>
+                                        <Button type="button" paddingSize="xxs" variant="normal" aria-label={closeLabel} className="-mt-1 shrink-0 rounded-full!">
+                                            <IconX aria-hidden="true" size={16} />
+                                        </Button>
+                                    </DialogClose>
+                                </div>
+                                {description ? (
+                                    <DialogDescription className="mt-2! text-base! text-tertiary!">{description}</DialogDescription>
+                                ) : (
+                                    <DialogDescription className="sr-only">{title}</DialogDescription>
+                                )}
+                                <div className="pt-6">{children}</div>
+                            </div>
+                        </AutoScrollArea>
+                    </Card>
+                </DialogContent>
+            </DialogPortal>
+        )
+    }
+
     return (
         <DialogPortal>
             <DialogOverlay className={cn("backdrop-blur-sm", className)} />
