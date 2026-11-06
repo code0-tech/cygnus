@@ -1,7 +1,6 @@
 "use client"
 
 import { PAYMENT_PERIOD_OPTIONS, type SubscriptionSelection, type SubscriptionSelectionAction } from "@/lib/subscription/types"
-import { WorkflowCalculatorDialog } from "@/components/subscription/WorkflowCalculatorDialog"
 import { SubscriptionOptionCard, SubscriptionOptionGroup, type SubscriptionOptionPrice } from "@/components/subscription/SubscriptionOptionCard"
 import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
@@ -19,13 +18,8 @@ import { cn } from "@/lib/utils"
 import { Text } from "@code0-tech/pictor"
 import NumberFlow from "@number-flow/react"
 import { usePathname, useSearchParams } from "next/navigation"
-import type { ReactNode } from "react"
 import { useEffect, useRef, useState } from "react"
 import { LinkButton } from "../ui/LinkButton"
-
-export interface SubscriptionIcons {
-    workflowBusinessTypes: ReactNode[]
-}
 
 export type SubscriptionOptionImageKey = "b2b" | "b2c" | "pro" | "max" | "custom" | "selfHosted" | "cloud"
 
@@ -43,13 +37,12 @@ function SubscriptionOptionCategoryLabel({ label, description }: { label: string
 interface SubscriptionConfiguratorProps {
     locale: AppLocale
     content: SubscriptionConfiguratorContent
-    icons: SubscriptionIcons
     onActiveImageChangeAction?: (key: SubscriptionOptionImageKey) => void
     subscriptionPrices: SubscriptionPriceCatalog
     checkoutPackages: CheckoutPackages
 }
 
-export function SubscriptionConfigurator({ locale, content, icons, onActiveImageChangeAction, subscriptionPrices, checkoutPackages }: SubscriptionConfiguratorProps) {
+export function SubscriptionConfigurator({ locale, content, onActiveImageChangeAction, subscriptionPrices, checkoutPackages }: SubscriptionConfiguratorProps) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
     const catalog = getSubscriptionCatalog(content, subscriptionPrices, checkoutPackages)
@@ -292,17 +285,7 @@ export function SubscriptionConfigurator({ locale, content, icons, onActiveImage
                                 centerLabelSuffix={monthlyPeriodSuffix}
                             />
                         </Card>
-                        <div className="flex w-full items-center justify-between gap-4">
-                            <WorkflowCalculatorDialog
-                                locale={locale}
-                                content={content.workflowCalculator}
-                                businessTypeIcons={icons.workflowBusinessTypes}
-                                value={selection.workflowExecutions}
-                                packages={workflowExecutionPackages}
-                                suffix="Workflow Executions"
-                                centerLabelSuffix={monthlyPeriodSuffix}
-                                onApply={(workflowExecutionsValue) => dispatch({ type: "workflowExecutionsChanged", value: workflowExecutionsValue })}
-                            />
+                        <div className="flex w-full items-center justify-end gap-4">
                             <div className="flex flex-wrap items-start justify-end gap-2">
                                 <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
                                 <LinkButton href={content.contactSales.href} className="border-b-0 py-0 text-sm text-secondary" showArrow={false}>

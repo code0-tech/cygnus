@@ -2281,38 +2281,6 @@ export const subscription_config_plan_custom_features = pgTable('subscription_co
 )
 
 
-export const subscription_config_workflow_calculator_types = pgTable('subscription_config_workflow_calculator_types', {
-  _order: integer('_order').notNull(),
-  _parentID: integer('_parent_id').notNull(),
-  id: varchar('id').primaryKey(),
-  icon: varchar('icon').notNull().default("building"),
-  conversion_rate: numeric('conversion_rate', {mode: 'number'}).notNull().default(1),
-}, (columns) => [
-    index('subscription_config_workflow_calculator_types_order_idx').on(columns._order), index('subscription_config_workflow_calculator_types_parent_id_idx').on(columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [subscription_config.id],
-      name: 'subscription_config_workflow_calculator_types_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const subscription_config_workflow_calculator_types_locales = pgTable('subscription_config_workflow_calculator_types_locales', {
-  name: varchar('name').notNull(),
-  conversion_unit: varchar('conversion_unit').notNull(),
-  id: serial('id').primaryKey(),
-  _locale: enum__locales('_locale').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-}, (columns) => [
-    uniqueIndex('subscription_config_workflow_calculator_types_locales_locale').on(columns._locale, columns._parentID), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [subscription_config_workflow_calculator_types.id],
-      name: 'subscription_config_workflow_calculator_types_locales_par_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const subscription_config = pgTable('subscription_config', {
   id: serial('id').primaryKey(),
   defaults_deployment: enum_subscription_config_defaults_deployment('defaults_deployment').notNull().default("self_hosted"),
@@ -2396,19 +2364,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   aiTokens_title: varchar('ai_tokens_title').notNull(),
   aiTokens_description: varchar('ai_tokens_description'),
   aiTokens_suffix: varchar('ai_tokens_suffix').notNull(),
-  workflowCalculator_triggerLabel: varchar('workflow_calculator_trigger_label').notNull(),
-  workflowCalculator_title: varchar('workflow_calculator_title').notNull(),
-  workflowCalculator_description: varchar('workflow_calculator_description').notNull(),
-  workflowCalculator_closeLabel: varchar('workflow_calculator_close_label').notNull(),
-  workflowCalculator_businessTypeLabel: varchar('workflow_calculator_business_type_label').notNull(),
-  workflowCalculator_businessTypeSearchPlaceholder: varchar('workflow_calculator_business_type_search_placeholder').notNull(),
-  workflowCalculator_noBusinessTypesFoundLabel: varchar('workflow_calculator_no_business_types_found_label').notNull(),
-  workflowCalculator_activeWorkflowsLabel: varchar('workflow_calculator_active_workflows_label').notNull(),
-  workflowCalculator_runsPerDayLabel: varchar('workflow_calculator_runs_per_day_label').notNull(),
-  workflowCalculator_daysPerMonthLabel: varchar('workflow_calculator_days_per_month_label').notNull(),
-  workflowCalculator_estimateLabel: varchar('workflow_calculator_estimate_label').notNull(),
-  workflowCalculator_cancelLabel: varchar('workflow_calculator_cancel_label').notNull(),
-  workflowCalculator_applyLabel: varchar('workflow_calculator_apply_label').notNull(),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -4064,25 +4019,6 @@ export const relations_subscription_config_plan_custom_features = relations(subs
     relationName: 'plan_custom_features',
     }),
       }))
-export const relations_subscription_config_workflow_calculator_types_locales = relations(subscription_config_workflow_calculator_types_locales, ({ one }) => ({
-  _parentID: one(subscription_config_workflow_calculator_types, {
-    
-    fields: [subscription_config_workflow_calculator_types_locales._parentID],
-    references: [subscription_config_workflow_calculator_types.id],
-    relationName: '_locales',
-    }),
-      }))
-export const relations_subscription_config_workflow_calculator_types = relations(subscription_config_workflow_calculator_types, ({ one, many }) => ({
-  _parentID: one(subscription_config, {
-    
-    fields: [subscription_config_workflow_calculator_types._parentID],
-    references: [subscription_config.id],
-    relationName: 'workflowCalculator_types',
-    }),
-    _locales: many(subscription_config_workflow_calculator_types_locales, {
-            relationName: '_locales',
-    }),
-      }))
 export const relations_subscription_config_locales = relations(subscription_config_locales, ({ one }) => ({
   _parentID: one(subscription_config, {
     
@@ -4142,9 +4078,6 @@ export const relations_subscription_config = relations(subscription_config, ({ o
     fields: [subscription_config.plan_custom_image],
     references: [media.id],
     relationName: 'plan_custom_image',
-    }),
-    workflowCalculator_types: many(subscription_config_workflow_calculator_types, {
-            relationName: 'workflowCalculator_types',
     }),
     _locales: many(subscription_config_locales, {
             relationName: '_locales',
@@ -4404,8 +4337,6 @@ type DatabaseSchema = {
   subscription_config_plan_pro_features: typeof subscription_config_plan_pro_features
   subscription_config_plan_max_features: typeof subscription_config_plan_max_features
   subscription_config_plan_custom_features: typeof subscription_config_plan_custom_features
-  subscription_config_workflow_calculator_types: typeof subscription_config_workflow_calculator_types
-  subscription_config_workflow_calculator_types_locales: typeof subscription_config_workflow_calculator_types_locales
   subscription_config: typeof subscription_config
   subscription_config_locales: typeof subscription_config_locales
   checkout: typeof checkout
@@ -4527,8 +4458,6 @@ type DatabaseSchema = {
   relations_subscription_config_plan_pro_features: typeof relations_subscription_config_plan_pro_features
   relations_subscription_config_plan_max_features: typeof relations_subscription_config_plan_max_features
   relations_subscription_config_plan_custom_features: typeof relations_subscription_config_plan_custom_features
-  relations_subscription_config_workflow_calculator_types_locales: typeof relations_subscription_config_workflow_calculator_types_locales
-  relations_subscription_config_workflow_calculator_types: typeof relations_subscription_config_workflow_calculator_types
   relations_subscription_config_locales: typeof relations_subscription_config_locales
   relations_subscription_config: typeof relations_subscription_config
   relations_checkout_locales: typeof relations_checkout_locales

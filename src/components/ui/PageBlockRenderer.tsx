@@ -26,12 +26,11 @@ import { ActionFunctionsSection } from "../sections/ActionFunctionsSection"
 import { ActionEventsSection } from "../sections/ActionEventsSection"
 import { ActionReferencesSection } from "../sections/ActionReferencesSection"
 import { ActionListSection } from "../sections/ActionListSection"
-import { SubscriptionConfiguratorSection, type SubscriptionIcons } from "../sections/SubscriptionConfiguratorSection"
+import { SubscriptionConfiguratorSection } from "../sections/SubscriptionConfiguratorSection"
 import { PricingSection } from "../sections/PricingSection"
 import { SmallPricingSection } from "../sections/SmallPricingSection"
 import { ContactSection } from "../sections/ContactSection"
 import { CompareApplicationSection } from "../sections/CompareApplicationSection"
-import { getIcon } from "@/components/ui/IconRenderer"
 import type { ActionItem, PaginatedActionsResult, SubscriptionConfigData, SubscriptionConfiguratorBlockData } from "@/lib/cms"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
@@ -147,15 +146,9 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
                 description: content.pageIntro?.description?.trim() || "",
             },
         }
-        const icons: SubscriptionIcons = {
-            workflowBusinessTypes: (config.workflowCalculator.types.length ? config.workflowCalculator.types : [{ icon: "tabler:IconBuilding" }]).map((businessType, index) =>
-                getIcon(businessType.icon?.trim() || "tabler:IconBuilding", 18, `workflow-business-type-${index}-${businessType.icon}`)
-            ),
-        }
-
         const checkoutPackages = options.checkoutPackages
         if (!checkoutPackages) return null
-        return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} icons={icons} subscriptionPrices={subscriptionPrices} checkoutPackages={checkoutPackages} />
+        return <SubscriptionConfiguratorSection locale={options.locale ?? "en"} content={{ ...config, ...blockContent }} subscriptionPrices={subscriptionPrices} checkoutPackages={checkoutPackages} />
     },
     pricing: (block, options) => {
         const config = options.subscriptionConfig

@@ -3003,28 +3003,6 @@ export interface SubscriptionConfig {
     description?: string | null;
     suffix: string;
   };
-  workflowCalculator: {
-    triggerLabel: string;
-    title: string;
-    description: string;
-    closeLabel: string;
-    businessTypeLabel: string;
-    businessTypeSearchPlaceholder: string;
-    noBusinessTypesFoundLabel: string;
-    activeWorkflowsLabel: string;
-    runsPerDayLabel: string;
-    daysPerMonthLabel: string;
-    estimateLabel: string;
-    cancelLabel: string;
-    applyLabel: string;
-    types: {
-      name: string;
-      conversion_unit: string;
-      icon: string;
-      conversion_rate: number;
-      id?: string | null;
-    }[];
-  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3799,32 +3777,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         suffix?: T;
-      };
-  workflowCalculator?:
-    | T
-    | {
-        triggerLabel?: T;
-        title?: T;
-        description?: T;
-        closeLabel?: T;
-        businessTypeLabel?: T;
-        businessTypeSearchPlaceholder?: T;
-        noBusinessTypesFoundLabel?: T;
-        activeWorkflowsLabel?: T;
-        runsPerDayLabel?: T;
-        daysPerMonthLabel?: T;
-        estimateLabel?: T;
-        cancelLabel?: T;
-        applyLabel?: T;
-        types?:
-          | T
-          | {
-              name?: T;
-              conversion_unit?: T;
-              icon?: T;
-              conversion_rate?: T;
-              id?: T;
-            };
       };
   updatedAt?: T;
   createdAt?: T;

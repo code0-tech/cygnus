@@ -1,4 +1,3 @@
-import { iconField as payloadIconField } from "@mvriu5/payload-icon-picker"
 import type { Field, GlobalConfig } from "payload"
 import { localizedText } from "@/fields/localizedText"
 
@@ -19,17 +18,6 @@ const paymentPeriodOptions = [
     { label: "Quarterly", value: "quarterly" },
     { label: "Yearly", value: "yearly" },
 ]
-
-const iconField = payloadIconField({
-    name: "icon",
-    label: "Icon",
-    required: true,
-    placeholder: "Search icons",
-    noResultsLabel: "No icons found",
-    admin: {
-        position: "sidebar",
-    },
-})
 
 const colorField = {
     name: "color",
@@ -310,65 +298,6 @@ export const SubscriptionCollection: GlobalConfig = {
                                 localizedText("title", "How many AI tokens do you expect to consume per month?", "Wie viele KI-Tokens erwartest du pro Monat zu verbrauchen?"),
                                 sectionDescriptionField,
                                 localizedText("suffix", "tokens", "Tokens"),
-                            ],
-                        },
-                    ],
-                },
-                {
-                    label: "Workflow calculator",
-                    description: "Dialog that estimates monthly workflow executions from business types.",
-                    fields: [
-                        {
-                            name: "workflowCalculator",
-                            label: "Workflow Calculator",
-                            type: "group",
-                            fields: [
-                                localizedText("triggerLabel", "Calculate", "Berechnen"),
-                                localizedText("title", "Calculate workflow executions", "Workflow-Ausführungen berechnen"),
-                                localizedText(
-                                    "description",
-                                    "Estimate monthly volume from your active workflows and their average execution frequency.",
-                                    "Schätze das monatliche Volumen anhand deiner aktiven Workflows und ihrer durchschnittlichen Ausführungshäufigkeit.",
-                                    { type: "textarea" }
-                                ),
-                                localizedText("closeLabel", "Close dialog", "Dialog schließen"),
-                                localizedText("businessTypeLabel", "Business type", "Geschäftsbereich"),
-                                localizedText("businessTypeSearchPlaceholder", "Search business types", "Geschäftsbereiche durchsuchen"),
-                                localizedText("noBusinessTypesFoundLabel", "No business types found.", "Keine Geschäftsbereiche gefunden."),
-                                localizedText("activeWorkflowsLabel", "Active workflows", "Aktive Workflows"),
-                                localizedText("runsPerDayLabel", "Runs per month", "Ausführungen pro Monat"),
-                                localizedText("daysPerMonthLabel", "Days per month", "Tage pro Monat"),
-                                localizedText("estimateLabel", "Estimated monthly volume", "Geschätztes monatliches Volumen"),
-                                localizedText("cancelLabel", "Cancel", "Abbrechen"),
-                                localizedText("applyLabel", "Apply value", "Wert übernehmen"),
-                                {
-                                    name: "types",
-                                    label: "Business Types",
-                                    type: "array",
-                                    required: true,
-                                    minRows: 1,
-                                    defaultValue: [
-                                        {
-                                            name: "General",
-                                            conversion_rate: 1,
-                                            conversion_unit: "executions",
-                                            icon: "building",
-                                        },
-                                    ],
-                                    fields: [
-                                        localizedText("name", "General", "Allgemein"),
-                                        localizedText("conversion_unit", "executions", "Ausführungen", { label: "Conversion Unit" }),
-                                        { ...iconField, defaultValue: "building" },
-                                        {
-                                            name: "conversion_rate",
-                                            label: "Conversion Rate",
-                                            type: "number",
-                                            required: true,
-                                            defaultValue: 1,
-                                            min: 0,
-                                        },
-                                    ],
-                                },
                             ],
                         },
                     ],
