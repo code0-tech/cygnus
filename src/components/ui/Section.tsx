@@ -1,42 +1,12 @@
 import { SectionLinkButton } from "@/components/ui/SectionLinkButton"
 import { SectionMotion, type SectionAnimation } from "@/components/ui/SectionMotion"
+import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
 import { cn } from "@/lib/utils"
 import { createElement, type ReactNode } from "react"
 
 interface SectionLink {
     label?: string | null
     url?: string | null
-}
-
-function hasHighlightedHeading(heading?: string | null) {
-    return Boolean(heading && /\*\*.*?\*\*/.test(heading))
-}
-
-function FormattedText({ text }: { text: string }) {
-    return (
-        <>
-            {text.split(/(\*\*.*?\*\*)/g).flatMap((part, partIndex) => {
-                const highlighted = part.startsWith("**") && part.endsWith("**") && part.length > 4
-                const value = highlighted ? part.slice(2, -2) : part
-
-                return value.split(/(\\n|\r\n|\n|\r)/g).map((linePart, lineIndex) => {
-                    const key = `${partIndex}-${lineIndex}`
-
-                    if (/^(\\n|\r\n|\n|\r)$/.test(linePart)) {
-                        return <br key={key} />
-                    }
-
-                    if (!highlighted) return linePart
-
-                    return (
-                        <span className="text-white" key={key}>
-                            {linePart}
-                        </span>
-                    )
-                })
-            })}
-        </>
-    )
 }
 
 interface SectionProps {
@@ -69,12 +39,9 @@ export function Section({
     const rawLinkUrl = linkButton?.url?.trim()
     const shouldShowFunnel = showFunnel && Boolean(heading || description || (showLinkButton && rawLinkUrl && linkButton?.label))
     const headingTag = `h${headingLevel}` as const
-    const headingClassName = cn("section-stagger-item text-4xl font-semibold", hasHighlightedHeading(heading) ? "text-secondary" : "text-white")
+    const headingClassName = cn("section-stagger-item text-4xl font-semibold", hasHighlightedText(heading) ? "text-secondary" : "text-white")
     const funnelClassName = funnelType === "center" ? "section-funnel flex flex-col gap-4 items-center justify-center text-center" : "section-funnel flex flex-col gap-4 text-left"
-    const descriptionClassName = cn(
-        "section-stagger-item relative z-10 max-w-[90vw] text-xl font-medium text-secondary lg:w-1/2",
-        funnelType === "center" && "text-center"
-    )
+    const descriptionClassName = cn("section-stagger-item relative z-10 max-w-[90vw] text-xl font-medium text-secondary lg:w-1/2", funnelType === "center" && "text-center")
 
     return (
         <SectionMotion animation={animation} className={className} fullHeight={fullHeight}>

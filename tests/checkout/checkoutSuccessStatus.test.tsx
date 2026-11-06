@@ -1,0 +1,380 @@
+import assert from "node:assert/strict"
+import test, { afterEach, mock } from "node:test"
+import React from "react"
+import type { CheckoutData } from "../../src/lib/cms"
+import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
+
+installDomTestEnvironment("https://code0.example/en/checkout/success?session_id=cs_test")
+
+mock.module("@code0-tech/pictor", {
+    namedExports: {
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
+        Badge: ({ children, className }: { children: React.ReactNode; className?: string }) => <span className={className}>{children}</span>,
+        Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
+        Card: ({ children, className }: { children: React.ReactNode; className?: string }) => <div className={className}>{children}</div>,
+    },
+})
+mock.module("@number-flow/react", {
+    defaultExport: ({ value }: { value: number }) => <span>{value}</span>,
+})
+mock.module("next/link", {
+    defaultExport: ({ children, prefetch: _prefetch, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { prefetch?: boolean | null }) => <a {...props}>{children}</a>,
+})
+let routerReplaceCalls: string[] = []
+mock.module("next/navigation", {
+    namedExports: {
+        useRouter: () => ({
+            replace: (url: string) => {
+                routerReplaceCalls.push(url)
+            },
+        }),
+    },
+})
+// The real getIcon pulls in @mvriu5/payload-icon-picker, which imports a .css file Node's test runner cannot load.
+mock.module("@/components/ui/IconRenderer", {
+    namedExports: {
+        getIcon: (icon: string | null | undefined) => <span data-icon={icon ?? undefined} />,
+    },
+})
+let downloadedLicenseIds: string[] = []
+mock.module("@/lib/licenses/client", {
+    namedExports: {
+        downloadLicenseFile: async (licenseId: string) => {
+            downloadedLicenseIds.push(licenseId)
+        },
+    },
+})
+
+const { cleanup, render, screen, waitFor } = await import("@testing-library/react")
+const userEvent = (await import("@testing-library/user-event")).default
+const { CheckoutSuccessStatus } = await import("../../src/components/checkout/success/CheckoutSuccessStatus")
+const originalFetch = globalThis.fetch
+const originalDateNow = Date.now
+
+const content: CheckoutData["success"] = {
+    heading: "Checkout complete",
+    description: "Your subscription is ready.",
+    licenseDashboardLabel: "Open licenses",
+    sculptorLabel: "Open Sculptor",
+    licenseDownloadLabel: "Download license",
+    licenseDownloadError: "Could not download license.",
+    licensePendingLabel: "Preparing license",
+    licenseStatusRetryLabel: "Try again",
+    delayedHeading: "CMS delay heading",
+    delayedConfirmedDescription: "CMS message for confirmed payments awaiting a license.",
+    delayedPendingDescription: "CMS message for checkouts awaiting payment confirmation.",
+    receiptHint: "Stripe sends the receipt to your email address.",
+    guestAccountHint: "You will receive an email with a link to create your account. Complete your account setup using that link to continue.",
+    failedHeading: "Payment failed",
+    failedDescription: "Stripe could not process your payment.",
+    invalidHeading: "Checkout link is no longer valid",
+    invalidDescription: "The link has expired or belongs to another account.",
+    checkoutRetryLabel: "Back to checkout",
+}
+
+const errorMessage = "Could not confirm the license."
+const checkoutSearchParams = new URLSearchParams({ session_id: "cs_test", plan: "pro", customerType: "b2b", paymentPeriod: "monthly" }).toString()
+const pricingContent = {
+    deploymentIcons: { cloud: "cloud", selfHosted: "server" },
+    deploymentIconColor: "aqua",
+    customerTypeIcons: { b2b: "building", b2c: "user" },
+    customerTypeIconColor: "yellow",
+    pricing: {
+        planLabel: "Plan",
+        baseLabel: "AI Tokens",
+        workflowExecutionsLabel: "Workflow Executions",
+        discountInputPlaceholder: "Discount code",
+        taxLabel: "Tax",
+        totalLabel: "Total",
+    },
+} as CheckoutData["summary"]
+const subscriptionConfig = {
+    packages: { pro: { title: "Pro" }, max: { title: "Max" }, custom: { title: "Custom" } },
+    plan: {
+        pro: { title: "Pro", icon: "pro", color: "lime" },
+        max: { title: "Max", icon: "max", color: "magenta" },
+        custom: { title: "Custom", icon: "custom", color: "yellow" },
+    },
+    paymentPeriod: { monthlyPeriodSuffix: "/ month", quarterlyPeriodSuffix: "/ quarter", yearlyPeriodSuffix: "/ year" },
+} as never
+// The status route normalizes Crater's enums, so the component only ever sees the lowercase values.
+const completedConfiguration = {
+    aiTokens: null,
+    customerType: "business",
+    deploymentType: "self_hosted",
+    paymentPeriod: "monthly",
+    plan: "pro",
+    workflowExecutions: null,
+}
+const completedPricing = { currency: "eur", discount: 1_000, subtotal: 10_000, tax: 1_710, total: 10_710 }
+const sharedProps = { pricingContent, subscriptionConfig }
+
+function respondWith(body: unknown, status = 200) {
+    const responseBody =
+        body && typeof body === "object" && "state" in body
+            ? {
+                  configuration: COMPLETED_TEST_STATES.has(String(body.state)) ? completedConfiguration : null,
+                  pricing: COMPLETED_TEST_STATES.has(String(body.state)) ? completedPricing : null,
+                  ...body,
+              }
+            : body
+    globalThis.fetch = (async () => new Response(JSON.stringify(responseBody), { status, headers: { "content-type": "application/json" } })) as typeof fetch
+}
+const COMPLETED_TEST_STATES = new Set(["PAYMENT_PENDING", "FULFILLMENT_PENDING", "READY"])
+
+test("keeps the confirmed overview mounted when polling reports the license is ready", async () => {
+    const pendingCompletion = {
+        state: "FULFILLMENT_PENDING" as const,
+        customerId: "gid://crater/Customer/1",
+        licenseId: null,
+        configuration: { ...completedConfiguration, paymentPeriod: "monthly" as const },
+        pricing: completedPricing,
+    }
+    respondWith(pendingCompletion)
+    const { container } = render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    const heading = await screen.findByRole("heading", { name: content.heading })
+    const pricingOverview = container.querySelector("#checkout-applied-discount")
+    assert.ok(pricingOverview)
+    assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
+    assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
+
+    respondWith({ ...pendingCompletion, state: "READY", licenseId: "gid://crater/License/2" })
+    await screen.findByRole("link", { name: content.licenseDashboardLabel }, { timeout: 3000 })
+
+    assert.equal(screen.getByRole("heading", { name: content.heading }), heading)
+    assert.equal(container.querySelector("#checkout-applied-discount"), pricingOverview)
+    assert.ok(screen.getByRole("link", { name: content.licenseDashboardLabel }))
+    assert.ok(screen.getByRole("button", { name: content.licenseDownloadLabel }))
+    assert.equal(screen.queryByRole("button", { name: content.licensePendingLabel }), null)
+})
+
+afterEach(() => {
+    cleanup()
+    globalThis.fetch = originalFetch
+    Date.now = originalDateNow
+    routerReplaceCalls = []
+    downloadedLicenseIds = []
+})
+
+test("pauses slow fulfillment without showing a payment error and can resume to READY", async () => {
+    let now = 1_000_000
+    let requests = 0
+    Date.now = () => now
+    globalThis.fetch = (async () => {
+        requests += 1
+        now += 5 * 60_000
+        return new Response(
+            JSON.stringify({
+                state: "FULFILLMENT_PENDING",
+                customerId: "gid://crater/Customer/1",
+                licenseId: null,
+                configuration: completedConfiguration,
+                pricing: completedPricing,
+            }),
+            { status: 200, headers: { "content-type": "application/json" } }
+        )
+    }) as typeof fetch
+
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+
+    assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
+    assert.equal(requests, 1)
+    assert.equal(screen.queryByText(content.licensePendingLabel), null)
+    assert.equal(screen.queryByText(errorMessage), null)
+    assert.ok(screen.getByRole("heading", { name: content.delayedHeading }))
+    assert.equal(screen.getByRole("status").textContent, content.delayedConfirmedDescription)
+    assert.ok(screen.getByText("Pro"))
+    assert.ok(screen.getByText("107.1"))
+    assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
+    assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
+    assert.deepEqual(routerReplaceCalls, [])
+
+    // A manual retry starts a new polling window and still waits for verified access.
+    respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
+    await userEvent.setup().click(screen.getByRole("button", { name: content.licenseStatusRetryLabel }))
+    await screen.findByRole("button", { name: content.licensePendingLabel })
+    assert.equal(screen.queryByText(content.delayedHeading), null)
+    respondWith({ state: "READY", customerId: "gid://crater/Customer/1", licenseId: "gid://crater/License/2" })
+    await screen.findByRole("link", { name: content.licenseDashboardLabel }, { timeout: 3000 })
+    assert.ok(screen.getByRole("button", { name: content.licenseDownloadLabel }))
+})
+
+for (const state of ["CHECKOUT_PENDING", "PAYMENT_PENDING"]) {
+    test(`delayed ${state} does not claim the payment is confirmed`, async () => {
+        let now = 1_000_000
+        Date.now = () => now
+        globalThis.fetch = (async () => {
+            now += 5 * 60_000
+            return Response.json({ state, customerId: "gid://crater/Customer/1", licenseId: null, configuration: null, pricing: null })
+        }) as typeof fetch
+        render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="de" sessionId="cs_test" />)
+        await screen.findByRole("heading", { name: content.delayedHeading })
+        assert.equal(screen.getByRole("status").textContent, content.delayedPendingDescription)
+        assert.equal(screen.queryByText(errorMessage), null)
+        assert.equal(screen.queryByText(content.receiptHint), null)
+        assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
+        assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
+        assert.deepEqual(routerReplaceCalls, [])
+    })
+}
+
+test("transport failures still offer an error and a status retry", async () => {
+    respondWith({ error: "Temporarily unavailable" }, 502)
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    await screen.findByText(errorMessage)
+    assert.equal(screen.getByRole("alert").textContent, errorMessage)
+    assert.ok(screen.getByRole("button", { name: content.licenseStatusRetryLabel }))
+    assert.equal(screen.queryByText(content.delayedHeading), null)
+})
+
+test("explains a declined payment and redirects back into checkout with the failure flagged", async () => {
+    respondWith({ state: "FAILED", customerId: "gid://crater/Customer/1", licenseId: null })
+
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+
+    assert.ok(await screen.findByText(content.failedHeading))
+    assert.ok(screen.getByText(content.failedDescription))
+    assert.equal(screen.getByRole("link", { name: content.checkoutRetryLabel }).getAttribute("href"), "/en/checkout")
+    assert.equal(screen.queryByText(content.heading), null)
+    assert.equal(screen.queryByText(content.receiptHint), null)
+    await waitFor(() => {
+        assert.deepEqual(routerReplaceCalls, ["/en/checkout?plan=pro&customerType=b2b&paymentPeriod=monthly&paymentFailed=1"])
+    })
+})
+
+test("explains a checkout session that cannot be verified", async () => {
+    respondWith({ error: "The checkout session could not be verified.", errorCode: "INVALID_CHECKOUT_STATUS_SESSION" }, 404)
+
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="de" sessionId="cs_test" />)
+
+    assert.ok(await screen.findByText(content.invalidHeading))
+    assert.ok(screen.getByText(content.invalidDescription))
+    assert.equal(screen.getByRole("link", { name: content.checkoutRetryLabel }).getAttribute("href"), "/de/checkout")
+    assert.deepEqual(routerReplaceCalls, [])
+})
+
+test("shows Crater's confirmed Stripe pricing once payment is confirmed", async () => {
+    respondWith({ state: "FULFILLMENT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null })
+
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+
+    assert.ok(await screen.findByText(content.heading))
+    // The plan appears as a badge; its subtotal is no longer a price line of its own.
+    assert.ok(screen.getByText("Pro"))
+    assert.equal(screen.queryByText("€100.00"), null)
+    assert.ok(screen.getByText("-€10.00"))
+    assert.ok(screen.getByText("€17.10"))
+    assert.ok(screen.getByText("107.1"))
+    assert.ok(screen.getByText(content.receiptHint))
+    assert.equal(screen.queryByText(content.guestAccountHint), null)
+})
+
+test("keeps polling the license when Crater has not exposed the optional pricing yet", async () => {
+    respondWith({
+        state: "FULFILLMENT_PENDING",
+        customerId: "gid://crater/Customer/1",
+        licenseId: null,
+        configuration: null,
+        pricing: null,
+    })
+
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+
+    assert.ok(await screen.findByText(content.heading))
+    assert.ok(screen.getByRole("button", { name: content.licensePendingLabel }))
+    assert.equal(screen.queryByText(errorMessage), null)
+})
+
+test("offers Sculptor next to the license dashboard for a cloud license", async () => {
+    respondWith({
+        state: "READY",
+        customerId: "gid://crater/Customer/1",
+        licenseId: "gid://crater/License/2",
+        configuration: { ...completedConfiguration, deploymentType: "cloud" },
+    })
+
+    render(
+        <CheckoutSuccessStatus
+            {...sharedProps}
+            checkoutSearchParams={checkoutSearchParams}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            sculptorUrl="https://sculptor.example/cloud"
+            sessionId="cs_test"
+        />
+    )
+
+    const dashboardUrl = new URL((await screen.findByRole("link", { name: content.licenseDashboardLabel })).getAttribute("href")!, window.location.origin)
+    assert.equal(dashboardUrl.pathname, "/api/crater/licenses/access")
+    assert.equal(dashboardUrl.searchParams.get("customerId"), "gid://crater/Customer/1")
+    assert.equal(dashboardUrl.searchParams.get("licenseId"), "gid://crater/License/2")
+    assert.equal(dashboardUrl.searchParams.has("returnPath"), false)
+    assert.equal(screen.getByRole("link", { name: content.sculptorLabel }).getAttribute("href"), "https://sculptor.example/cloud")
+    assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
+
+    // Each action is a single focusable link that opens in a new tab, without a nested <button>.
+    for (const name of [content.licenseDashboardLabel, content.sculptorLabel]) {
+        const link = screen.getByRole("link", { name })
+        assert.equal(link.querySelector("button"), null)
+        assert.equal(link.getAttribute("target"), "_blank")
+        assert.equal(link.getAttribute("rel"), "noreferrer")
+    }
+    assert.equal(screen.queryByRole("button", { name: content.licenseDashboardLabel }), null)
+    assert.equal(screen.queryByRole("button", { name: content.sculptorLabel }), null)
+})
+
+test("downloads the Crater license next to the dashboard for self-hosted", async () => {
+    respondWith({ state: "READY", customerId: "gid://crater/Customer/1", licenseId: "gid://crater/License/2" })
+
+    render(
+        <CheckoutSuccessStatus
+            {...sharedProps}
+            checkoutSearchParams={checkoutSearchParams}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            sculptorUrl="https://sculptor.example/cloud"
+            sessionId="cs_test"
+        />
+    )
+
+    await userEvent.setup().click(await screen.findByRole("button", { name: content.licenseDownloadLabel }))
+    assert.deepEqual(downloadedLicenseIds, ["gid://crater/License/2"])
+    assert.equal(screen.queryByRole("link", { name: content.sculptorLabel }), null)
+})
+
+test("guest confirmation accepts serialized query parameters and offers only the purchase download", async () => {
+    respondWith({ state: "READY", customerId: "gid://crater/Customer/1", licenseId: "gid://crater/License/2" })
+    render(
+        <CheckoutSuccessStatus
+            {...sharedProps}
+            checkoutSearchParams={`${checkoutSearchParams}&guestCheckout=purchase-one`}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            sessionId="cs_test"
+        />
+    )
+    await userEvent.setup().click(await screen.findByRole("button", { name: content.licenseDownloadLabel }))
+    assert.deepEqual(downloadedLicenseIds, ["gid://crater/License/2"])
+    assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
+    assert.ok(screen.getByText(content.guestAccountHint))
+})
+
+test("failed guest checkout returns to the checkout with the guest session and configuration", async () => {
+    respondWith({ state: "FAILED", customerId: "gid://crater/Customer/1", licenseId: null })
+    render(
+        <CheckoutSuccessStatus
+            {...sharedProps}
+            checkoutSearchParams={`${checkoutSearchParams}&guestCheckout=purchase-one`}
+            content={content}
+            errorMessage={errorMessage}
+            locale="en"
+            sessionId="cs_test"
+        />
+    )
+    await screen.findByText(content.failedHeading)
+    assert.equal(screen.queryByText(content.guestAccountHint), null)
+    assert.deepEqual(routerReplaceCalls, ["/en/checkout?plan=pro&customerType=b2b&paymentPeriod=monthly&guestCheckout=purchase-one&paymentFailed=1"])
+})

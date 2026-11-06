@@ -3,15 +3,20 @@ import { nodemailerAdapter } from "@payloadcms/email-nodemailer"
 import { seoPlugin } from "@payloadcms/plugin-seo"
 import { BlocksFeature, CodeBlock, FixedToolbarFeature, lexicalEditor } from "@payloadcms/richtext-lexical"
 import path from "path"
-import type { SMTPTransportOptions } from "nodemailer"
 import { buildConfig } from "payload"
 import sharp from "sharp"
 import { fileURLToPath } from "url"
+import nodemailer from "nodemailer"
 import { Actions } from "./collections/actions"
 import { Blog } from "./collections/blog"
+import { Checkout } from "./globals/checkout"
 import { CookieBanner } from "./globals/cookieBanner"
+import { Errors } from "./globals/errors"
 import { Footer } from "./globals/footer"
 import { Jobs } from "./collections/jobs"
+import { LicenseDialogs } from "./globals/licenseDialogs"
+import { LicenseToasts } from "./globals/licenseToasts"
+import { Licenses } from "./globals/licenses"
 import { Media } from "./collections/media"
 import { Navigation } from "./globals/navigation"
 import { Pages } from "./collections/pages"
@@ -33,11 +38,10 @@ const dirname = path.dirname(filename)
 const smtpHost = process.env.SMTP_HOST
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
 const isDevelopment = process.env.NODE_ENV === "development"
-const appURL = (process.env.NEXT_PUBLIC_APP_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
-const allowedOrigins = Array.from(new Set([appURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
+const payloadServerURL = (process.env.SERVER_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
+const allowedOrigins = Array.from(new Set([payloadServerURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
 const shouldSkipEmailVerify = isDevelopment || isBuildPhase || process.env.PAYLOAD_SKIP_EMAIL_VERIFY === "true" || !smtpHost
-
-const smtpTransportOptions = {
+const smtpTransport = nodemailer.createTransport({
     host: smtpHost,
     port: Number(process.env.SMTP_PORT),
     secure: Number(process.env.SMTP_PORT) === 465,
@@ -45,10 +49,10 @@ const smtpTransportOptions = {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
-} satisfies SMTPTransportOptions
+})
 
 export default buildConfig({
-    serverURL: appURL,
+    serverURL: payloadServerURL,
     cors: allowedOrigins,
     csrf: allowedOrigins,
     admin: {
@@ -82,7 +86,7 @@ export default buildConfig({
         defaultLocale: "en",
     },
     collections: [Users, Media, Pages, Actions, Jobs, Blog, TeamMembers],
-    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection],
+    globals: [Navigation, Footer, CookieBanner, SubscriptionCollection, Checkout, Licenses, LicenseDialogs, LicenseToasts, Errors],
     jobs: {
         autoRun: [
             {
@@ -104,7 +108,7 @@ export default buildConfig({
         defaultFromAddress: process.env.CONTACT_FROM_EMAIL!,
         defaultFromName: "Payload Mail",
         skipVerify: shouldSkipEmailVerify,
-        transportOptions: smtpTransportOptions,
+        transport: smtpTransport,
     }),
     secret: process.env.PAYLOAD_SECRET || "",
     typescript: {
@@ -135,16 +139,13 @@ export default buildConfig({
             generateURL: ({ collectionConfig, doc, locale }) => {
                 if (!doc?.slug || !locale) return ""
 
-                const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://code0.tech"
-                const normalizedBaseUrl = baseUrl.replace(/\/$/, "")
-
                 if (collectionConfig?.slug === "blog") {
-                    return `${normalizedBaseUrl}/${locale}/blog/${doc.slug}`
+                    return `${payloadServerURL}/${locale}/blog/${doc.slug}`
                 }
 
                 if (collectionConfig?.slug === "pages") {
                     const pagePath = doc.slug === "main" ? `/${locale}` : `/${locale}/${doc.slug}`
-                    return `${normalizedBaseUrl}${pagePath}`
+                    return `${payloadServerURL}${pagePath}`
                 }
 
                 return ""

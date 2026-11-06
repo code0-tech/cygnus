@@ -2,7 +2,7 @@
 
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import type { AppLocale } from "@/lib/i18n"
-import { Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
+import { Alert, Button, EmailInput, emailValidation, TextAreaInput, TextInput, useForm } from "@code0-tech/pictor"
 import type { FocusEvent } from "react"
 import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
@@ -183,7 +183,11 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
             >
                 {labels.applicationSubmitLabel}
             </Button>
-            {submitStatus && <p className={submitStatus.type === "success" ? "mt-2 text-sm text-green-300" : "mt-2 text-sm text-red-300"}>{submitStatus.message}</p>}
+            {submitStatus && (
+                <Alert color={submitStatus.type} className="mt-2">
+                    {submitStatus.message}
+                </Alert>
+            )}
         </Card>
     )
 }

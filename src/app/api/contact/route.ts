@@ -11,7 +11,7 @@ import { NextResponse } from "next/server"
 export const runtime = "nodejs"
 
 const checkContactRateLimit = createRateLimitChecker(
-    getRateLimitConfig("CONTACT_RATE_LIMIT_MAX", "CONTACT_RATE_LIMIT_WINDOW_SECONDS")
+    getRateLimitConfig(process.env.CONTACT_RATE_LIMIT_MAX, process.env.CONTACT_RATE_LIMIT_WINDOW_SECONDS)
 )
 
 export async function POST(req: Request) {

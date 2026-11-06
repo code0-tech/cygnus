@@ -1,0 +1,64 @@
+import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
+import { CheckoutSuccessStatus } from "@/components/checkout/success/CheckoutSuccessStatus"
+import { parseCheckoutSessionId } from "@/lib/crater/values"
+import { getFooter, getGlobal } from "@/lib/cms"
+import { getClientConfig } from "@/lib/clientConfig.server"
+import { isSupportedLocale } from "@/lib/i18n"
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+
+export const metadata: Metadata = { title: "Checkout status" }
+
+interface CheckoutSuccessPageProps {
+    params: Promise<{ locale: string }>
+    searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+function toSearchParams(query: Record<string, string | string[] | undefined>) {
+    const searchParams = new URLSearchParams()
+    for (const [key, value] of Object.entries(query)) {
+        const singleValue = Array.isArray(value) ? value[0] : value
+        if (singleValue !== undefined) searchParams.set(key, singleValue)
+    }
+    return searchParams
+}
+
+export default async function CheckoutSuccessPage({ params, searchParams }: CheckoutSuccessPageProps) {
+    const [{ locale }, query] = await Promise.all([params, searchParams])
+    if (!isSupportedLocale(locale)) notFound()
+    const checkoutSessionId = parseCheckoutSessionId(query.session_id)
+    if (!checkoutSessionId) notFound()
+
+    const [checkoutContent, subscriptionConfig, footer, errors] = await Promise.all([
+        getGlobal("checkout", locale),
+        getGlobal("subscriptionConfig", locale),
+        getFooter(locale),
+        getGlobal("errors", locale),
+    ])
+    const currentYear = new Date().getUTCFullYear()
+    const checkoutSearchParams = toSearchParams(query).toString()
+
+    return (
+        <div className="flex flex-1 flex-col gap-8">
+            <div className="flex flex-1 items-center justify-center">
+                <div className="flex flex-col gap-4 max-w-2xl text-center">
+                    <div className="relative z-10 space-y-4">
+                        {checkoutContent?.success && checkoutContent.summary && subscriptionConfig && errors ? (
+                            <CheckoutSuccessStatus
+                                checkoutSearchParams={checkoutSearchParams}
+                                content={checkoutContent.success}
+                                errorMessage={errors.checkoutLicenseStatus}
+                                locale={locale}
+                                pricingContent={checkoutContent.summary}
+                                sessionId={checkoutSessionId}
+                                sculptorUrl={getClientConfig().sculptorUrl}
+                                subscriptionConfig={subscriptionConfig}
+                            />
+                        ) : null}
+                    </div>
+                </div>
+            </div>
+            <CheckoutLegalFooter className="shrink-0 justify-center pb-2" locale={locale} footer={footer} currentYear={currentYear} />
+        </div>
+    )
+}

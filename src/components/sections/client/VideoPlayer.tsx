@@ -1,5 +1,6 @@
 "use client"
 
+import { Alert } from "@code0-tech/pictor"
 import ReactPlayer from "react-player"
 import { useState } from "react"
 
@@ -18,8 +19,8 @@ export function VideoPlayer({ autoPlay = false, controls = true, loop = false, m
 
     if (hasError) {
         return (
-            <div className="relative z-10 flex h-full items-center justify-center px-6 text-center text-secondary" role="alert">
-                Video could not be loaded.
+            <div className="relative z-10 flex h-full items-center justify-center px-6">
+                <Alert color="error">Video could not be loaded.</Alert>
             </div>
         )
     }
