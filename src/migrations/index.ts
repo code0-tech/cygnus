@@ -163,7 +163,6 @@ import * as migration_20261009_090000_payment_method_dialog_copy from './2026100
 import * as migration_20261009_194500_remove_subscription_cms_package_sizes from './20261009_194500_remove_subscription_cms_package_sizes';
 
 import * as migration_20261010_120000_remove_sculptor_cms_urls from './20261010_120000_remove_sculptor_cms_urls';
-
 import * as migration_20261010_130000_immediate_cancellation_labels from './20261010_130000_immediate_cancellation_labels';
 import * as migration_20261011_120000_require_subscription_config_fields from './20261011_120000_require_subscription_config_fields';
 import * as migration_20261011_160000_immediate_cancellation_confirmation from './20261011_160000_immediate_cancellation_confirmation';
@@ -180,11 +179,8 @@ import * as migration_20261016_120000_subscription_savings_label from './2026101
 import * as migration_20261016_150000_invoice_number_pending_label from './20261016_150000_invoice_number_pending_label';
 import * as migration_20261016_200000_remove_unused_globals from './20261016_200000_remove_unused_globals';
 import * as migration_20261016_210000_merge_pricing_packages_into_plans from './20261016_210000_merge_pricing_packages_into_plans';
-
 import * as migration_20261018_120000_checkout_delayed_status_copy from './20261018_120000_checkout_delayed_status_copy';
-
 import * as migration_20261018_130000_checkout_rate_limit_error from './20261018_130000_checkout_rate_limit_error';
-
 import * as migration_20261019_120000_shorten_array_database_names from './20261019_120000_shorten_array_database_names';
 import * as migration_20261024_120000_checkout_tax_labels from './20261024_120000_checkout_tax_labels';
 import * as migration_20261025_120000_remove_subscription_option_icons from './20261025_120000_remove_subscription_option_icons';
@@ -197,6 +193,8 @@ import * as migration_20261101_130000_send_offer_messages from './20261101_13000
 import * as migration_20261101_140000_send_offer_billing_required from './20261101_140000_send_offer_billing_required';
 import * as migration_20261105_120000_invoice_pending_payment_description from './20261105_120000_invoice_pending_payment_description';
 import * as migration_20261106_120000_remove_workflow_calculator from './20261106_120000_remove_workflow_calculator';
+import * as migration_20260823_163819_navigation_menu_groups from './20260823_163819_navigation_menu_groups';
+import * as migration_20261101_150000_users_password_reset_requested_at from './20261101_150000_users_password_reset_requested_at';
 
 export const migrations = [
   {
@@ -940,6 +938,11 @@ export const migrations = [
     name: '20260827_114728_remove_weekly_payment_period',
   },
   {
+    up: migration_20260823_163819_navigation_menu_groups.up,
+    down: migration_20260823_163819_navigation_menu_groups.down,
+    name: '20260823_163819_navigation_menu_groups',
+  },
+  {
     up: migration_20260828_104452_add_playground_media_to_sections.up,
     down: migration_20260828_104452_add_playground_media_to_sections.down,
     name: '20260828_104452_add_playground_media_to_sections',
@@ -1168,5 +1171,10 @@ export const migrations = [
     up: migration_20261106_120000_remove_workflow_calculator.up,
     down: migration_20261106_120000_remove_workflow_calculator.down,
     name: '20261106_120000_remove_workflow_calculator',
+  },
+  {
+    up: migration_20261101_150000_users_password_reset_requested_at.up,
+    down: migration_20261101_150000_users_password_reset_requested_at.down,
+    name: '20261101_150000_users_password_reset_requested_at',
   },
 ];

@@ -95,7 +95,7 @@ export function InstallSectionClient({ heading, subheading, label, code, highlig
                                 />
                             </ScrollAreaViewport>
                             <ScrollAreaScrollbar orientation="horizontal" className="mx-2 mb-1 h-1.5! rounded-full">
-                                <ScrollAreaThumb className="bg-light! transition-colors! hover:bg-white/10!" />
+                                <ScrollAreaThumb className="bg-light! transition-colors! hover:bg-light!" />
                             </ScrollAreaScrollbar>
                         </ScrollArea>
                     </motion.div>
