@@ -27,7 +27,7 @@
         "generate": "payload generate:types"
     },
     "dependencies": {
-        "@apollo/client": "^4.2.8",
+        "@apollo/client": "^4.3.5",
         "@base-ui/react": "^1.9.0",
         "@c15t/nextjs": "^2.3.0",
         "@c15t/react": "^2.3.0",
