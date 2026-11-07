@@ -3094,6 +3094,17 @@ export interface Checkout {
       taxLabel: string;
       taxInclusiveLabel: string;
       taxExclusiveLabel: string;
+      subtotalLabel: string;
+      totalExcludingTaxLabel: string;
+      /**
+       * Shown after the tax name, for example VAT – Germany (19% on €65.67). {rate} and {amount} are replaced.
+       */
+      taxRateLabel: string;
+      totalDueTodayLabel: string;
+      /**
+       * Shown next to the total when tax applies.
+       */
+      totalIncludingTaxSuffix: string;
       totalLabel: string;
       perMonthSuffix: string;
     };
@@ -3906,6 +3917,11 @@ export interface CheckoutSelect<T extends boolean = true> {
               taxLabel?: T;
               taxInclusiveLabel?: T;
               taxExclusiveLabel?: T;
+              subtotalLabel?: T;
+              totalExcludingTaxLabel?: T;
+              taxRateLabel?: T;
+              totalDueTodayLabel?: T;
+              totalIncludingTaxSuffix?: T;
               totalLabel?: T;
               perMonthSuffix?: T;
             };

@@ -108,6 +108,13 @@ export const Checkout: GlobalConfig = {
                         { name: "taxLabel", type: "text", required: true, localized: true, defaultValue: "Tax" },
                         localizedText("taxInclusiveLabel", "Included tax", "Enthaltene Steuer"),
                         localizedText("taxExclusiveLabel", "Additional tax", "Zusätzliche Steuer"),
+                        localizedText("subtotalLabel", "Subtotal", "Zwischensumme"),
+                        localizedText("totalExcludingTaxLabel", "Total excluding tax", "Gesamt ohne Steuern"),
+                        localizedText("taxRateLabel", "{rate} on {amount}", "{rate} auf {amount}", {
+                            description: "Shown after the tax name, for example VAT – Germany (19% on €65.67). {rate} and {amount} are replaced.",
+                        }),
+                        localizedText("totalDueTodayLabel", "Total due today", "Heute fällig"),
+                        localizedText("totalIncludingTaxSuffix", "incl. VAT", "inkl. MwSt.", { description: "Shown next to the total when tax applies." }),
                         { name: "totalLabel", type: "text", required: true, localized: true, defaultValue: "Total" },
                         { name: "perMonthSuffix", type: "text", required: true, localized: true, defaultValue: "/mo" },
                     ],

@@ -400,9 +400,14 @@ function TestInput({
 
 test("maps Stripe's exact discount, tax, and total from minor currency units", () => {
     const pricing = getStripePricingFromSession({
+        billingAddress: { address: { country: "DE" } },
         currency: "eur",
         minorUnitsAmountDivisor: 100,
         tax: { status: "ready" },
+        taxAmounts: [
+            { amount: "€17.10", minorUnitsAmount: 1_710, inclusive: false, displayName: "VAT", percentage: 19 },
+            { amount: "€0.00", minorUnitsAmount: 0, inclusive: false, displayName: "Zero tax", percentage: 0 },
+        ],
         total: {
             discount: { amount: "€10.00", minorUnitsAmount: 1_000 },
             subtotal: { amount: "€100.00", minorUnitsAmount: 10_000 },
@@ -413,13 +418,35 @@ test("maps Stripe's exact discount, tax, and total from minor currency units", (
     } as never)
 
     assert.deepEqual(pricing, {
+        billingCountry: "DE",
         currency: "eur",
         discountAmount: 10,
         subtotalPrice: 100,
         taxAmount: 17.1,
         taxAmountInclusive: 0,
+        taxLines: [{ amount: 17.1, displayName: "VAT", inclusive: false, percentage: 19 }],
         totalPrice: 107.1,
     })
+})
+
+test("maps missing Stripe tax details to empty tax lines and no billing country", () => {
+    const pricing = getStripePricingFromSession({
+        billingAddress: null,
+        currency: "eur",
+        minorUnitsAmountDivisor: 100,
+        tax: { status: "ready" },
+        taxAmounts: null,
+        total: {
+            discount: { minorUnitsAmount: 0 },
+            subtotal: { minorUnitsAmount: 10_000 },
+            taxExclusive: { minorUnitsAmount: 0 },
+            taxInclusive: { minorUnitsAmount: 0 },
+            total: { minorUnitsAmount: 10_000 },
+        },
+    } as never)
+
+    assert.equal(pricing?.billingCountry, null)
+    assert.deepEqual(pricing?.taxLines, [])
 })
 
 test("keeps included and additional tax separate without adding included tax to the total", () => {

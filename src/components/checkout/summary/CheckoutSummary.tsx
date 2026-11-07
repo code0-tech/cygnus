@@ -12,7 +12,7 @@ import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/chec
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import { formatCurrency } from "@/lib/formatters"
-import { calculateExclusiveTaxRate, formatDiscountBadge, getMonthlyEquivalentAmount, resolveCheckoutPricing } from "@/lib/subscription/calculator"
+import { calculateExclusiveTaxRate, formatDiscountBadge, getMonthlyEquivalentAmount, getPaymentPeriodMonths, resolveCheckoutPricing } from "@/lib/subscription/calculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { Alert, Button, Dialog, DialogTrigger, SegmentedControl, SegmentedControlItem, TextInput } from "@code0-tech/pictor"
@@ -61,7 +61,7 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
     const paymentPeriodParam = searchParams.get("paymentPeriod")
     const workflowExecutionsParam = searchParams.get("workflowExecutions")
     const aiTokensParam = searchParams.get("aiTokens")
-    const { aiTokens, isCustomPlan, paymentPeriod, periodSuffix, planPrice, planTitle, pricing, workflowExecutions } = resolveCheckoutPricing({
+    const { aiTokens, paymentPeriod, plan, planTitle, pricing, workflowExecutions } = resolveCheckoutPricing({
         aiTokensParam,
         checkoutPackages,
         customerTypeParam: customerType,
@@ -75,9 +75,6 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
     })
     const locale = params?.locale === "de" ? "de" : "en"
     const monthlyPeriodSuffix = subscriptionConfig?.paymentPeriod.monthlyPeriodSuffix ?? content.pricing.perMonthSuffix
-    const paymentPeriodDiscountAmount = Math.max(0, pricing.totalBeforeDiscount - pricing.totalPrice)
-    const paymentPeriodDiscountPercentage = pricing.totalBeforeDiscount > 0 ? paymentPeriodDiscountAmount / pricing.totalBeforeDiscount : 0
-    const paymentPeriodDiscountLabel = paymentPeriod === "quarterly" ? content.pricing.quarterlyDiscountLabel : paymentPeriod === "yearly" ? content.pricing.yearlyDiscountLabel : null
     const paymentPeriodTotalPrice = pricing.totalPrice
     const previewDiscountedPrice = paymentPeriodTotalPrice
     const previewTaxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
@@ -91,6 +88,14 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
     const taxPercentageInclusive = stripePricing && !hasMixedTax ? calculateExclusiveTaxRate(stripePricing.totalPrice, taxAmountInclusive) : null
     const totalPrice = stripePricing?.totalPrice ?? previewDiscountedPrice + previewTaxAmount
     const formattedDiscountAmount = formatCurrency(promotionDiscountAmount, currency, locale)
+    const includedQuantities = plan === "custom" ? { aiTokens, workflowExecutions } : checkoutPackages.planQuantities[plan]
+    const deploymentTitle = deployment === "cloud" ? subscriptionConfig.deployment.cloud.title : deployment === "self_hosted" ? subscriptionConfig.deployment.selfHosted.title : null
+    const customerTypeTitle = customerType === "b2b" || customerType === "b2c" ? subscriptionConfig.customerType[customerType].title : null
+    const lineItemDetails = [deploymentTitle, customerTypeTitle].filter(Boolean).join(", ")
+    const lineItemLabel = lineItemDetails ? `${planTitle} (${lineItemDetails})` : planTitle
+    const periodStart = new Date()
+    const periodEnd = new Date(periodStart)
+    periodEnd.setMonth(periodEnd.getMonth() + getPaymentPeriodMonths(paymentPeriod))
 
     return (
         <div className="flex-[1.34]">
@@ -184,29 +189,26 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
             )}
 
             <CheckoutPricingOverview
-                aiTokenPrice={pricing.aiTokenPrice}
-                aiTokens={aiTokens}
+                aiTokens={includedQuantities.aiTokens}
+                billingCountry={stripePricing?.billingCountry ?? null}
                 content={content}
                 currency={currency}
-                customerType={customerType}
-                deployment={deployment}
-                isCustomPlan={isCustomPlan}
+                lineItemAmount={pricing.totalPrice}
+                lineItemLabel={lineItemLabel}
                 locale={locale}
-                monthlyPeriodSuffix={monthlyPeriodSuffix}
-                paymentPeriodDiscountAmount={paymentPeriodDiscountAmount}
-                paymentPeriodDiscountLabel={paymentPeriodDiscountLabel}
-                paymentPeriodDiscountPercentage={paymentPeriodDiscountPercentage}
-                periodSuffix={periodSuffix}
-                planPrice={planPrice}
+                periodEnd={periodEnd}
+                periodStart={periodStart}
+                planDescription={subscriptionConfig.plan[plan].description}
                 planTitle={planTitle}
                 subscriptionConfig={subscriptionConfig}
+                subtotalPrice={stripePricing?.subtotalPrice ?? pricing.totalPrice}
                 taxAmount={taxAmount}
                 taxAmountInclusive={taxAmountInclusive}
+                taxLines={stripePricing?.taxLines ?? []}
                 taxPercentage={taxPercentage}
                 taxPercentageInclusive={taxPercentageInclusive}
                 totalPrice={totalPrice}
-                workflowExecutionPrice={pricing.workflowExecutionPrice}
-                workflowExecutions={workflowExecutions}
+                workflowExecutions={includedQuantities.workflowExecutions}
             />
 
             {errors && (

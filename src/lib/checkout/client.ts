@@ -135,12 +135,21 @@ export interface CheckoutTaxQuoteData {
     taxAmountExclusive: number
 }
 
+export interface CheckoutStripeTaxLine {
+    amount: number
+    displayName: string
+    inclusive: boolean
+    percentage: number | null
+}
+
 export interface CheckoutStripePricingData {
+    billingCountry: string | null
     currency: string
     discountAmount: number
     subtotalPrice: number
     taxAmount: number
     taxAmountInclusive: number
+    taxLines: CheckoutStripeTaxLine[]
     totalPrice: number
 }
 

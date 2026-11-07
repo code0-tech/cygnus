@@ -148,9 +148,20 @@ export function CheckoutPaymentFields({
         if (checkoutState.type === "success" && isContactElementReady && isAddressElementReady && isTaxIdElementReady) onSessionReady()
     }, [checkoutState.type, isAddressElementReady, isContactElementReady, isTaxIdElementReady, onSessionReady])
 
+    const liveStripeTaxDetailsKey = liveStripePricing ? JSON.stringify([liveStripePricing.billingCountry, liveStripePricing.taxLines]) : null
+
     useEffect(() => {
         onPricingChange(liveStripePricing)
-    }, [liveStripePricing?.currency, liveStripePricing?.discountAmount, liveStripePricing?.subtotalPrice, liveStripePricing?.taxAmount, liveStripePricing?.taxAmountInclusive, liveStripePricing?.totalPrice, onPricingChange])
+    }, [
+        liveStripePricing?.currency,
+        liveStripePricing?.discountAmount,
+        liveStripePricing?.subtotalPrice,
+        liveStripePricing?.taxAmount,
+        liveStripePricing?.taxAmountInclusive,
+        liveStripePricing?.totalPrice,
+        liveStripeTaxDetailsKey,
+        onPricingChange,
+    ])
 
     useEffect(() => {
         onStripeCheckoutChange(checkoutState.type === "success" ? checkoutState.checkout : null)
