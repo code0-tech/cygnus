@@ -296,10 +296,11 @@ export function CheckoutPaymentFields({
 
     return (
         <div className="w-full space-y-6">
-            {activeStep === "billingAddress" && customerSelect ? (isContactElementReady && isAddressElementReady && isTaxIdElementReady ? customerSelect : customerSelectSkeleton) : null}
             {activeStep === "billingAddress" ? (
                 <>
                     <section className="w-full space-y-4">
+                        <h3 className="text-lg text-white">{content.contactHeading}</h3>
+                        {customerSelect ? (isContactElementReady && isAddressElementReady && isTaxIdElementReady ? customerSelect : customerSelectSkeleton) : null}
                         {customerEmail ? (
                             <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]! [&_.input-wrapper:hover]:bg-[#17151e]!">
                                 <EmailInput title={content.emailLabel} value={customerEmail} disabled className="text-tertiary/50!" />
@@ -314,6 +315,10 @@ export function CheckoutPaymentFields({
                                 onReady={markContactElementReady}
                             />
                         )}
+                    </section>
+
+                    <section className="w-full space-y-4">
+                        <h3 className="text-lg text-white">{content.billingHeading}</h3>
                         <BillingAddressElement
                             options={{ display: { name: "full" } }}
                             onChange={(event) => {
@@ -326,11 +331,7 @@ export function CheckoutPaymentFields({
                         {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} onLoaderStart={markTaxIdElementLoading} onReady={markTaxIdElementReady} />}
                     </section>
 
-                    {errorMessage && (
-                        <Alert color="error">
-                            {errorMessage}
-                        </Alert>
-                    )}
+                    {errorMessage && <Alert color="error">{errorMessage}</Alert>}
 
                     <div className="space-y-3">
                         <Button
@@ -342,6 +343,7 @@ export function CheckoutPaymentFields({
                         >
                             {isUpdatingBilling ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                         </Button>
+                        <p className="mb-4 text-center text-sm text-tertiary">{content.notChargedYetText}</p>
                         {isBusinessCustomer && <SendOfferDialog content={content} emailLocked={offerEmailLocked} initialEmail={email} onSend={onSendOffer} />}
                     </div>
                 </>
@@ -361,11 +363,7 @@ export function CheckoutPaymentFields({
 
                     <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
 
-                    {errorMessage && (
-                        <Alert color="error">
-                            {errorMessage}
-                        </Alert>
-                    )}
+                    {errorMessage && <Alert color="error">{errorMessage}</Alert>}
 
                     <div className="space-y-3">
                         <Button

@@ -199,6 +199,7 @@ import * as migration_20261107_120000_subscription_plan_card_texts from './20261
 import * as migration_20261107_130000_checkout_summary_plan_heading from './20261107_130000_checkout_summary_plan_heading';
 import * as migration_20261107_140000_checkout_summary_totals_labels from './20261107_140000_checkout_summary_totals_labels';
 import * as migration_20261107_150000_checkout_next_charge_and_next_steps from './20261107_150000_checkout_next_charge_and_next_steps';
+import * as migration_20261107_160000_checkout_form_section_headings from './20261107_160000_checkout_form_section_headings';
 
 export const migrations = [
   {
@@ -1200,5 +1201,10 @@ export const migrations = [
     up: migration_20261107_150000_checkout_next_charge_and_next_steps.up,
     down: migration_20261107_150000_checkout_next_charge_and_next_steps.down,
     name: '20261107_150000_checkout_next_charge_and_next_steps',
+  },
+  {
+    up: migration_20261107_160000_checkout_form_section_headings.up,
+    down: migration_20261107_160000_checkout_form_section_headings.down,
+    name: '20261107_160000_checkout_form_section_headings',
   },
 ];

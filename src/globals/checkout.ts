@@ -128,8 +128,10 @@ export const Checkout: GlobalConfig = {
             name: "form",
             type: "group",
             fields: [
-                { name: "billingHeading", type: "text", required: true, localized: true, defaultValue: "Billing Address" },
+                localizedText("contactHeading", "Contact", "Kontakt", { description: "Heading above the customer selection and email." }),
+                localizedText("billingHeading", "Billing address", "Rechnungsadresse", { description: "Heading above the billing address." }),
                 { name: "continueLabel", type: "text", required: true, localized: true, defaultValue: "Continue to Payment" },
+                localizedText("notChargedYetText", "You won't be charged yet.", "Es wird noch nichts abgebucht.", { description: "Shown below the continue to payment button." }),
                 { name: "backToBillingLabel", type: "text", required: true, localized: true, defaultValue: "Back to Billing" },
                 { name: "payNowLabel", type: "text", required: true, localized: true, defaultValue: "Pay now" },
                 localizedText("sendOfferPrompt", "Need an invoice or a quote first?", "Benötigst du zuerst eine Rechnung oder ein Angebot?"),

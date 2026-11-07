@@ -117,6 +117,7 @@ function CheckoutFormContent() {
                         void continueNewCustomer()
                     }}
                 >
+                    <h3 className="text-lg font-semibold text-white">{content.contactHeading}</h3>
                     {customerSelect}
                     <EmailInput
                         disabled={Boolean(guestEmail)}
@@ -129,6 +130,7 @@ function CheckoutFormContent() {
                         onChange={(event) => setStripeEmail(event.currentTarget.value, emailValidation(event.currentTarget.value))}
                         className="w-full!"
                     />
+                    <h3 className="mb-4 text-lg font-semibold text-white">{content.billingHeading}</h3>
                     <AddressElement
                         options={{ mode: "billing", display: { name: "full" }, defaultValues: defaultBillingAddressValues.current }}
                         onChange={(event) => setStripeBillingAddress({ name: event.value.name, address: event.value.address }, event.complete)}
@@ -141,6 +143,7 @@ function CheckoutFormContent() {
                     >
                         {isLoading ? content.processingLabel : content.continueLabel}
                     </Button>
+                    <p className="text-center text-sm text-tertiary">{content.notChargedYetText}</p>
                     {customerType === "business" && (
                         <SendOfferDialog
                             content={content}

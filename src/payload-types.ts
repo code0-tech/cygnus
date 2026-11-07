@@ -3114,8 +3114,19 @@ export interface Checkout {
     };
   };
   form: {
+    /**
+     * Heading above the customer selection and email.
+     */
+    contactHeading: string;
+    /**
+     * Heading above the billing address.
+     */
     billingHeading: string;
     continueLabel: string;
+    /**
+     * Shown below the continue to payment button.
+     */
+    notChargedYetText: string;
     backToBillingLabel: string;
     payNowLabel: string;
     sendOfferPrompt: string;
@@ -3934,8 +3945,10 @@ export interface CheckoutSelect<T extends boolean = true> {
   form?:
     | T
     | {
+        contactHeading?: T;
         billingHeading?: T;
         continueLabel?: T;
+        notChargedYetText?: T;
         backToBillingLabel?: T;
         payNowLabel?: T;
         sendOfferPrompt?: T;
