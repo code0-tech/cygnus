@@ -10,6 +10,7 @@ import { IconArrowLeft, IconLock } from "@tabler/icons-react"
 import { BillingAddressElement, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { useParams } from "next/navigation"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
+import { CheckoutBillingSummary } from "./CheckoutBillingSummary"
 import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
 
 export function CheckoutErrorState({ message, onRetry, retryLabel }: { message: string; onRetry?: () => void; retryLabel?: string }) {
@@ -359,6 +360,8 @@ export function CheckoutPaymentFields({
                         <IconArrowLeft aria-hidden="true" size={16} />
                         {content.backToBillingLabel}
                     </button>
+
+                    {billingAddress && <CheckoutBillingSummary billingAddress={billingAddress} changeLabel={content.billingChangeLabel} disabled={isConfirming} onChange={showBillingAddress} />}
 
                     <form id={paymentFormId} onSubmit={handleSubmit} className="w-full space-y-4">
                         <PaymentElement

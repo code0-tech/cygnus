@@ -203,6 +203,7 @@ import * as migration_20261107_160000_checkout_form_section_headings from './202
 import * as migration_20261107_170000_checkout_secure_label from './20261107_170000_checkout_secure_label';
 import * as migration_20261107_180000_checkout_secure_payment_text from './20261107_180000_checkout_secure_payment_text';
 import * as migration_20261107_190000_checkout_discount_dialog_description from './20261107_190000_checkout_discount_dialog_description';
+import * as migration_20261107_200000_checkout_billing_change_label from './20261107_200000_checkout_billing_change_label';
 
 export const migrations = [
   {
@@ -1224,5 +1225,10 @@ export const migrations = [
     up: migration_20261107_190000_checkout_discount_dialog_description.up,
     down: migration_20261107_190000_checkout_discount_dialog_description.down,
     name: '20261107_190000_checkout_discount_dialog_description',
+  },
+  {
+    up: migration_20261107_200000_checkout_billing_change_label.up,
+    down: migration_20261107_200000_checkout_billing_change_label.down,
+    name: '20261107_200000_checkout_billing_change_label',
   },
 ];
