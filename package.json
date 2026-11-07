@@ -74,7 +74,7 @@
         "web-haptics": "^0.0.6"
     },
     "devDependencies": {
-        "@ai-sdk/mistral": "^4.0.76",
+        "@ai-sdk/mistral": "^4.0.77",
         "@swc-node/register": "^1.12.1",
         "@tailwindcss/postcss": "^4.3.3",
         "@testing-library/react": "^16.3.2",
