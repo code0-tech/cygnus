@@ -28,6 +28,7 @@ type SliderProps = {
     ariaLabel?: string
     valueLabelSuffix?: string
     centerLabelSuffix?: string
+    hideCenterLabel?: boolean
     smoothDrag?: boolean
 }
 
@@ -58,6 +59,7 @@ export function Slider({
     ariaLabel,
     valueLabelSuffix,
     centerLabelSuffix = "",
+    hideCenterLabel = false,
     smoothDrag = false,
 }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
@@ -383,9 +385,9 @@ export function Slider({
                 </div>
             </div>
 
-            <div className={cn("mt-2 grid grid-cols-3 text-tertiary", sizeStyles.label)}>
+            <div className={cn("mt-2 grid text-tertiary", hideCenterLabel ? "grid-cols-2" : "grid-cols-3", sizeStyles.label)}>
                 <span>{resolvedMinLabel}</span>
-                <span className="relative min-w-32 whitespace-nowrap text-center text-sm tabular-nums text-white sm:text-base">
+                <span hidden={hideCenterLabel} className="relative min-w-32 whitespace-nowrap text-center text-sm tabular-nums text-white sm:text-base">
                     <span aria-hidden="true" className="pointer-events-none absolute top-1/2 left-1/2 h-4 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/25 blur-xl" />
                     {resolvedCenterLabel}
                 </span>

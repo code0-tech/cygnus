@@ -3,10 +3,12 @@ import test from "node:test"
 import {
     calculateExclusiveTaxRate,
     calculateSubscriptionQuote,
+    formatQuantityMultiplier,
     formatDiscountBadge,
     getMonthlyEquivalentAmount,
     getPaymentPeriodMonths,
     getPaymentPeriodSuffix,
+    getQuantityMultiplier,
     getSubscriptionDisplayPrices,
     getSubscriptionPeriodSavings,
     getSubscriptionSelectionPriceDifference,
@@ -409,4 +411,31 @@ test("snaps manipulated custom-plan usage parameters onto packages before calcul
     assert.equal(result.pricing.aiTokenPrice, 0)
     assert.equal(result.pricing.workflowExecutionPrice, 2)
     assert.equal(result.pricing.totalPrice, 2)
+})
+
+test("quantity multiplier compares a quantity with the base quantity", () => {
+    assert.equal(getQuantityMultiplier(4_000_000, 500_000), 8)
+    assert.equal(getQuantityMultiplier(25_000, 2_000), 12.5)
+    assert.equal(getQuantityMultiplier(250_000, 2_000), 125)
+})
+
+test("quantity multiplier rounds down to one decimal below 100 and to a whole number from 100", () => {
+    assert.equal(getQuantityMultiplier(2_599, 2_000), 1.2)
+    assert.equal(getQuantityMultiplier(199_990, 2_000), 99.9)
+    assert.equal(getQuantityMultiplier(251_900, 2_000), 125)
+})
+
+test("quantity multipliers show a decimal only below 100 and never .0", () => {
+    assert.equal(formatQuantityMultiplier(8, "en"), "8×")
+    assert.equal(formatQuantityMultiplier(2.5, "en"), "2.5×")
+    assert.equal(formatQuantityMultiplier(10, "en"), "10×")
+    assert.equal(formatQuantityMultiplier(12.5, "de"), "12,5×")
+    assert.equal(formatQuantityMultiplier(125, "en"), "125×")
+})
+
+test("quantity multiplier is omitted when the quantity is not more than the base", () => {
+    assert.equal(getQuantityMultiplier(2_000, 2_000), null)
+    assert.equal(getQuantityMultiplier(2_100, 2_000), null)
+    assert.equal(getQuantityMultiplier(1_000, 2_000), null)
+    assert.equal(getQuantityMultiplier(1_000, 0), null)
 })

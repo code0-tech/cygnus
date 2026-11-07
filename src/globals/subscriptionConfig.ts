@@ -148,9 +148,14 @@ export const SubscriptionCollection: GlobalConfig = {
                                     type: "group",
                                     fields: [
                                         localizedText("title", "Cloud", "Cloud"),
-                                        localizedText("description", "Use managed infrastructure with selectable runtime consumption.", "Nutze verwaltete Infrastruktur mit wählbarem Laufzeitverbrauch.", {
-                                            type: "textarea",
-                                        }),
+                                        localizedText(
+                                            "description",
+                                            "Use managed infrastructure with selectable runtime consumption.",
+                                            "Nutze verwaltete Infrastruktur mit wählbarem Laufzeitverbrauch.",
+                                            {
+                                                type: "textarea",
+                                            }
+                                        ),
                                         optionImageField(),
                                     ],
                                 },
@@ -168,9 +173,14 @@ export const SubscriptionCollection: GlobalConfig = {
                                     type: "group",
                                     fields: [
                                         localizedText("title", "B2B", "B2B"),
-                                        localizedText("description", "Organization purchase flow with tailored commercial handling.", "Kaufprozess für Organisationen mit individueller kaufmännischer Abwicklung.", {
-                                            type: "textarea",
-                                        }),
+                                        localizedText(
+                                            "description",
+                                            "Organization purchase flow with tailored commercial handling.",
+                                            "Kaufprozess für Organisationen mit individueller kaufmännischer Abwicklung.",
+                                            {
+                                                type: "textarea",
+                                            }
+                                        ),
                                         optionImageField(),
                                     ],
                                 },
@@ -197,7 +207,7 @@ export const SubscriptionCollection: GlobalConfig = {
                                 localizedText("monthlyText", "Monthly", "Monatlich"),
                                 localizedText("savingsLabel", "Save", "Spare", {
                                     label: "Savings Label",
-                                    description: "Text before the monthly savings amount in payment period badges, for example Save €2.50.",
+                                    description: "Text before what the whole payment period saves compared to paying monthly, for example Save €30.",
                                 }),
                                 localizedText("quarterlyText", "Quarterly", "Vierteljährlich"),
                                 localizedText("yearlyText", "Yearly", "Jährlich"),
@@ -221,6 +231,15 @@ export const SubscriptionCollection: GlobalConfig = {
                                 localizedText("title", "Choose the plan that best matches your requirements.", "Wähle den Plan, der am besten zu deinen Anforderungen passt."),
                                 sectionDescriptionField,
                                 { ...colorField, label: "Selected color", defaultValue: "lime", admin: { description: "Highlight color of the selected option in this step." } },
+                                localizedText("aiTokensLabel", "AI Tokens", "AI Tokens", { label: "AI tokens label", description: "Name of the AI token quantity in the plan options." }),
+                                localizedText("workflowExecutionsLabel", "Workflow Executions", "Workflow-Ausführungen", {
+                                    label: "Workflow executions label",
+                                    description: "Name of the workflow execution quantity in the plan options.",
+                                }),
+                                localizedText("moreWorkflowsLabel", "more workflows", "mehr Workflows", {
+                                    label: "More workflows label",
+                                    description: "Shown below how many times the workflow executions of Pro a plan includes, for example 12.5× more workflows.",
+                                }),
                                 {
                                     name: "pro",
                                     label: "Pro",
@@ -245,14 +264,27 @@ export const SubscriptionCollection: GlobalConfig = {
                                     type: "group",
                                     fields: [
                                         localizedText("title", "Max", "Max"),
-                                        localizedText("description", "A ready-to-use plan for organizations with higher requirements.", "Ein sofort nutzbarer Plan für Organisationen mit höheren Anforderungen.", {
-                                            type: "textarea",
-                                        }),
+                                        localizedText(
+                                            "description",
+                                            "A ready-to-use plan for organizations with higher requirements.",
+                                            "Ein sofort nutzbarer Plan für Organisationen mit höheren Anforderungen.",
+                                            {
+                                                type: "textarea",
+                                            }
+                                        ),
                                         planFeaturesField([
                                             { en: "Everything included in Pro", de: "Alle Funktionen aus Pro" },
                                             { en: "Advanced automation capabilities", de: "Erweiterte Automatisierungsfunktionen" },
                                             { en: "Designed for higher workflow demand", de: "Für einen höheren Workflow-Bedarf ausgelegt" },
                                         ]),
+                                        localizedText("comparisonText", "{multiplier} more than Pro", "{multiplier} mehr als Pro", {
+                                            label: "Comparison text",
+                                            description: "Compares a quantity of the selected Max plan with Pro. Use {multiplier} to insert how many times the Pro quantity it is, for example 8×.",
+                                        }),
+                                        localizedText("priceDifferenceText", "only {amount} more than Pro", "nur {amount} mehr als Pro", {
+                                            label: "Price difference text",
+                                            description: "Shown below the price of the selected Max plan. Use {amount} to insert what Max costs more than Pro in the same payment period.",
+                                        }),
                                         { ...colorField, defaultValue: "magenta" },
                                         optionImageField(),
                                     ],
@@ -269,6 +301,14 @@ export const SubscriptionCollection: GlobalConfig = {
                                             { en: "Configurable workflow executions", de: "Konfigurierbare Workflow-Ausführungen" },
                                             { en: "Tailored usage configuration", de: "Individuelle Nutzungskonfiguration" },
                                         ]),
+                                        localizedText("quantitiesText", "From {quantities}", "Ab {quantities}", {
+                                            label: "Quantities text",
+                                            description: "Shown while Custom is not selected. Use {quantities} to insert the smallest AI token and workflow execution packages.",
+                                        }),
+                                        localizedText("priceFallbackText", "Price depends on your configuration", "Preis hängt von deiner Konfiguration ab", {
+                                            label: "Price fallback text",
+                                            description: "Shown instead of a price while Custom is not selected.",
+                                        }),
                                         { ...colorField, defaultValue: "yellow" },
                                         optionImageField(),
                                     ],

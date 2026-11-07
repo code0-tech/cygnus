@@ -195,6 +195,7 @@ import * as migration_20261105_120000_invoice_pending_payment_description from '
 import * as migration_20261106_120000_remove_workflow_calculator from './20261106_120000_remove_workflow_calculator';
 import * as migration_20260823_163819_navigation_menu_groups from './20260823_163819_navigation_menu_groups';
 import * as migration_20261101_150000_users_password_reset_requested_at from './20261101_150000_users_password_reset_requested_at';
+import * as migration_20261107_120000_subscription_plan_card_texts from './20261107_120000_subscription_plan_card_texts';
 
 export const migrations = [
   {
@@ -1176,5 +1177,10 @@ export const migrations = [
     up: migration_20261101_150000_users_password_reset_requested_at.up,
     down: migration_20261101_150000_users_password_reset_requested_at.down,
     name: '20261101_150000_users_password_reset_requested_at',
+  },
+  {
+    up: migration_20261107_120000_subscription_plan_card_texts.up,
+    down: migration_20261107_120000_subscription_plan_card_texts.down,
+    name: '20261107_120000_subscription_plan_card_texts',
   },
 ];

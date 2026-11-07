@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { IconCheck } from "@tabler/icons-react"
 import type { CSSProperties, ReactNode } from "react"
 
-type SubscriptionOptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta" | "neutral"
+export type SubscriptionOptionAccent = "aqua" | "yellow" | "pink" | "blue" | "brand" | "lime" | "magenta" | "neutral"
 
 // Options of one configurator step share this container; the active card is highlighted inside it.
 export function SubscriptionOptionGroup({ children }: { children: ReactNode }) {
@@ -14,7 +14,7 @@ export function SubscriptionOptionGroup({ children }: { children: ReactNode }) {
     )
 }
 
-const mixAccent = (color: string, percent: number) => `color-mix(in oklab, ${color} ${percent}%, transparent)`
+export const mixAccent = (color: string, percent: number) => `color-mix(in oklab, ${color} ${percent}%, transparent)`
 
 export interface SubscriptionOptionPrice {
     amount: string

@@ -2958,7 +2958,7 @@ export interface SubscriptionConfig {
     description?: string | null;
     monthlyText: string;
     /**
-     * Text before the monthly savings amount in payment period badges, for example Save €2.50.
+     * Text before what the whole payment period saves compared to paying monthly, for example Save €30.
      */
     savingsLabel: string;
     quarterlyText: string;
@@ -2978,6 +2978,18 @@ export interface SubscriptionConfig {
      * Highlight color of the selected option in this step.
      */
     color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    /**
+     * Name of the AI token quantity in the plan options.
+     */
+    aiTokensLabel: string;
+    /**
+     * Name of the workflow execution quantity in the plan options.
+     */
+    workflowExecutionsLabel: string;
+    /**
+     * Shown below how many times the workflow executions of Pro a plan includes, for example 12.5× more workflows.
+     */
+    moreWorkflowsLabel: string;
     pro: {
       title: string;
       description: string;
@@ -2995,6 +3007,14 @@ export interface SubscriptionConfig {
         text: string;
         id?: string | null;
       }[];
+      /**
+       * Compares a quantity of the selected Max plan with Pro. Use {multiplier} to insert how many times the Pro quantity it is, for example 8×.
+       */
+      comparisonText: string;
+      /**
+       * Shown below the price of the selected Max plan. Use {amount} to insert what Max costs more than Pro in the same payment period.
+       */
+      priceDifferenceText: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
@@ -3005,6 +3025,14 @@ export interface SubscriptionConfig {
         text: string;
         id?: string | null;
       }[];
+      /**
+       * Shown while Custom is not selected. Use {quantities} to insert the smallest AI token and workflow execution packages.
+       */
+      quantitiesText: string;
+      /**
+       * Shown instead of a price while Custom is not selected.
+       */
+      priceFallbackText: string;
       color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
@@ -3757,6 +3785,9 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         color?: T;
+        aiTokensLabel?: T;
+        workflowExecutionsLabel?: T;
+        moreWorkflowsLabel?: T;
         pro?:
           | T
           | {
@@ -3782,6 +3813,8 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
                     text?: T;
                     id?: T;
                   };
+              comparisonText?: T;
+              priceDifferenceText?: T;
               color?: T;
               image?: T;
             };
@@ -3796,6 +3829,8 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
                     text?: T;
                     id?: T;
                   };
+              quantitiesText?: T;
+              priceFallbackText?: T;
               color?: T;
               image?: T;
             };

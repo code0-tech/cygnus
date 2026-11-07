@@ -116,6 +116,18 @@ export function getSubscriptionPeriodSavings(selection: SubscriptionSelection, c
     return calculateSubscriptionQuote(selection, config).periodDiscount
 }
 
+export function getQuantityMultiplier(value: number, base: number) {
+    if (base <= 0) return null
+
+    const ratio = value / base
+    const rounded = ratio >= 100 ? Math.floor(ratio) : Math.floor(ratio * 10) / 10
+    return rounded > 1 ? rounded : null
+}
+
+export function formatQuantityMultiplier(multiplier: number, locale: AppLocale) {
+    return `${new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { maximumFractionDigits: multiplier >= 100 ? 0 : 1 }).format(multiplier)}×`
+}
+
 // What choosing another option changes the total of the current payment period by, in cents; negative when it is cheaper.
 export function getSubscriptionSelectionPriceDifference(current: SubscriptionSelection, next: SubscriptionSelection, config: SubscriptionCatalog) {
     return calculateSubscriptionQuote(next, config).total - calculateSubscriptionQuote(current, config).total
