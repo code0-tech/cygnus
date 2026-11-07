@@ -355,7 +355,7 @@ export function CheckoutPaymentFields({
                         type="button"
                         disabled={isConfirming}
                         onClick={showBillingAddress}
-                        className="inline-flex items-center gap-1.5 text-sm text-tertiary transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex cursor-pointer items-center gap-1.5 text-sm text-tertiary transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <IconArrowLeft aria-hidden="true" size={16} />
                         {content.backToBillingLabel}
