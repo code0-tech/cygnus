@@ -3094,6 +3094,10 @@ export interface Checkout {
       discountInputPlaceholder: string;
       discountButtonLabel: string;
       discountPromptLabel: string;
+      /**
+       * Shown below the title of the discount code dialog.
+       */
+      discountDialogDescription: string;
       discountRemoveLabel: string;
       taxLabel: string;
       taxInclusiveLabel: string;
@@ -3937,6 +3941,7 @@ export interface CheckoutSelect<T extends boolean = true> {
               discountInputPlaceholder?: T;
               discountButtonLabel?: T;
               discountPromptLabel?: T;
+              discountDialogDescription?: T;
               discountRemoveLabel?: T;
               taxLabel?: T;
               taxInclusiveLabel?: T;

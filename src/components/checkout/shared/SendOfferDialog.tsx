@@ -61,11 +61,7 @@ export function SendOfferDialog({ blockedReason = null, content, emailLocked = f
             <span className="flex flex-wrap items-center justify-center gap-x-1 text-sm text-secondary">
                 <span>{content.sendOfferPrompt}</span>
                 <DialogTrigger asChild>
-                    <Button
-                        type="button"
-                        variant="none"
-                        className="h-auto! w-auto! p-0! text-sm! text-brand! shadow-none! hover:bg-transparent! hover:underline! hover:text-brand!"
-                    >
+                    <Button type="button" variant="none" className="h-auto! w-auto! p-0! text-sm! text-brand! shadow-none! hover:bg-transparent! hover:underline! hover:text-brand!">
                         {content.sendOfferLabel}
                     </Button>
                 </DialogTrigger>
@@ -76,7 +72,7 @@ export function SendOfferDialog({ blockedReason = null, content, emailLocked = f
                 ) : (
                     <form onSubmit={(event) => void submit(event)} className="space-y-5">
                         <EmailInput
-                            title={content.emailLabel}
+                            aria-label={content.emailLabel}
                             name="offer-email"
                             autoComplete="email"
                             maxLength={254}
@@ -89,7 +85,12 @@ export function SendOfferDialog({ blockedReason = null, content, emailLocked = f
                         {blockedReason ? <Alert color="warning">{blockedReason}</Alert> : null}
                         {error ? <Alert color="error">{error}</Alert> : null}
                         <DialogFooter>
-                            <Button type="submit" variant="filled" disabled={!validEmail || isSending || Boolean(blockedReason)} className="w-full!">
+                            <Button
+                                type="submit"
+                                variant="normal"
+                                disabled={!validEmail || isSending || Boolean(blockedReason)}
+                                className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
+                            >
                                 {isSending ? <ButtonLoader label={content.processingLabel} /> : content.sendOfferLabel}
                             </Button>
                         </DialogFooter>

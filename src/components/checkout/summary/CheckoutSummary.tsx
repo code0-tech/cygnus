@@ -140,10 +140,10 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                             const monthlyPrice = getMonthlyEquivalentAmount(Math.round(periodPricing.totalPrice * 100), period) / 100
 
                             return (
-                                <SegmentedControlItem key={period} value={period} className="w-full! min-w-0! px-2! py-2! text-xs! sm:text-sm!">
-                                    <span className="flex min-w-0 flex-col items-center gap-0.5">
-                                        <span className="flex min-w-0 max-w-full items-center justify-center gap-2">
-                                            <span className="truncate">{subscriptionConfig.paymentPeriod[`${period}Text`]}</span>
+                                <SegmentedControlItem key={period} value={period} className="w-full! min-w-0! justify-start! px-3! py-2! text-left! text-xs! sm:text-sm!">
+                                    <span className="flex w-full min-w-0 flex-col items-start gap-0.5">
+                                        <span className="flex min-w-0 max-w-full items-center justify-start gap-2">
+                                            <span className="truncate text-white">{subscriptionConfig.paymentPeriod[`${period}Text`]}</span>
                                             {discountPercentage > 0 && (
                                                 <StableBadge color="info" border className="shrink-0">
                                                     -{formatDiscountBadge(discountPercentage, locale)}
@@ -198,6 +198,7 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                         checkoutRef={checkoutFormState?.stripeCheckoutRef}
                         onSessionChange={checkoutFormState?.syncStripeCheckoutSession}
                         promptLabel={content.pricing.discountPromptLabel}
+                        dialogDescription={content.pricing.discountDialogDescription}
                         removeLabel={content.pricing.discountRemoveLabel}
                         sessionReady={Boolean(checkoutFormState?.selectedCustomerId && checkoutFormState.checkoutSession && checkoutFormState.stripeCheckoutReady)}
                     />
@@ -228,6 +229,7 @@ interface CheckoutDiscountProps {
     appliedContainerId?: string
     appliedAmount?: string | null
     buttonLabel: string
+    dialogDescription?: string
     discountSessionRequiredError: string
     discountValidationError: string
     inputPlaceholder: string
@@ -244,6 +246,7 @@ export function CheckoutDiscount({
     appliedContainerId,
     authenticated,
     buttonLabel,
+    dialogDescription,
     discountSessionRequiredError,
     discountValidationError,
     inputPlaceholder,
@@ -437,8 +440,8 @@ export function CheckoutDiscount({
 
     const discountForm = (
         <form onSubmit={handleSubmit} className="w-full space-y-2">
-            <div className="flex flex-col items-stretch gap-4 lg:flex-row lg:items-start lg:gap-2">
-                <div className="min-w-0 w-full lg:flex-1">
+            <div className="flex flex-col items-stretch gap-4">
+                <div className="min-w-0 w-full">
                     <TextInput
                         aria-label={inputPlaceholder}
                         autoComplete="off"
@@ -455,7 +458,7 @@ export function CheckoutDiscount({
                     type="submit"
                     variant="normal"
                     disabled={!sessionReady || isApplying || code.trim() === (appliedCode ?? "")}
-                    className="h-10! w-full! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary! lg:w-auto!"
+                    className="h-10! w-full! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary!"
                 >
                     {isApplying ? <ButtonLoader label={buttonLabel} /> : buttonLabel}
                 </Button>
@@ -477,7 +480,7 @@ export function CheckoutDiscount({
                     {promptLabel}
                 </button>
             </DialogTrigger>
-            <SiteDialogContent compact title={promptLabel}>
+            <SiteDialogContent compact title={promptLabel} description={dialogDescription || undefined}>
                 {discountForm}
             </SiteDialogContent>
         </Dialog>

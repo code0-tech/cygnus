@@ -107,6 +107,12 @@ export const Checkout: GlobalConfig = {
                         { name: "discountInputPlaceholder", type: "text", required: true, localized: true, defaultValue: "Discount code" },
                         { name: "discountButtonLabel", type: "text", required: true, localized: true, defaultValue: "Apply" },
                         { name: "discountPromptLabel", type: "text", required: true, localized: true, defaultValue: "Have a discount?" },
+                        localizedText(
+                            "discountDialogDescription",
+                            "Enter your discount code. It is applied to your order before you pay.",
+                            "Gib deinen Rabattcode ein. Er wird vor der Zahlung auf deine Bestellung angerechnet.",
+                            { description: "Shown below the title of the discount code dialog." }
+                        ),
                         { name: "discountRemoveLabel", type: "text", required: true, localized: true, defaultValue: "Remove" },
                         { name: "taxLabel", type: "text", required: true, localized: true, defaultValue: "Tax" },
                         localizedText("taxInclusiveLabel", "Included tax", "Enthaltene Steuer"),
