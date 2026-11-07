@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card"
 import { PackageSlider } from "@/components/ui/PackageSlider"
 import type { SubscriptionConfiguratorContent } from "@/lib/cms"
 import { localizeHref, type AppLocale } from "@/lib/i18n"
-import { calculateSubscriptionQuote, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionMonthlySavings, getSubscriptionSelectionPriceDifference } from "@/lib/subscription/calculator"
+import { calculateSubscriptionQuote, getPaymentPeriodSuffix, getSubscriptionDisplayPrices, getSubscriptionPeriodSavings, getSubscriptionSelectionPriceDifference } from "@/lib/subscription/calculator"
 import { formatMinorCurrency } from "@/lib/formatters"
 import { getSubscriptionCatalog } from "@/lib/subscription/catalog"
 import { buildSubscriptionSelectionSearchParams, parseSubscriptionSelectionFromSearchParams, reduceSubscriptionSelection } from "@/lib/subscription/configurator"
@@ -300,7 +300,7 @@ export function SubscriptionConfigurator({ locale, content, onActiveImageChangeA
                     <SubscriptionOptionCategoryLabel label={content.paymentPeriod.label} description={content.paymentPeriod.description} />
                     <SubscriptionOptionGroup>
                         {paymentPeriodOptions.map((period) => {
-                            const savings = getSubscriptionMonthlySavings({ ...selection, paymentPeriod: period }, catalog)
+                            const savings = getSubscriptionPeriodSavings({ ...selection, paymentPeriod: period }, catalog)
 
                             return (
                                 <SubscriptionOptionCard

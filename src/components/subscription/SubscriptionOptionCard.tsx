@@ -56,14 +56,7 @@ export function SubscriptionOptionCard({ title, description, active, onClick, di
                 {active && <IconCheck size={12} stroke={3} />}
             </span>
             <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <p className="text-base font-medium text-white">{title}</p>
-                    {badge && (
-                        <span style={{ background: mixAccent(accentColor, 15), color: accentColor }} className="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium">
-                            {badge}
-                        </span>
-                    )}
-                </div>
+                <p className="text-base font-medium text-white">{title}</p>
                 <p className="mt-0.5 text-sm text-secondary">{description}</p>
                 {children}
                 {price && (
@@ -73,6 +66,11 @@ export function SubscriptionOptionCard({ title, description, active, onClick, di
                     </p>
                 )}
             </div>
+            {badge && (
+                <span style={{ background: mixAccent(accentColor, 15), color: accentColor }} className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium">
+                    {badge}
+                </span>
+            )}
         </button>
     )
 }

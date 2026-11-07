@@ -112,10 +112,8 @@ export function getSubscriptionQuoteDiscountRate(selection: SubscriptionSelectio
     return quote.subtotal > 0 ? quote.periodDiscount / quote.subtotal : 0
 }
 
-export function getSubscriptionMonthlySavings(selection: SubscriptionSelection, config: SubscriptionCatalog) {
-    const monthlyQuote = calculateSubscriptionQuote({ ...selection, paymentPeriod: "monthly" }, config)
-    const quote = calculateSubscriptionQuote(selection, config)
-    return Math.max(0, monthlyQuote.total - getMonthlyEquivalentAmount(quote.total, selection.paymentPeriod))
+export function getSubscriptionPeriodSavings(selection: SubscriptionSelection, config: SubscriptionCatalog) {
+    return calculateSubscriptionQuote(selection, config).periodDiscount
 }
 
 // What choosing another option changes the total of the current payment period by, in cents; negative when it is cheaper.
