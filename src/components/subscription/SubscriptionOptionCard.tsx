@@ -37,7 +37,8 @@ interface SubscriptionOptionCardProps {
 
 export function SubscriptionOptionCard({ title, description, active, onClick, disabled = false, accent = "aqua", badge, price, children }: SubscriptionOptionCardProps) {
     const accentColor = `var(--bg-${accent})`
-    const activeStyle: CSSProperties = { background: `linear-gradient(to right, ${mixAccent(accentColor, 18)}, ${mixAccent(accentColor, 2)} 70%)` }
+    // Matches SubscriptionPlanCard so all configurator steps look alike.
+    const activeStyle: CSSProperties = { background: mixAccent(accentColor, 8), borderColor: mixAccent(accentColor, 20) }
 
     return (
         <button
@@ -46,23 +47,23 @@ export function SubscriptionOptionCard({ title, description, active, onClick, di
             onClick={onClick}
             disabled={disabled}
             style={active ? activeStyle : undefined}
-            className={cn("flex w-full items-start gap-4 rounded-xl px-4 py-3.5 text-left transition-colors duration-200", !active && "hover:bg-white/4", disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer")}
+            className={cn("flex w-full items-start gap-4 rounded-xl border border-transparent px-4 py-4 text-left transition-colors duration-200 sm:px-5", !active && "hover:bg-white/4", disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer")}
         >
             <span
                 aria-hidden="true"
                 style={active ? { background: accentColor, borderColor: accentColor } : undefined}
-                className={cn("mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border text-primary transition-colors duration-200", !active && "border-white/25")}
+                className={cn("mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border text-primary transition-colors duration-200", !active && "border-white/25")}
             >
-                {active && <IconCheck size={12} stroke={3} />}
+                {active && <IconCheck size={14} stroke={3} />}
             </span>
             <div className="min-w-0 flex-1">
-                <p className="text-base font-medium text-white">{title}</p>
-                <p className="mt-0.5 text-sm text-secondary">{description}</p>
+                <p className="text-lg font-semibold text-white">{title}</p>
+                <p className="mt-1 text-sm text-secondary">{description}</p>
                 {children}
                 {price && (
-                    <p className="mt-2 flex items-baseline gap-1 whitespace-nowrap">
-                        <span className={cn("text-base tabular-nums", price.relative ? "text-secondary" : "font-semibold text-white")}>{price.amount}</span>
-                        <span className="text-xs text-tertiary">{price.suffix}</span>
+                    <p className="mt-2 flex items-baseline gap-1.5 whitespace-nowrap">
+                        <span className={cn("text-xl font-semibold tabular-nums", active ? "text-white" : "text-secondary")}>{price.amount}</span>
+                        <span className="text-sm text-tertiary">{price.suffix}</span>
                     </p>
                 )}
             </div>
