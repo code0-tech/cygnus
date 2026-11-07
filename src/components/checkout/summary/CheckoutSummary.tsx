@@ -12,7 +12,7 @@ import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/chec
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import { formatCurrency } from "@/lib/formatters"
-import { calculateExclusiveTaxRate, formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
+import { calculateExclusiveTaxRate, formatDiscountBadge, getMonthlyEquivalentAmount, resolveCheckoutPricing } from "@/lib/subscription/calculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { Alert, Button, Dialog, DialogTrigger, SegmentedControl, SegmentedControlItem, TextInput } from "@code0-tech/pictor"
@@ -158,15 +158,22 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
 
                                 const discountPercentage = periodPricing.totalBeforeDiscount > 0 ? discountAmount / periodPricing.totalBeforeDiscount : 0
 
+                                const monthlyPrice = getMonthlyEquivalentAmount(Math.round(periodPricing.totalPrice * 100), period) / 100
+
                                 return (
                                     <SegmentedControlItem key={period} value={period} className="w-full! min-w-0! px-2! py-2! text-xs! sm:text-sm!">
-                                        <span className="flex min-w-0 items-center justify-center gap-2">
-                                            <span className="truncate">{subscriptionConfig.paymentPeriod[`${period}Text`]}</span>
-                                            {discountPercentage > 0 && (
-                                                <StableBadge color="info" border className="shrink-0">
-                                                    -{formatDiscountBadge(discountPercentage, locale)}
-                                                </StableBadge>
-                                            )}
+                                        <span className="flex min-w-0 flex-col items-center gap-0.5">
+                                            <span className="flex min-w-0 max-w-full items-center justify-center gap-2">
+                                                <span className="truncate">{subscriptionConfig.paymentPeriod[`${period}Text`]}</span>
+                                                {discountPercentage > 0 && (
+                                                    <StableBadge color="info" border className="shrink-0">
+                                                        -{formatDiscountBadge(discountPercentage, locale)}
+                                                    </StableBadge>
+                                                )}
+                                            </span>
+                                            <span className="max-w-full truncate text-xs font-normal tabular-nums text-tertiary">
+                                                {formatCurrency(monthlyPrice, currency, locale)} {monthlyPeriodSuffix}
+                                            </span>
                                         </span>
                                     </SegmentedControlItem>
                                 )
