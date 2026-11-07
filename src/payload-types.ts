@@ -3071,6 +3071,10 @@ export interface Checkout {
      */
     heading: string;
     description: string;
+    /**
+     * Shown below the order summary. {date} is replaced with the end of the first billing period.
+     */
+    nextChargeText: string;
     deploymentIcons: {
       cloud: string;
       selfHosted: string;
@@ -3141,7 +3145,7 @@ export interface Checkout {
     countryLabel: string;
   };
   /**
-   * Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher.
+   * Checklist of what happens after paying, always shown below the order summary. Each step shows its title in bold followed by the description.
    */
   nextSteps: {
     heading: string;
@@ -3888,6 +3892,7 @@ export interface CheckoutSelect<T extends boolean = true> {
         eyebrow?: T;
         heading?: T;
         description?: T;
+        nextChargeText?: T;
         deploymentIcons?:
           | T
           | {

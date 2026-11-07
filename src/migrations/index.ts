@@ -198,6 +198,7 @@ import * as migration_20261101_150000_users_password_reset_requested_at from './
 import * as migration_20261107_120000_subscription_plan_card_texts from './20261107_120000_subscription_plan_card_texts';
 import * as migration_20261107_130000_checkout_summary_plan_heading from './20261107_130000_checkout_summary_plan_heading';
 import * as migration_20261107_140000_checkout_summary_totals_labels from './20261107_140000_checkout_summary_totals_labels';
+import * as migration_20261107_150000_checkout_next_charge_and_next_steps from './20261107_150000_checkout_next_charge_and_next_steps';
 
 export const migrations = [
   {
@@ -1194,5 +1195,10 @@ export const migrations = [
     up: migration_20261107_140000_checkout_summary_totals_labels.up,
     down: migration_20261107_140000_checkout_summary_totals_labels.down,
     name: '20261107_140000_checkout_summary_totals_labels',
+  },
+  {
+    up: migration_20261107_150000_checkout_next_charge_and_next_steps.up,
+    down: migration_20261107_150000_checkout_next_charge_and_next_steps.down,
+    name: '20261107_150000_checkout_next_charge_and_next_steps',
   },
 ];

@@ -98,11 +98,9 @@ test("applies and removes a promotion code directly through the active Stripe SD
     const appliedValues: Array<string | null> = []
     const user = userEvent.setup()
     render(<><div id="applied-discount" data-testid="applied-discount" /><CheckoutDiscount {...props} appliedContainerId="applied-discount" onApplied={(code) => appliedValues.push(code)} checkoutRef={sdk(async (code) => { requestedCodes.push(code) })} /></>)
-    const prompt = screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!
-    await user.click(prompt)
-    await user.click(prompt)
     assert.equal(screen.queryByPlaceholderText(props.inputPlaceholder), null)
-    await user.click(prompt)
+    await user.click(screen.getByRole("button", { name: props.promptLabel }))
+    assert.ok(screen.getByRole("dialog").contains(screen.getByPlaceholderText(props.inputPlaceholder)))
     await user.type(screen.getByPlaceholderText(props.inputPlaceholder), " SAVE10 ")
     await user.click(screen.getByRole("button", { name: "Apply" }))
     await waitFor(() => assert.equal(appliedValues.at(-1), "SAVE10"))
@@ -115,10 +113,10 @@ test("applies and removes a promotion code directly through the active Stripe SD
     assert.equal(window.location.search, "")
 })
 
-test("applies a promotion code in the mobile dialog", async () => {
+test("closes the dialog after applying a promotion code", async () => {
     const user = userEvent.setup()
     render(<CheckoutDiscount {...props} checkoutRef={sdk()} />)
-    await user.click(screen.getAllByRole("button", { name: props.promptLabel })[0])
+    await user.click(screen.getByRole("button", { name: props.promptLabel }))
     assert.ok(screen.getByRole("dialog").contains(screen.getByPlaceholderText(props.inputPlaceholder)))
     await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE10")
     await user.click(screen.getByRole("button", { name: "Apply" }))
@@ -144,7 +142,7 @@ test("shows a discount only after the checkout confirms it", async () => {
     const applied: Array<string | null> = []
     const user = userEvent.setup()
     render(<CheckoutDiscount {...props} onApplied={(code) => applied.push(code)} checkoutRef={sdk(() => pending)} />)
-    await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
+    await user.click(screen.getByRole("button", { name: props.promptLabel }))
     await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE10")
     await user.click(screen.getByRole("button", { name: "Apply" }))
     assert.equal((screen.getByRole("button", { name: "Apply" }) as HTMLButtonElement).disabled, true)
@@ -158,7 +156,7 @@ for (const [failure, message] of [[new Error("This promotion code has expired.")
     test(`shows the checkout rejection: ${message}`, async () => {
         const user = userEvent.setup()
         render(<CheckoutDiscount {...props} checkoutRef={sdk(async () => { throw failure })} />)
-        await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
+        await user.click(screen.getByRole("button", { name: props.promptLabel }))
         await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "INVALID")
         await user.click(screen.getByRole("button", { name: "Apply" }))
         assert.ok(await screen.findByText(message))
@@ -171,7 +169,7 @@ test("forwards Stripe's success session and displays its supplied discount amoun
     const sessions: StripeCheckoutSession[] = []
     const user = userEvent.setup()
     render(<CheckoutDiscount {...props} checkoutRef={sdk()} onSessionChange={(session) => sessions.push(session)} appliedAmount="�7.00" />)
-    await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
+    await user.click(screen.getByRole("button", { name: props.promptLabel }))
     await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE")
     await user.click(screen.getByRole("button", { name: props.buttonLabel }))
     await waitFor(() => assert.deepEqual(sessions, [updatedSession]))
@@ -184,7 +182,7 @@ test("shows Stripe's returned validation error without applying the code", async
     const sessions: StripeCheckoutSession[] = []
     const user = userEvent.setup()
     render(<CheckoutDiscount {...props} checkoutRef={checkoutRef} onSessionChange={(session) => sessions.push(session)} />)
-    await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
+    await user.click(screen.getByRole("button", { name: props.promptLabel }))
     await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "INVALID")
     await user.click(screen.getByRole("button", { name: props.buttonLabel }))
     assert.ok(await screen.findByText("This code is not valid for this subscription."))
@@ -198,7 +196,7 @@ test("keeps the code and amount when Stripe refuses removal and displays its err
     const applied: Array<string | null> = []
     const user = userEvent.setup()
     render(<CheckoutDiscount {...props} checkoutRef={checkoutRef} onApplied={(code) => applied.push(code)} appliedAmount="�7.00" />)
-    await user.click(screen.getAllByRole("button", { name: props.promptLabel }).at(-1)!)
+    await user.click(screen.getByRole("button", { name: props.promptLabel }))
     await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE")
     await user.click(screen.getByRole("button", { name: props.buttonLabel }))
     await screen.findByText("SAVE")

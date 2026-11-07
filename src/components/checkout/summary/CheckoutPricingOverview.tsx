@@ -116,7 +116,9 @@ function CheckoutPreviewPricingOverview({
     const countryName = billingCountry ? formatCountryName(billingCountry, locale) : null
     const hasTax = taxAmount > 0 || taxAmountInclusive > 0
     const formatTaxRate = (percentage: number | null) =>
-        percentage === null ? formatAmount(totalExcludingTax) : content.pricing.taxRateLabel.replaceAll("{rate}", percentFormatter.format(percentage / 100)).replaceAll("{amount}", formatAmount(totalExcludingTax))
+        percentage === null
+            ? formatAmount(totalExcludingTax)
+            : content.pricing.taxRateLabel.replaceAll("{rate}", percentFormatter.format(percentage / 100)).replaceAll("{amount}", formatAmount(totalExcludingTax))
     const usageTiles = [
         { label: content.pricing.baseLabel, value: aiTokens },
         { label: content.pricing.workflowExecutionsLabel, value: workflowExecutions },
@@ -156,47 +158,47 @@ function CheckoutPreviewPricingOverview({
 
                     <SummaryRow label={content.pricing.totalExcludingTaxLabel} value={formatAmount(totalExcludingTax)} />
 
-                    {taxLines.length > 0
-                        ? taxLines.map((tax) => (
-                              <SummaryRow
-                                  key={`${tax.displayName}-${tax.inclusive}-${tax.percentage}`}
-                                  label={
-                                      <>
-                                          {tax.displayName}
-                                          {countryName && ` – ${countryName}`}
-                                          <span className="text-tertiary"> ({formatTaxRate(tax.percentage)})</span>
-                                      </>
-                                  }
-                                  value={formatAmount(tax.amount)}
-                              />
-                          ))
-                        : (
-                              <>
-                                  {taxAmountInclusive > 0 && (
-                                      <SummaryRow
-                                          label={
-                                              <>
-                                                  {content.pricing.taxInclusiveLabel}
-                                                  {taxPercentageInclusive !== null && <span className="text-tertiary"> ({formatTaxRate(taxPercentageInclusive * 100)})</span>}
-                                              </>
-                                          }
-                                          value={formatAmount(taxAmountInclusive)}
-                                      />
-                                  )}
-                                  {(taxAmount > 0 || taxPercentage !== null) && (taxAmount > 0 || taxAmountInclusive === 0) && (
-                                      <SummaryRow
-                                          label={
-                                              <>
-                                                  {taxAmount === 0 ? content.pricing.taxLabel : content.pricing.taxExclusiveLabel}
-                                                  {countryName && ` – ${countryName}`}
-                                                  {taxPercentage !== null && <span className="text-tertiary"> ({formatTaxRate(taxPercentage * 100)})</span>}
-                                              </>
-                                          }
-                                          value={formatAmount(taxAmount)}
-                                      />
-                                  )}
-                              </>
-                          )}
+                    {taxLines.length > 0 ? (
+                        taxLines.map((tax) => (
+                            <SummaryRow
+                                key={`${tax.displayName}-${tax.inclusive}-${tax.percentage}`}
+                                label={
+                                    <>
+                                        {tax.displayName}
+                                        {countryName && ` – ${countryName}`}
+                                        <span className="text-tertiary"> ({formatTaxRate(tax.percentage)})</span>
+                                    </>
+                                }
+                                value={formatAmount(tax.amount)}
+                            />
+                        ))
+                    ) : (
+                        <>
+                            {taxAmountInclusive > 0 && (
+                                <SummaryRow
+                                    label={
+                                        <>
+                                            {content.pricing.taxInclusiveLabel}
+                                            {taxPercentageInclusive !== null && <span className="text-tertiary"> ({formatTaxRate(taxPercentageInclusive * 100)})</span>}
+                                        </>
+                                    }
+                                    value={formatAmount(taxAmountInclusive)}
+                                />
+                            )}
+                            {(taxAmount > 0 || taxPercentage !== null) && (taxAmount > 0 || taxAmountInclusive === 0) && (
+                                <SummaryRow
+                                    label={
+                                        <>
+                                            {taxAmount === 0 ? content.pricing.taxLabel : content.pricing.taxExclusiveLabel}
+                                            {countryName && ` – ${countryName}`}
+                                            {taxPercentage !== null && <span className="text-tertiary"> ({formatTaxRate(taxPercentage * 100)})</span>}
+                                        </>
+                                    }
+                                    value={formatAmount(taxAmount)}
+                                />
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
 

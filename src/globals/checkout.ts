@@ -78,6 +78,9 @@ export const Checkout: GlobalConfig = {
                     localized: true,
                     defaultValue: "This checkout reflects the subscription shape you configured, including runtime.",
                 },
+                localizedText("nextChargeText", "Next charge on {date} · Cancel anytime before", "Nächste Abbuchung am {date} · Vorher jederzeit kündbar", {
+                    description: "Shown below the order summary. {date} is replaced with the end of the first billing period.",
+                }),
                 {
                     name: "deploymentIcons",
                     label: "Deployment Icons",
@@ -176,17 +179,16 @@ export const Checkout: GlobalConfig = {
             name: "nextSteps",
             type: "group",
             admin: {
-                description:
-                    "Vertical 3-step 'what happens after you pay' stepper shown in the summary once the payment step is reached, replacing the order summary heading and payment period switcher.",
+                description: "Checklist of what happens after paying, always shown below the order summary. Each step shows its title in bold followed by the description.",
             },
             fields: [
-                { name: "heading", type: "text", required: true, localized: true, defaultValue: "What happens next" },
-                { name: "step1Title", type: "text", required: true, localized: true, defaultValue: "Payment confirmed" },
-                { name: "step1Description", type: "text", required: true, localized: true, defaultValue: "Stripe securely confirms your payment." },
-                { name: "step2Title", type: "text", required: true, localized: true, defaultValue: "License provisioned" },
-                { name: "step2Description", type: "text", required: true, localized: true, defaultValue: "Your license is created automatically." },
-                { name: "step3Title", type: "text", required: true, localized: true, defaultValue: "Get started" },
-                { name: "step3Description", type: "text", required: true, localized: true, defaultValue: "Access your license dashboard and start building." },
+                localizedText("heading", "What happens next", "Wie es weitergeht"),
+                localizedText("step1Title", "Payment confirmed", "Zahlung bestätigt"),
+                localizedText("step1Description", "securely by Stripe", "sicher über Stripe"),
+                localizedText("step2Title", "License created", "Lizenz erstellt"),
+                localizedText("step2Description", "automatically, invoice sent by email", "automatisch, Rechnung per E-Mail"),
+                localizedText("step3Title", "Start building", "Loslegen"),
+                localizedText("step3Description", "from your license dashboard", "über dein Lizenz-Dashboard"),
             ],
         },
         {
