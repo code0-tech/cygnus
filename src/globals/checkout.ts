@@ -70,7 +70,7 @@ export const Checkout: GlobalConfig = {
             type: "group",
             fields: [
                 { name: "eyebrow", type: "text", required: true, localized: true, defaultValue: "Order Summary" },
-                { name: "heading", type: "text", required: true, localized: true, defaultValue: "Review your configuration" },
+                localizedText("heading", "Your Plan: {plan}", "Dein Plan: {plan}", { description: "{plan} is replaced with the selected plan title." }),
                 {
                     name: "description",
                     type: "textarea",

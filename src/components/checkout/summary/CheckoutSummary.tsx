@@ -124,8 +124,8 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                 <>
                     <div className="mb-6">
                         <p className="tracking-wide text-brand">{content.eyebrow}</p>
-                        <h2 className="mt-4 text-2xl text-white">{content.heading}</h2>
-                        <p className="mt-2 max-w-md text-sm leading-6 text-secondary">{content.description}</p>
+                        <h2 className="mt-4 text-4xl text-white font-semibold">{content.heading.replaceAll("{plan}", planTitle)}</h2>
+                        <p className="mt-2 text-sm leading-6 text-secondary">{content.description}</p>
                     </div>
 
                     {subscriptionConfig && (
@@ -468,11 +468,7 @@ export function CheckoutDiscount({
                     {isApplying ? <ButtonLoader label={buttonLabel} /> : buttonLabel}
                 </Button>
             </div>
-            {errorMessage && (
-                <Alert color="error">
-                    {errorMessage}
-                </Alert>
-            )}
+            {errorMessage && <Alert color="error">{errorMessage}</Alert>}
         </form>
     )
 

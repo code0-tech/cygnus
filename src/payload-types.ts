@@ -3066,6 +3066,9 @@ export interface Checkout {
   };
   summary: {
     eyebrow: string;
+    /**
+     * {plan} is replaced with the selected plan title.
+     */
     heading: string;
     description: string;
     deploymentIcons: {

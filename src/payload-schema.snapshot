@@ -2495,7 +2495,7 @@ export const checkout_locales = pgTable('checkout_locales', {
   login_guestDescription: varchar('login_guest_description').notNull().default("Complete your subscription checkout without signing in."),
   login_guestLabel: varchar('login_guest_label').notNull().default("Continue as guest"),
   summary_eyebrow: varchar('summary_eyebrow').notNull().default("Order Summary"),
-  summary_heading: varchar('summary_heading').notNull().default("Review your configuration"),
+  summary_heading: varchar('summary_heading').notNull(),
   summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime."),
   summary_pricing_planLabel: varchar('summary_pricing_plan_label').notNull().default("Plan"),
   summary_pricing_baseLabel: varchar('summary_pricing_base_label').notNull().default("AI Tokens"),
