@@ -3115,6 +3115,10 @@ export interface Checkout {
   };
   form: {
     /**
+     * Shown with a lock icon in the checkout header.
+     */
+    secureCheckoutLabel: string;
+    /**
      * Heading above the customer selection and email.
      */
     contactHeading: string;
@@ -3945,6 +3949,7 @@ export interface CheckoutSelect<T extends boolean = true> {
   form?:
     | T
     | {
+        secureCheckoutLabel?: T;
         contactHeading?: T;
         billingHeading?: T;
         continueLabel?: T;

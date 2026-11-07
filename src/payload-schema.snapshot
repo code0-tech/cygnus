@@ -2517,6 +2517,7 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_pricing_totalIncludingTaxSuffix: varchar('summary_pricing_total_including_tax_suffix').notNull(),
   summary_pricing_totalLabel: varchar('summary_pricing_total_label').notNull().default("Total"),
   summary_pricing_perMonthSuffix: varchar('summary_pricing_per_month_suffix').notNull().default("/mo"),
+  form_secureCheckoutLabel: varchar('form_secure_checkout_label').notNull(),
   form_contactHeading: varchar('form_contact_heading').notNull(),
   form_billingHeading: varchar('form_billing_heading').notNull(),
   form_continueLabel: varchar('form_continue_label').notNull().default("Continue to Payment"),

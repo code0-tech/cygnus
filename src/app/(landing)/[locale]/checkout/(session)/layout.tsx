@@ -13,6 +13,10 @@ export default async function CheckoutSessionLayout({ children, params }: Checko
     const { locale } = await params
     if (!isSupportedLocale(locale)) notFound()
 
-    const errors = await getGlobal("errors", locale)
-    return <CheckoutSessionLayoutClient errors={errors}>{children}</CheckoutSessionLayoutClient>
+    const [errors, checkoutContent] = await Promise.all([getGlobal("errors", locale), getGlobal("checkout", locale)])
+    return (
+        <CheckoutSessionLayoutClient errors={errors} secureCheckoutLabel={checkoutContent?.form.secureCheckoutLabel}>
+            {children}
+        </CheckoutSessionLayoutClient>
+    )
 }

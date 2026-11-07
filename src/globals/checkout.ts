@@ -128,6 +128,7 @@ export const Checkout: GlobalConfig = {
             name: "form",
             type: "group",
             fields: [
+                localizedText("secureCheckoutLabel", "Secure checkout", "Sicherer Checkout", { description: "Shown with a lock icon in the checkout header." }),
                 localizedText("contactHeading", "Contact", "Kontakt", { description: "Heading above the customer selection and email." }),
                 localizedText("billingHeading", "Billing address", "Rechnungsadresse", { description: "Heading above the billing address." }),
                 { name: "continueLabel", type: "text", required: true, localized: true, defaultValue: "Continue to Payment" },
