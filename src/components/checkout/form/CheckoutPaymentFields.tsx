@@ -6,6 +6,7 @@ import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvi
 import { ButtonLoader } from "@/components/ui/Loader"
 import { SendOfferDialog } from "@/components/checkout/shared/SendOfferDialog"
 import { Alert, Button, EmailInput } from "@code0-tech/pictor"
+import { IconArrowLeft, IconLock } from "@tabler/icons-react"
 import { BillingAddressElement, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
 import { useParams } from "next/navigation"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
@@ -349,6 +350,16 @@ export function CheckoutPaymentFields({
                 </>
             ) : (
                 <>
+                    <button
+                        type="button"
+                        disabled={isConfirming}
+                        onClick={showBillingAddress}
+                        className="inline-flex items-center gap-1.5 text-sm text-tertiary transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <IconArrowLeft aria-hidden="true" size={16} />
+                        {content.backToBillingLabel}
+                    </button>
+
                     <form id={paymentFormId} onSubmit={handleSubmit} className="w-full space-y-4">
                         <PaymentElement
                             options={{ layout: "tabs", fields: { billingDetails: { name: "never", address: "never" } } }}
@@ -361,11 +372,10 @@ export function CheckoutPaymentFields({
                         />
                     </form>
 
-                    <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
-
                     {errorMessage && <Alert color="error">{errorMessage}</Alert>}
 
                     <div className="space-y-3">
+                        <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
                         <Button
                             type="submit"
                             form={paymentFormId}
@@ -375,15 +385,10 @@ export function CheckoutPaymentFields({
                         >
                             {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}
                         </Button>
-                        <Button
-                            type="button"
-                            variant="normal"
-                            disabled={isConfirming}
-                            onClick={showBillingAddress}
-                            className="h-10! w-full! border-none! bg-transparent! text-sm! text-tertiary! shadow-none! hover:bg-white/6! hover:text-white! transition-colors!"
-                        >
-                            {content.backToBillingLabel}
-                        </Button>
+                        <p className="flex items-center justify-center gap-1.5 text-center text-sm text-tertiary">
+                            <IconLock aria-hidden="true" size={16} className="shrink-0" />
+                            {content.securePaymentText}
+                        </p>
                     </div>
                 </>
             )}

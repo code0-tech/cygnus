@@ -135,6 +135,9 @@ export const Checkout: GlobalConfig = {
                 localizedText("notChargedYetText", "You won't be charged yet.", "Es wird noch nichts abgebucht.", { description: "Shown below the continue to payment button." }),
                 { name: "backToBillingLabel", type: "text", required: true, localized: true, defaultValue: "Back to Billing" },
                 { name: "payNowLabel", type: "text", required: true, localized: true, defaultValue: "Pay now" },
+                localizedText("securePaymentText", "Processed securely by Stripe. You can cancel anytime.", "Sicher verarbeitet über Stripe. Du kannst jederzeit kündigen.", {
+                    description: "Shown with a lock icon below the pay button.",
+                }),
                 localizedText("sendOfferPrompt", "Need an invoice or a quote first?", "Benötigst du zuerst eine Rechnung oder ein Angebot?"),
                 {
                     name: "sendOfferLabel",

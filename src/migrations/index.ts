@@ -201,6 +201,7 @@ import * as migration_20261107_140000_checkout_summary_totals_labels from './202
 import * as migration_20261107_150000_checkout_next_charge_and_next_steps from './20261107_150000_checkout_next_charge_and_next_steps';
 import * as migration_20261107_160000_checkout_form_section_headings from './20261107_160000_checkout_form_section_headings';
 import * as migration_20261107_170000_checkout_secure_label from './20261107_170000_checkout_secure_label';
+import * as migration_20261107_180000_checkout_secure_payment_text from './20261107_180000_checkout_secure_payment_text';
 
 export const migrations = [
   {
@@ -1212,5 +1213,10 @@ export const migrations = [
     up: migration_20261107_170000_checkout_secure_label.up,
     down: migration_20261107_170000_checkout_secure_label.down,
     name: '20261107_170000_checkout_secure_label',
+  },
+  {
+    up: migration_20261107_180000_checkout_secure_payment_text.up,
+    down: migration_20261107_180000_checkout_secure_payment_text.down,
+    name: '20261107_180000_checkout_secure_payment_text',
   },
 ];

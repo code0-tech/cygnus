@@ -3133,6 +3133,10 @@ export interface Checkout {
     notChargedYetText: string;
     backToBillingLabel: string;
     payNowLabel: string;
+    /**
+     * Shown with a lock icon below the pay button.
+     */
+    securePaymentText: string;
     sendOfferPrompt: string;
     /**
      * Shown below the primary billing button for business customers only.
@@ -3956,6 +3960,7 @@ export interface CheckoutSelect<T extends boolean = true> {
         notChargedYetText?: T;
         backToBillingLabel?: T;
         payNowLabel?: T;
+        securePaymentText?: T;
         sendOfferPrompt?: T;
         sendOfferLabel?: T;
         sendOfferTitle?: T;
