@@ -1,30 +1,19 @@
 import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
-import { CRATER_ERROR_FIELDS, craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
+import { craterJson, runCraterMutation, withCraterSession } from "@/lib/crater/api.server"
+import { CRATER_SESSION_LOGOUT } from "@/lib/crater/logout.server"
 import { clearCraterSessionCookie } from "@/lib/crater/session.server"
-import type { Mutation, MutationUsersLogoutArgs, Query } from "@code0-tech/crater-graphql-types"
+import type { Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
 type SessionStatusData = Pick<Query, "currentUser">
-type SessionLogoutData = Pick<Mutation, "usersLogout">
 
 const SESSION_STATUS: TypedDocumentNode<SessionStatusData, Record<string, never>> = gql`
     query CraterSessionStatus {
         currentUser {
             id
-        }
-    }
-`
-
-const SESSION_LOGOUT: TypedDocumentNode<SessionLogoutData, MutationUsersLogoutArgs> = gql`
-    ${CRATER_ERROR_FIELDS}
-    mutation CraterSessionLogout($input: UsersLogoutInput!) {
-        usersLogout(input: $input) {
-            errors {
-                ...CraterErrorFields
-            }
         }
     }
 `
@@ -43,7 +32,7 @@ export const GET = withCraterSession({ log: "Crater session status error", error
 })
 
 const revokeSession = withCraterSession({ log: "Crater session logout error", error: "Could not revoke Crater session." }, async (_request, token) => {
-    const mutation = await runCraterMutation(token, SESSION_LOGOUT, { input: {} }, (data) => data.usersLogout, "Crater could not revoke the user session.")
+    const mutation = await runCraterMutation(token, CRATER_SESSION_LOGOUT, { input: {} }, (data) => data.usersLogout, "Crater could not revoke the user session.")
     if (mutation.response) return mutation.response
 
     return craterJson({ authenticated: false })

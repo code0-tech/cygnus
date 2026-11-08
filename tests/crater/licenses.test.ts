@@ -129,17 +129,25 @@ test("license access never exchanges tokens from links, even with a login-state 
 })
 
 test("a missing subscription never replaces the existing session with a token from a link", async () => {
-    await withGraphQLServer([{ data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: false } } } } }], async (server) => {
+    const noCustomers = { data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: false } } } } }
+    const loggedOut = { data: { usersLogout: { errors: [] } } }
+    await withGraphQLServer([noCustomers, loggedOut], async (server) => {
         const response = await accessLicenseDashboard(new Request(
             "https://code0.example/api/crater/licenses/access?locale=en&subscriptionId=666&token=attacker-token",
             { headers: { cookie: "crater_session=victim-session" } }
         ))
         assert.equal(response.status, 307)
-        assert.equal(response.headers.get("location"), "https://code0.example/en/licenses")
-        assert.equal(response.headers.get("set-cookie"), null)
-        assert.equal(server.requests.length, 1)
-        assert.equal(server.requests[0].authorization, "Session victim-session")
+        // The session is only ever replaced through the state-protected login, never with the token from the link.
+        const location = new URL(response.headers.get("location")!)
+        assert.equal(location.pathname, "/api/crater/auth/start")
+        assert.equal(location.searchParams.get("returnPath"), "/api/crater/licenses/access?locale=en&subscriptionId=666&sessionSwitch=1")
+        assert.doesNotMatch(location.toString(), /attacker-token/)
+        assert.ok(response.headers.getSetCookie().every((value) => /Max-Age=0/i.test(value)), "Must not set an authenticated session")
+        assert.equal(server.requests.length, 2)
+        assert.ok(server.requests.every((request) => request.authorization === "Session victim-session"))
         assert.equal(server.requests[0].body.operationName, "LicenseSubscriptionCustomer")
+        assert.equal(server.requests[1].body.operationName, "CraterSessionLogout")
+        assert.ok(server.requests.every((request) => !JSON.stringify(request.body).includes("attacker-token")))
     })
 })
 

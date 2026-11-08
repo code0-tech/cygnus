@@ -1,4 +1,5 @@
 import { craterJson, craterTransportErrorResponse, noStoreRedirect as craterNoStoreRedirect } from "@/lib/crater/api.server"
+import { revokeCraterSession } from "@/lib/crater/logout.server"
 import { isCustomerId, isLicenseId, isSubscriptionId } from "@/lib/crater/request"
 import { findCustomerForSubscription, findSubscriptionForLicenseSnapshot } from "@/lib/licenses/snapshotLookup.server"
 import { createLicenseActionPath, createLicenseDashboardLoginPath, createLicensePath, isLicenseDashboardAction, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
@@ -11,6 +12,8 @@ import { NextResponse } from "next/server"
 export const runtime = "nodejs"
 
 const noStoreRedirect = (url: URL) => craterNoStoreRedirect(url, { noReferrer: true })
+
+const SESSION_SWITCH_PARAM = "sessionSwitch"
 
 function resolveLicenseReturnUrl(requestUrl: URL, locale: string, siteOrigin: string) {
     const fallbackUrl = new URL(`/${locale}/licenses`, siteOrigin)
@@ -63,9 +66,10 @@ export async function GET(request: Request) {
     const session = readCraterSessionAuthorization(request)
     const isSculptorLink = requestUrl.searchParams.has("subscriptionId")
 
-    const startLogin = (clearSession: boolean) => {
+    const startLogin = (clearSession: boolean, switchSession = false) => {
         const accessParams = new URLSearchParams(requestUrl.searchParams)
         accessParams.delete("token")
+        if (switchSession) accessParams.set(SESSION_SWITCH_PARAM, "1")
         const response = noStoreRedirect(new URL(createLicenseDashboardLoginPath(`${requestUrl.pathname}?${accessParams}`), siteOrigin))
         return clearSession ? clearCraterSessionCookie(response) : response
     }
@@ -92,7 +96,13 @@ export async function GET(request: Request) {
             if (isSculptorLink) return startLogin(true)
             return clearCraterSessionCookie(craterJson({ error: "The Crater session has no authenticated user." }, 401))
         }
-        if (isSculptorLink) return noStoreRedirect(new URL(`/${locale}/licenses`, siteOrigin))
+        if (isSculptorLink) {
+            if (requestUrl.searchParams.get(SESSION_SWITCH_PARAM) !== "1") {
+                await revokeCraterSession(sessionToken)
+                return startLogin(true, true)
+            }
+            return noStoreRedirect(new URL(`/${locale}/licenses`, siteOrigin))
+        }
         return craterJson({ error: "The requested license was not found." }, 404)
     } catch (error) {
         const transportResponse = craterTransportErrorResponse(error, request)
