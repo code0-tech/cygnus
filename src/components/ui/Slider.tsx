@@ -30,6 +30,7 @@ type SliderProps = {
     centerLabelSuffix?: string
     hideCenterLabel?: boolean
     smoothDrag?: boolean
+    flat?: boolean
 }
 
 function formatSliderLabel(value: number, suffix?: string, trailingSuffix = "") {
@@ -61,6 +62,7 @@ export function Slider({
     centerLabelSuffix = "",
     hideCenterLabel = false,
     smoothDrag = false,
+    flat = false,
 }: SliderProps) {
     const trackRef = useRef<HTMLDivElement>(null)
     const pointerStartXRef = useRef(0)
@@ -351,7 +353,7 @@ export function Slider({
                         const lineProgress = index / (lineCount - 1)
                         const edgeInfluence = overscrollStretch > 0 ? lineProgress ** 2 : (1 - lineProgress) ** 2
                         const edgeScale = overscrollStretch > 0 ? 1 + Math.abs(overscrollStretch) * edgeInfluence * 0.14 : 1 - Math.abs(overscrollStretch) * edgeInfluence * 0.08
-                        const baseHeight = sizeStyles.minHeight + lineProgress * sizeStyles.heightRange
+                        const baseHeight = sizeStyles.minHeight + (flat ? 0.5 : lineProgress) * sizeStyles.heightRange
                         const isMajorLine = majorLineIndexes.has(index)
                         const lineHeight = baseHeight + (isMajorLine ? sizeStyles.majorExtraHeight : 0)
 

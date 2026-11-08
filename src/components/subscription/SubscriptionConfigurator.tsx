@@ -257,6 +257,7 @@ export function SubscriptionConfigurator({ locale, content, onActiveImageChangeA
                                 {selection.plan === "custom" && (
                                     <>
                                         <SubscriptionPlanUsageSlider
+                                            accent={content.plan.color}
                                             label={quantityLabels.aiTokens}
                                             valueLabel={`${formatCompactNumber(aiTokensPreview)} ${aiTokens.suffix}`}
                                             packages={aiTokenPackages}
@@ -267,6 +268,7 @@ export function SubscriptionConfigurator({ locale, content, onActiveImageChangeA
                                             valueLabelSuffix={aiTokens.suffix}
                                         />
                                         <SubscriptionPlanUsageSlider
+                                            accent={content.plan.color}
                                             label={quantityLabels.workflowExecutions}
                                             valueLabel={`${formatCompactNumber(workflowExecutionsPreview)} ${workflowExecutions.suffix}`}
                                             packages={workflowExecutionPackages}

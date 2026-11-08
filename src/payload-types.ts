@@ -13,3428 +13,3433 @@
  * via the `definition` "supportedTimezones".
  */
 export type SupportedTimezones =
-    | "Pacific/Midway"
-    | "Pacific/Niue"
-    | "Pacific/Honolulu"
-    | "Pacific/Rarotonga"
-    | "America/Anchorage"
-    | "Pacific/Gambier"
-    | "America/Los_Angeles"
-    | "America/Tijuana"
-    | "America/Denver"
-    | "America/Phoenix"
-    | "America/Chicago"
-    | "America/Guatemala"
-    | "America/New_York"
-    | "America/Bogota"
-    | "America/Caracas"
-    | "America/Santiago"
-    | "America/Buenos_Aires"
-    | "America/Sao_Paulo"
-    | "Atlantic/South_Georgia"
-    | "Atlantic/Azores"
-    | "Atlantic/Cape_Verde"
-    | "Europe/London"
-    | "Europe/Berlin"
-    | "Africa/Lagos"
-    | "Europe/Athens"
-    | "Africa/Cairo"
-    | "Europe/Moscow"
-    | "Asia/Riyadh"
-    | "Asia/Dubai"
-    | "Asia/Baku"
-    | "Asia/Karachi"
-    | "Asia/Tashkent"
-    | "Asia/Calcutta"
-    | "Asia/Dhaka"
-    | "Asia/Almaty"
-    | "Asia/Jakarta"
-    | "Asia/Bangkok"
-    | "Asia/Shanghai"
-    | "Asia/Singapore"
-    | "Asia/Tokyo"
-    | "Asia/Seoul"
-    | "Australia/Brisbane"
-    | "Australia/Sydney"
-    | "Pacific/Guam"
-    | "Pacific/Noumea"
-    | "Pacific/Auckland"
-    | "Pacific/Fiji"
+  | 'Pacific/Midway'
+  | 'Pacific/Niue'
+  | 'Pacific/Honolulu'
+  | 'Pacific/Rarotonga'
+  | 'America/Anchorage'
+  | 'Pacific/Gambier'
+  | 'America/Los_Angeles'
+  | 'America/Tijuana'
+  | 'America/Denver'
+  | 'America/Phoenix'
+  | 'America/Chicago'
+  | 'America/Guatemala'
+  | 'America/New_York'
+  | 'America/Bogota'
+  | 'America/Caracas'
+  | 'America/Santiago'
+  | 'America/Buenos_Aires'
+  | 'America/Sao_Paulo'
+  | 'Atlantic/South_Georgia'
+  | 'Atlantic/Azores'
+  | 'Atlantic/Cape_Verde'
+  | 'Europe/London'
+  | 'Europe/Berlin'
+  | 'Africa/Lagos'
+  | 'Europe/Athens'
+  | 'Africa/Cairo'
+  | 'Europe/Moscow'
+  | 'Asia/Riyadh'
+  | 'Asia/Dubai'
+  | 'Asia/Baku'
+  | 'Asia/Karachi'
+  | 'Asia/Tashkent'
+  | 'Asia/Calcutta'
+  | 'Asia/Dhaka'
+  | 'Asia/Almaty'
+  | 'Asia/Jakarta'
+  | 'Asia/Bangkok'
+  | 'Asia/Shanghai'
+  | 'Asia/Singapore'
+  | 'Asia/Tokyo'
+  | 'Asia/Seoul'
+  | 'Australia/Brisbane'
+  | 'Australia/Sydney'
+  | 'Pacific/Guam'
+  | 'Pacific/Noumea'
+  | 'Pacific/Auckland'
+  | 'Pacific/Fiji';
 
 export interface Config {
-    auth: {
-        users: UserAuthOperations
-    }
-    blocks: {}
-    collections: {
-        users: User
-        media: Media
-        pages: Page
-        actions: Action
-        jobs: Job
-        blog: Blog
-        "team-members": TeamMember
-        "payload-ai-auditlog": PayloadAiAuditlog
-        "payload-kv": PayloadKv
-        "payload-locked-documents": PayloadLockedDocument
-        "payload-preferences": PayloadPreference
-        "payload-migrations": PayloadMigration
-    }
-    collectionsJoins: {}
-    collectionsSelect: {
-        users: UsersSelect<false> | UsersSelect<true>
-        media: MediaSelect<false> | MediaSelect<true>
-        pages: PagesSelect<false> | PagesSelect<true>
-        actions: ActionsSelect<false> | ActionsSelect<true>
-        jobs: JobsSelect<false> | JobsSelect<true>
-        blog: BlogSelect<false> | BlogSelect<true>
-        "team-members": TeamMembersSelect<false> | TeamMembersSelect<true>
-        "payload-ai-auditlog": PayloadAiAuditlogSelect<false> | PayloadAiAuditlogSelect<true>
-        "payload-kv": PayloadKvSelect<false> | PayloadKvSelect<true>
-        "payload-locked-documents": PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>
-        "payload-preferences": PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>
-        "payload-migrations": PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>
-    }
-    db: {
-        defaultIDType: number
-    }
-    fallbackLocale: ("false" | "none" | "null") | false | null | ("en" | "de") | ("en" | "de")[]
-    globals: {
-        navigation: Navigation
-        footer: Footer
-        "cookie-banner": CookieBanner
-        subscriptionConfig: SubscriptionConfig
-        checkout: Checkout
-        licenses: License
-        "license-dialogs": LicenseDialog
-        "license-toasts": LicenseToast
-        errors: Error
-    }
-    globalsSelect: {
-        navigation: NavigationSelect<false> | NavigationSelect<true>
-        footer: FooterSelect<false> | FooterSelect<true>
-        "cookie-banner": CookieBannerSelect<false> | CookieBannerSelect<true>
-        subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>
-        checkout: CheckoutSelect<false> | CheckoutSelect<true>
-        licenses: LicensesSelect<false> | LicensesSelect<true>
-        "license-dialogs": LicenseDialogsSelect<false> | LicenseDialogsSelect<true>
-        "license-toasts": LicenseToastsSelect<false> | LicenseToastsSelect<true>
-        errors: ErrorsSelect<false> | ErrorsSelect<true>
-    }
-    locale: "en" | "de"
-    widgets: {
-        collections: CollectionsWidget
-    }
-    user: User
-    jobs: {
-        tasks: unknown
-        workflows: unknown
-    }
+  auth: {
+    users: UserAuthOperations;
+  };
+  blocks: {};
+  collections: {
+    users: User;
+    media: Media;
+    pages: Page;
+    actions: Action;
+    jobs: Job;
+    blog: Blog;
+    'team-members': TeamMember;
+    'payload-ai-auditlog': PayloadAiAuditlog;
+    'payload-kv': PayloadKv;
+    'payload-locked-documents': PayloadLockedDocument;
+    'payload-preferences': PayloadPreference;
+    'payload-migrations': PayloadMigration;
+  };
+  collectionsJoins: {};
+  collectionsSelect: {
+    users: UsersSelect<false> | UsersSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    actions: ActionsSelect<false> | ActionsSelect<true>;
+    jobs: JobsSelect<false> | JobsSelect<true>;
+    blog: BlogSelect<false> | BlogSelect<true>;
+    'team-members': TeamMembersSelect<false> | TeamMembersSelect<true>;
+    'payload-ai-auditlog': PayloadAiAuditlogSelect<false> | PayloadAiAuditlogSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
+  };
+  db: {
+    defaultIDType: number;
+  };
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'de') | ('en' | 'de')[];
+  globals: {
+    navigation: Navigation;
+    footer: Footer;
+    'cookie-banner': CookieBanner;
+    subscriptionConfig: SubscriptionConfig;
+    checkout: Checkout;
+    licenses: License;
+    'license-dialogs': LicenseDialog;
+    'license-toasts': LicenseToast;
+    errors: Error;
+  };
+  globalsSelect: {
+    navigation: NavigationSelect<false> | NavigationSelect<true>;
+    footer: FooterSelect<false> | FooterSelect<true>;
+    'cookie-banner': CookieBannerSelect<false> | CookieBannerSelect<true>;
+    subscriptionConfig: SubscriptionConfigSelect<false> | SubscriptionConfigSelect<true>;
+    checkout: CheckoutSelect<false> | CheckoutSelect<true>;
+    licenses: LicensesSelect<false> | LicensesSelect<true>;
+    'license-dialogs': LicenseDialogsSelect<false> | LicenseDialogsSelect<true>;
+    'license-toasts': LicenseToastsSelect<false> | LicenseToastsSelect<true>;
+    errors: ErrorsSelect<false> | ErrorsSelect<true>;
+  };
+  locale: 'en' | 'de';
+  widgets: {
+    collections: CollectionsWidget;
+  };
+  user: User;
+  jobs: {
+    tasks: unknown;
+    workflows: unknown;
+  };
 }
 export interface UserAuthOperations {
-    forgotPassword: {
-        email: string
-        password: string
-    }
-    login: {
-        email: string
-        password: string
-    }
-    registerFirstUser: {
-        email: string
-        password: string
-    }
-    unlock: {
-        email: string
-        password: string
-    }
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-    id: number
-    name: string
-    image?: (number | null) | Media
-    aiProvider?: ("claude" | "google" | "mistral" | "openai" | "openrouter") | null
-    /**
-     * Optional. If empty, the plugin uses the provider API key from environment variables.
-     */
-    aiApiKey?: string | null
-    updatedAt: string
-    createdAt: string
-    email: string
-    resetPasswordToken?: string | null
-    resetPasswordExpiration?: string | null
-    salt?: string | null
-    hash?: string | null
-    resetPasswordRequestedAt?: string | null
-    loginAttempts?: number | null
-    lockUntil?: string | null
-    sessions?:
-        | {
-              id: string
-              createdAt?: string | null
-              expiresAt: string
-          }[]
-        | null
-    password?: string | null
-    collection: "users"
+  id: number;
+  name: string;
+  image?: (number | null) | Media;
+  aiProvider?: ('claude' | 'google' | 'mistral' | 'openai' | 'openrouter') | null;
+  /**
+   * Optional. If empty, the plugin uses the provider API key from environment variables.
+   */
+  aiApiKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
-    id: number
-    alt: string
-    href?: string | null
-    updatedAt: string
-    createdAt: string
-    url?: string | null
-    thumbnailURL?: string | null
-    filename?: string | null
-    mimeType?: string | null
-    filesize?: number | null
-    width?: number | null
-    height?: number | null
-    focalX?: number | null
-    focalY?: number | null
+  id: number;
+  alt: string;
+  href?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
 export interface Page {
-    id: number
-    title: string
+  id: number;
+  title: string;
+  /**
+   * Enable this to use a custom URL slug instead of one of the predefined pages.
+   */
+  customPage?: boolean | null;
+  slug?:
+    | (
+        | 'main'
+        | 'jobs'
+        | 'blog'
+        | 'features'
+        | 'about-us'
+        | 'legal-notice'
+        | 'privacy'
+        | 'terms'
+        | 'contact'
+        | 'actions'
+        | 'action-details'
+        | 'community-edition'
+        | 'enterprise-edition'
+        | 'pricing'
+        | 'subscription'
+      )
+    | null;
+  /**
+   * Generated from the title when left empty. Predefined page slugs cannot be used.
+   */
+  customSlug?: string | null;
+  layout?:
+    | (
+        | {
+            badge?: string | null;
+            badge_link?: string | null;
+            heading: string;
+            centered?: boolean | null;
+            image?: (number | null) | Media;
+            /**
+             * CSS color shown behind the hero image, for example #13102d or rgb(19, 16, 45).
+             */
+            imageBackground?: string | null;
+            grainientColors?: {
+              color1?: string | null;
+              color2?: string | null;
+              color3?: string | null;
+              backgroundColor?: string | null;
+            };
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'hero';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            variant: 'feature' | 'runtime';
+            featureContent?: {
+              projects?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              roleSystem?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              organizations?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              memberManagement?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+            };
+            runtimeContent?: {
+              nodes?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              suggestionMenu?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              actionList?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+              runtimeTypes?: {
+                title?: string | null;
+                description?: string | null;
+                link?: {
+                  label?: string | null;
+                  url?: string | null;
+                };
+              };
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'bento';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            cardPlacement: 'alternate' | 'right' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            cards: {
+              label: string;
+              title: string;
+              description: string;
+              mediaType: 'image' | 'playground';
+              image?: (number | null) | Media;
+              playgroundUrl?: string | null;
+              showImageBorder?: boolean | null;
+              mask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
+              bulletPoints?: string[] | null;
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'offsetCards';
+          }
+        | {
+            heading: string;
+            subheading: string;
+            label?: string | null;
+            /**
+             * Syntax highlighting language. Defaults to Bash when left empty.
+             */
+            language?:
+              | (
+                  | 'bsl'
+                  | 'sdbl'
+                  | 'abap'
+                  | 'actionscript-3'
+                  | 'ada'
+                  | 'angular-html'
+                  | 'angular-ts'
+                  | 'apache'
+                  | 'apex'
+                  | 'apl'
+                  | 'applescript'
+                  | 'ara'
+                  | 'asciidoc'
+                  | 'razor'
+                  | 'asm'
+                  | 'astro'
+                  | 'ahk'
+                  | 'ahk2'
+                  | 'awk'
+                  | 'ballerina'
+                  | 'bat'
+                  | 'beancount'
+                  | 'berry'
+                  | 'bibtex'
+                  | 'bicep'
+                  | 'bird2'
+                  | 'blade'
+                  | 'c'
+                  | 'csharp'
+                  | 'cpp'
+                  | 'c3'
+                  | 'cadence'
+                  | 'cairo'
+                  | 'chapel'
+                  | 'clarity'
+                  | 'clojure'
+                  | 'soy'
+                  | 'cmake'
+                  | 'cobol'
+                  | 'codeowners'
+                  | 'codeql'
+                  | 'coffee'
+                  | 'common-lisp'
+                  | 'crystal'
+                  | 'css'
+                  | 'csv'
+                  | 'cue'
+                  | 'cypher'
+                  | 'd'
+                  | 'dart'
+                  | 'dax'
+                  | 'desktop'
+                  | 'diff'
+                  | 'docker'
+                  | 'dotenv'
+                  | 'dream-maker'
+                  | 'edge'
+                  | 'elixir'
+                  | 'elm'
+                  | 'emacs-lisp'
+                  | 'erb'
+                  | 'erlang'
+                  | 'fsharp'
+                  | 'fennel'
+                  | 'fish'
+                  | 'fluent'
+                  | 'fortran-fixed-form'
+                  | 'fortran-free-form'
+                  | 'gdresource'
+                  | 'gdscript'
+                  | 'gdshader'
+                  | 'genie'
+                  | 'po'
+                  | 'gherkin'
+                  | 'git-commit'
+                  | 'git-rebase'
+                  | 'gleam'
+                  | 'glimmer-js'
+                  | 'glimmer-ts'
+                  | 'glsl'
+                  | 'gn'
+                  | 'smalltalk'
+                  | 'gnuplot'
+                  | 'go'
+                  | 'graphql'
+                  | 'groovy'
+                  | 'hack'
+                  | 'handlebars'
+                  | 'hcl'
+                  | 'haskell'
+                  | 'haxe'
+                  | 'hjson'
+                  | 'hlsl'
+                  | 'html'
+                  | 'html-derivative'
+                  | 'http'
+                  | 'hurl'
+                  | 'hxml'
+                  | 'hy'
+                  | 'imba'
+                  | 'ini'
+                  | 'java'
+                  | 'javascript'
+                  | 'jinja'
+                  | 'jison'
+                  | 'json'
+                  | 'jsonl'
+                  | 'jsonc'
+                  | 'json5'
+                  | 'jsonnet'
+                  | 'jssm'
+                  | 'jsx'
+                  | 'julia'
+                  | 'just'
+                  | 'kdl'
+                  | 'kotlin'
+                  | 'kusto'
+                  | 'latex'
+                  | 'lean'
+                  | 'less'
+                  | 'liquid'
+                  | 'llvm'
+                  | 'log'
+                  | 'logo'
+                  | 'lua'
+                  | 'luau'
+                  | 'make'
+                  | 'markdown'
+                  | 'marko'
+                  | 'matlab'
+                  | 'mdc'
+                  | 'mdx'
+                  | 'mermaid'
+                  | 'mipsasm'
+                  | 'mojo'
+                  | 'moonbit'
+                  | 'move'
+                  | 'narrat'
+                  | 'nextflow'
+                  | 'nextflow-groovy'
+                  | 'nginx'
+                  | 'nim'
+                  | 'nix'
+                  | 'nsis'
+                  | 'nushell'
+                  | 'objective-c'
+                  | 'objective-cpp'
+                  | 'ocaml'
+                  | 'odin'
+                  | 'openscad'
+                  | 'org'
+                  | 'pascal'
+                  | 'perl'
+                  | 'php'
+                  | 'pkl'
+                  | 'plsql'
+                  | 'polar'
+                  | 'postcss'
+                  | 'powerquery'
+                  | 'powershell'
+                  | 'prisma'
+                  | 'prolog'
+                  | 'proto'
+                  | 'pug'
+                  | 'puppet'
+                  | 'purescript'
+                  | 'python'
+                  | 'qml'
+                  | 'qmldir'
+                  | 'qss'
+                  | 'r'
+                  | 'racket'
+                  | 'raku'
+                  | 'rbs'
+                  | 'regexp'
+                  | 'rel'
+                  | 'rst'
+                  | 'riscv'
+                  | 'coq'
+                  | 'ron'
+                  | 'rosmsg'
+                  | 'ruby'
+                  | 'haml'
+                  | 'rust'
+                  | 'sas'
+                  | 'sass'
+                  | 'scala'
+                  | 'scheme'
+                  | 'scss'
+                  | 'shaderlab'
+                  | 'shellscript'
+                  | 'shellsession'
+                  | 'smithy'
+                  | 'solidity'
+                  | 'sparql'
+                  | 'splunk'
+                  | 'sql'
+                  | 'ssh-config'
+                  | 'stata'
+                  | 'stylus'
+                  | 'surrealql'
+                  | 'svelte'
+                  | 'swift'
+                  | 'systemd'
+                  | 'system-verilog'
+                  | 'talonscript'
+                  | 'tasl'
+                  | 'tcl'
+                  | 'templ'
+                  | 'terraform'
+                  | 'tex'
+                  | 'toml'
+                  | 'tsv'
+                  | 'tsx'
+                  | 'turtle'
+                  | 'twig'
+                  | 'typescript'
+                  | 'ts-tags'
+                  | 'typespec'
+                  | 'typst'
+                  | 'v'
+                  | 'vala'
+                  | 'verilog'
+                  | 'vhdl'
+                  | 'viml'
+                  | 'vb'
+                  | 'vue'
+                  | 'vue-html'
+                  | 'vue-vine'
+                  | 'vyper'
+                  | 'wasm'
+                  | 'wit'
+                  | 'wenyan'
+                  | 'wgsl'
+                  | 'wikitext'
+                  | 'reg'
+                  | 'wolfram'
+                  | 'xml'
+                  | 'xsl'
+                  | 'yaml'
+                  | 'zenscript'
+                  | 'zig'
+                )
+              | null;
+            code: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'install';
+          }
+        | {
+            heading?: string | null;
+            subheading?: string | null;
+            cards: {
+              title: string;
+              description: string;
+              mediaType: 'image' | 'playground';
+              image?: (number | null) | Media;
+              playgroundUrl?: string | null;
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'swipeCards';
+          }
+        | {
+            description: string;
+            logos?:
+              | {
+                  logo: number | Media;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'brand';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            items: {
+              question: string;
+              answer: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+        | {
+            heading: string;
+            subheading: string;
+            ctaLink: {
+              label: string;
+              url: string;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cta';
+          }
+        | {
+            title: string;
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            mediaType: 'image' | 'playground';
+            image?: (number | null) | Media;
+            playgroundUrl?: string | null;
+            showCard?: boolean | null;
+            showImageBorder?: boolean | null;
+            imageMask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'ctaImage';
+          }
+        | {
+            heading: string;
+            searchPlaceholder: string;
+            allLocationsLabel: string;
+            allJobTypesLabel: string;
+            allCategoriesLabel: string;
+            noJobsFoundLabel: string;
+            applicationHeading: string;
+            applicationNameLabel: string;
+            applicationNamePlaceholder: string;
+            applicationEmailLabel: string;
+            applicationEmailPlaceholder: string;
+            applicationMessageLabel: string;
+            applicationMessagePlaceholder: string;
+            applicationSubmitLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'jobs';
+          }
+        | {
+            viewOtherBlogsLabel: string;
+            noPostsLabel: string;
+            loadMoreLabel: string;
+            loadingLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'blog';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'imageCenter' | 'imageLeft' | 'imageRight';
+            sectionDescription?: string | null;
+            blog: number | Blog;
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'blogPreview';
+          }
+        | {
+            /**
+             * Spacing above the border in pixels.
+             */
+            paddingTop?: number | null;
+            /**
+             * Spacing below the border in pixels.
+             */
+            paddingBottom?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'border';
+          }
+        | {
+            badge?: string | null;
+            badge_link?: string | null;
+            /**
+             * Use {} as a placeholder for the action title.
+             */
+            heading?: string | null;
+            grainientColors?: {
+              /**
+               * Used when the action module does not define brandColor1.
+               */
+              color1?: string | null;
+              /**
+               * Used when the action module does not define brandColor2.
+               */
+              color2?: string | null;
+              color3?: string | null;
+              backgroundColor?: string | null;
+            };
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionHero';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            functionDefinitionLabel: string;
+            parametersLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionFunctions';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            flowTypeLabel: string;
+            settingsLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionEvents';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionReferences';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            searchPlaceholder: string;
+            sortNewestLabel: string;
+            sortOldestLabel: string;
+            loadMoreLabel: string;
+            noActionsFoundLabel: string;
+            allCategoriesLabel: string;
+            categoryLabels: {
+              ai: string;
+              analytics: string;
+              communication: string;
+              cybersecurity: string;
+              dataStorage: string;
+              developerTools: string;
+              development: string;
+              financeAccounting: string;
+              hitl: string;
+              marketing: string;
+              miscellaneous: string;
+              productivity: string;
+              sales: string;
+              utility: string;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'actionList';
+          }
+        | {
+            content: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'markdown';
+          }
+        | {
+            heading: string;
+            description: string;
+            nameLabel: string;
+            namePlaceholder: string;
+            emailLabel: string;
+            emailPlaceholder: string;
+            messageLabel: string;
+            messagePlaceholder: string;
+            submitLabel: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'contact';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            cards?:
+              | {
+                  title: string;
+                  description?: string | null;
+                  link?: {
+                    label?: string | null;
+                    url?: string | null;
+                  };
+                  mediaType: 'image' | 'playground';
+                  image?: (number | null) | Media;
+                  playgroundUrl?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cardRow';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            items: {
+              time: string;
+              title: string;
+              description: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'roadmap';
+          }
+        | {
+            items: {
+              title: string;
+              description?: string | null;
+              showImageBorder?: boolean | null;
+              sectionLayout:
+                'imageRight' | 'imageLeft' | 'imageFullscreen' | 'imageRightFullscreen' | 'imageLeftFullscreen';
+              gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
+              gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+              bulletPoints?: string[] | null;
+              mediaType: 'image' | 'playground';
+              image?: (number | null) | Media;
+              playgroundUrl?: string | null;
+              link?: {
+                label?: string | null;
+                url?: string | null;
+              };
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'scrollCards';
+          }
+        | {
+            title: string;
+            description?: string | null;
+            showImageBorder?: boolean | null;
+            sectionLayout:
+              'imageRight' | 'imageLeft' | 'imageFullscreen' | 'imageRightFullscreen' | 'imageLeftFullscreen';
+            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
+            gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+            bulletPoints?: string[] | null;
+            mediaType: 'image' | 'playground';
+            image?: (number | null) | Media;
+            playgroundUrl?: string | null;
+            link?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'standaloneCard';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            sourceType: 'url' | 'media';
+            videoUrl?: string | null;
+            video?: (number | null) | Media;
+            poster?: (number | null) | Media;
+            controls?: boolean | null;
+            autoPlay?: boolean | null;
+            muted?: boolean | null;
+            loop?: boolean | null;
+            playsInline?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            badge?: string | null;
+            badge_link?: string | null;
+            heading: string;
+            image?: (number | null) | Media;
+            showImageBorder?: boolean | null;
+            mask?: ('top' | 'right' | 'bottom' | 'left')[] | null;
+            shineColors?: {
+              color1?: string | null;
+              color2?: string | null;
+              color3?: string | null;
+            };
+            texts?:
+              | {
+                  text: string;
+                  id?: string | null;
+                }[]
+              | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'widehero';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            features?:
+              | {
+                  icon: string;
+                  title: string;
+                  description?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'listFeature';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            items: {
+              number: number;
+              description: string;
+              enableNumberFlow?: boolean | null;
+              suffix?: string | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'stats';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            contentHeading?: string | null;
+            contentDescription?: string | null;
+            flowLayout: 'left' | 'right';
+            playgroundUrl?: string | null;
+            showBorder?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'flowExample';
+          }
+        | {
+            pageIntro?: {
+              heading?: string | null;
+              description?: string | null;
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'subscriptionConfigurator';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            popularPill?: {
+              icon?: string | null;
+              text?: string | null;
+              color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+            };
+            whatsIncludedText?: string | null;
+            /**
+             * Optional color applied to all card titles. Leave empty to use white.
+             */
+            titleColor?: string | null;
+            /**
+             * Optional accent color for the highlighted card background. Leave empty to use the white gradient.
+             */
+            highlightedCardColor?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
+            pro?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missing?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            max?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missing?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            custom?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missing?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'pricing';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            pricingPeriod: 'monthly' | 'quarterly' | 'yearly';
+            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
+            gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+            pro?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missing?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            max?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missing?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            custom?: {
+              features?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              missing?:
+                | {
+                    text: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              button?: {
+                label?: string | null;
+                url?: string | null;
+                variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+              };
+            };
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'smallPricing';
+          }
+        | {
+            sectionHeading?: string | null;
+            sectionLayout: 'center' | 'left';
+            sectionDescription?: string | null;
+            sectionLinkButton?: {
+              label?: string | null;
+              url?: string | null;
+            };
+            apps: {
+              logo: number | Media;
+              name: string;
+              features?:
+                | {
+                    title: string;
+                    exists?: boolean | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[];
+            showIcon?: boolean | null;
+            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
+            gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
+            buttons?:
+              | {
+                  label: string;
+                  url: string;
+                  variant?: ('none' | 'normal' | 'outlined' | 'filled') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'compareApplication';
+          }
+      )[]
+    | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
     /**
-     * Enable this to use a custom URL slug instead of one of the predefined pages.
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
      */
-    customPage?: boolean | null
-    slug?:
-        | (
-              | "main"
-              | "jobs"
-              | "blog"
-              | "features"
-              | "about-us"
-              | "legal-notice"
-              | "privacy"
-              | "terms"
-              | "contact"
-              | "actions"
-              | "action-details"
-              | "community-edition"
-              | "enterprise-edition"
-              | "pricing"
-              | "subscription"
-          )
-        | null
-    /**
-     * Generated from the title when left empty. Predefined page slugs cannot be used.
-     */
-    customSlug?: string | null
-    layout?:
-        | (
-              | {
-                    badge?: string | null
-                    badge_link?: string | null
-                    heading: string
-                    centered?: boolean | null
-                    image?: (number | null) | Media
-                    /**
-                     * CSS color shown behind the hero image, for example #13102d or rgb(19, 16, 45).
-                     */
-                    imageBackground?: string | null
-                    grainientColors?: {
-                        color1?: string | null
-                        color2?: string | null
-                        color3?: string | null
-                        backgroundColor?: string | null
-                    }
-                    texts?:
-                        | {
-                              text: string
-                              id?: string | null
-                          }[]
-                        | null
-                    buttons?:
-                        | {
-                              label: string
-                              url: string
-                              variant?: ("none" | "normal" | "outlined" | "filled") | null
-                              id?: string | null
-                          }[]
-                        | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "hero"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    variant: "feature" | "runtime"
-                    featureContent?: {
-                        projects?: {
-                            title?: string | null
-                            description?: string | null
-                            link?: {
-                                label?: string | null
-                                url?: string | null
-                            }
-                        }
-                        roleSystem?: {
-                            title?: string | null
-                            description?: string | null
-                            link?: {
-                                label?: string | null
-                                url?: string | null
-                            }
-                        }
-                        organizations?: {
-                            title?: string | null
-                            description?: string | null
-                            link?: {
-                                label?: string | null
-                                url?: string | null
-                            }
-                        }
-                        memberManagement?: {
-                            title?: string | null
-                            description?: string | null
-                            link?: {
-                                label?: string | null
-                                url?: string | null
-                            }
-                        }
-                    }
-                    runtimeContent?: {
-                        nodes?: {
-                            title?: string | null
-                            description?: string | null
-                            link?: {
-                                label?: string | null
-                                url?: string | null
-                            }
-                        }
-                        suggestionMenu?: {
-                            title?: string | null
-                            description?: string | null
-                            link?: {
-                                label?: string | null
-                                url?: string | null
-                            }
-                        }
-                        actionList?: {
-                            title?: string | null
-                            description?: string | null
-                            link?: {
-                                label?: string | null
-                                url?: string | null
-                            }
-                        }
-                        runtimeTypes?: {
-                            title?: string | null
-                            description?: string | null
-                            link?: {
-                                label?: string | null
-                                url?: string | null
-                            }
-                        }
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "bento"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    cardPlacement: "alternate" | "right" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    cards: {
-                        label: string
-                        title: string
-                        description: string
-                        mediaType: "image" | "playground"
-                        image?: (number | null) | Media
-                        playgroundUrl?: string | null
-                        showImageBorder?: boolean | null
-                        mask?: ("top" | "right" | "bottom" | "left")[] | null
-                        bulletPoints?: string[] | null
-                        link?: {
-                            label?: string | null
-                            url?: string | null
-                        }
-                        id?: string | null
-                    }[]
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "offsetCards"
-                }
-              | {
-                    heading: string
-                    subheading: string
-                    label?: string | null
-                    /**
-                     * Syntax highlighting language. Defaults to Bash when left empty.
-                     */
-                    language?:
-                        | (
-                              | "bsl"
-                              | "sdbl"
-                              | "abap"
-                              | "actionscript-3"
-                              | "ada"
-                              | "angular-html"
-                              | "angular-ts"
-                              | "apache"
-                              | "apex"
-                              | "apl"
-                              | "applescript"
-                              | "ara"
-                              | "asciidoc"
-                              | "razor"
-                              | "asm"
-                              | "astro"
-                              | "ahk"
-                              | "ahk2"
-                              | "awk"
-                              | "ballerina"
-                              | "bat"
-                              | "beancount"
-                              | "berry"
-                              | "bibtex"
-                              | "bicep"
-                              | "bird2"
-                              | "blade"
-                              | "c"
-                              | "csharp"
-                              | "cpp"
-                              | "c3"
-                              | "cadence"
-                              | "cairo"
-                              | "chapel"
-                              | "clarity"
-                              | "clojure"
-                              | "soy"
-                              | "cmake"
-                              | "cobol"
-                              | "codeowners"
-                              | "codeql"
-                              | "coffee"
-                              | "common-lisp"
-                              | "crystal"
-                              | "css"
-                              | "csv"
-                              | "cue"
-                              | "cypher"
-                              | "d"
-                              | "dart"
-                              | "dax"
-                              | "desktop"
-                              | "diff"
-                              | "docker"
-                              | "dotenv"
-                              | "dream-maker"
-                              | "edge"
-                              | "elixir"
-                              | "elm"
-                              | "emacs-lisp"
-                              | "erb"
-                              | "erlang"
-                              | "fsharp"
-                              | "fennel"
-                              | "fish"
-                              | "fluent"
-                              | "fortran-fixed-form"
-                              | "fortran-free-form"
-                              | "gdresource"
-                              | "gdscript"
-                              | "gdshader"
-                              | "genie"
-                              | "po"
-                              | "gherkin"
-                              | "git-commit"
-                              | "git-rebase"
-                              | "gleam"
-                              | "glimmer-js"
-                              | "glimmer-ts"
-                              | "glsl"
-                              | "gn"
-                              | "smalltalk"
-                              | "gnuplot"
-                              | "go"
-                              | "graphql"
-                              | "groovy"
-                              | "hack"
-                              | "handlebars"
-                              | "hcl"
-                              | "haskell"
-                              | "haxe"
-                              | "hjson"
-                              | "hlsl"
-                              | "html"
-                              | "html-derivative"
-                              | "http"
-                              | "hurl"
-                              | "hxml"
-                              | "hy"
-                              | "imba"
-                              | "ini"
-                              | "java"
-                              | "javascript"
-                              | "jinja"
-                              | "jison"
-                              | "json"
-                              | "jsonl"
-                              | "jsonc"
-                              | "json5"
-                              | "jsonnet"
-                              | "jssm"
-                              | "jsx"
-                              | "julia"
-                              | "just"
-                              | "kdl"
-                              | "kotlin"
-                              | "kusto"
-                              | "latex"
-                              | "lean"
-                              | "less"
-                              | "liquid"
-                              | "llvm"
-                              | "log"
-                              | "logo"
-                              | "lua"
-                              | "luau"
-                              | "make"
-                              | "markdown"
-                              | "marko"
-                              | "matlab"
-                              | "mdc"
-                              | "mdx"
-                              | "mermaid"
-                              | "mipsasm"
-                              | "mojo"
-                              | "moonbit"
-                              | "move"
-                              | "narrat"
-                              | "nextflow"
-                              | "nextflow-groovy"
-                              | "nginx"
-                              | "nim"
-                              | "nix"
-                              | "nsis"
-                              | "nushell"
-                              | "objective-c"
-                              | "objective-cpp"
-                              | "ocaml"
-                              | "odin"
-                              | "openscad"
-                              | "org"
-                              | "pascal"
-                              | "perl"
-                              | "php"
-                              | "pkl"
-                              | "plsql"
-                              | "polar"
-                              | "postcss"
-                              | "powerquery"
-                              | "powershell"
-                              | "prisma"
-                              | "prolog"
-                              | "proto"
-                              | "pug"
-                              | "puppet"
-                              | "purescript"
-                              | "python"
-                              | "qml"
-                              | "qmldir"
-                              | "qss"
-                              | "r"
-                              | "racket"
-                              | "raku"
-                              | "rbs"
-                              | "regexp"
-                              | "rel"
-                              | "rst"
-                              | "riscv"
-                              | "coq"
-                              | "ron"
-                              | "rosmsg"
-                              | "ruby"
-                              | "haml"
-                              | "rust"
-                              | "sas"
-                              | "sass"
-                              | "scala"
-                              | "scheme"
-                              | "scss"
-                              | "shaderlab"
-                              | "shellscript"
-                              | "shellsession"
-                              | "smithy"
-                              | "solidity"
-                              | "sparql"
-                              | "splunk"
-                              | "sql"
-                              | "ssh-config"
-                              | "stata"
-                              | "stylus"
-                              | "surrealql"
-                              | "svelte"
-                              | "swift"
-                              | "systemd"
-                              | "system-verilog"
-                              | "talonscript"
-                              | "tasl"
-                              | "tcl"
-                              | "templ"
-                              | "terraform"
-                              | "tex"
-                              | "toml"
-                              | "tsv"
-                              | "tsx"
-                              | "turtle"
-                              | "twig"
-                              | "typescript"
-                              | "ts-tags"
-                              | "typespec"
-                              | "typst"
-                              | "v"
-                              | "vala"
-                              | "verilog"
-                              | "vhdl"
-                              | "viml"
-                              | "vb"
-                              | "vue"
-                              | "vue-html"
-                              | "vue-vine"
-                              | "vyper"
-                              | "wasm"
-                              | "wit"
-                              | "wenyan"
-                              | "wgsl"
-                              | "wikitext"
-                              | "reg"
-                              | "wolfram"
-                              | "xml"
-                              | "xsl"
-                              | "yaml"
-                              | "zenscript"
-                              | "zig"
-                          )
-                        | null
-                    code: string
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "install"
-                }
-              | {
-                    heading?: string | null
-                    subheading?: string | null
-                    cards: {
-                        title: string
-                        description: string
-                        mediaType: "image" | "playground"
-                        image?: (number | null) | Media
-                        playgroundUrl?: string | null
-                        link?: {
-                            label?: string | null
-                            url?: string | null
-                        }
-                        id?: string | null
-                    }[]
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "swipeCards"
-                }
-              | {
-                    description: string
-                    logos?:
-                        | {
-                              logo: number | Media
-                              id?: string | null
-                          }[]
-                        | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "brand"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    items: {
-                        question: string
-                        answer: string
-                        id?: string | null
-                    }[]
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "faq"
-                }
-              | {
-                    heading: string
-                    subheading: string
-                    ctaLink: {
-                        label: string
-                        url: string
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "cta"
-                }
-              | {
-                    title: string
-                    texts?:
-                        | {
-                              text: string
-                              id?: string | null
-                          }[]
-                        | null
-                    buttons?:
-                        | {
-                              label: string
-                              url: string
-                              variant?: ("none" | "normal" | "outlined" | "filled") | null
-                              id?: string | null
-                          }[]
-                        | null
-                    mediaType: "image" | "playground"
-                    image?: (number | null) | Media
-                    playgroundUrl?: string | null
-                    showCard?: boolean | null
-                    showImageBorder?: boolean | null
-                    imageMask?: ("top" | "right" | "bottom" | "left")[] | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "ctaImage"
-                }
-              | {
-                    heading: string
-                    searchPlaceholder: string
-                    allLocationsLabel: string
-                    allJobTypesLabel: string
-                    allCategoriesLabel: string
-                    noJobsFoundLabel: string
-                    applicationHeading: string
-                    applicationNameLabel: string
-                    applicationNamePlaceholder: string
-                    applicationEmailLabel: string
-                    applicationEmailPlaceholder: string
-                    applicationMessageLabel: string
-                    applicationMessagePlaceholder: string
-                    applicationSubmitLabel: string
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "jobs"
-                }
-              | {
-                    viewOtherBlogsLabel: string
-                    noPostsLabel: string
-                    loadMoreLabel: string
-                    loadingLabel: string
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "blog"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "imageCenter" | "imageLeft" | "imageRight"
-                    sectionDescription?: string | null
-                    blog: number | Blog
-                    showBorder?: boolean | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "blogPreview"
-                }
-              | {
-                    /**
-                     * Spacing above the border in pixels.
-                     */
-                    paddingTop?: number | null
-                    /**
-                     * Spacing below the border in pixels.
-                     */
-                    paddingBottom?: number | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "border"
-                }
-              | {
-                    badge?: string | null
-                    badge_link?: string | null
-                    /**
-                     * Use {} as a placeholder for the action title.
-                     */
-                    heading?: string | null
-                    grainientColors?: {
-                        /**
-                         * Used when the action module does not define brandColor1.
-                         */
-                        color1?: string | null
-                        /**
-                         * Used when the action module does not define brandColor2.
-                         */
-                        color2?: string | null
-                        color3?: string | null
-                        backgroundColor?: string | null
-                    }
-                    texts?:
-                        | {
-                              text: string
-                              id?: string | null
-                          }[]
-                        | null
-                    buttons?:
-                        | {
-                              label: string
-                              url: string
-                              variant?: ("none" | "normal" | "outlined" | "filled") | null
-                              id?: string | null
-                          }[]
-                        | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "actionHero"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    functionDefinitionLabel: string
-                    parametersLabel: string
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "actionFunctions"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    flowTypeLabel: string
-                    settingsLabel: string
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "actionEvents"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "actionReferences"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    searchPlaceholder: string
-                    sortNewestLabel: string
-                    sortOldestLabel: string
-                    loadMoreLabel: string
-                    noActionsFoundLabel: string
-                    allCategoriesLabel: string
-                    categoryLabels: {
-                        ai: string
-                        analytics: string
-                        communication: string
-                        cybersecurity: string
-                        dataStorage: string
-                        developerTools: string
-                        development: string
-                        financeAccounting: string
-                        hitl: string
-                        marketing: string
-                        miscellaneous: string
-                        productivity: string
-                        sales: string
-                        utility: string
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "actionList"
-                }
-              | {
-                    content: {
-                        root: {
-                            type: string
-                            children: {
-                                type: any
-                                version: number
-                                [k: string]: unknown
-                            }[]
-                            direction: ("ltr" | "rtl") | null
-                            format: "left" | "start" | "center" | "right" | "end" | "justify" | ""
-                            indent: number
-                            version: number
-                        }
-                        [k: string]: unknown
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "markdown"
-                }
-              | {
-                    heading: string
-                    description: string
-                    nameLabel: string
-                    namePlaceholder: string
-                    emailLabel: string
-                    emailPlaceholder: string
-                    messageLabel: string
-                    messagePlaceholder: string
-                    submitLabel: string
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "contact"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    cards?:
-                        | {
-                              title: string
-                              description?: string | null
-                              link?: {
-                                  label?: string | null
-                                  url?: string | null
-                              }
-                              mediaType: "image" | "playground"
-                              image?: (number | null) | Media
-                              playgroundUrl?: string | null
-                              id?: string | null
-                          }[]
-                        | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "cardRow"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    items: {
-                        time: string
-                        title: string
-                        description: string
-                        id?: string | null
-                    }[]
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "roadmap"
-                }
-              | {
-                    items: {
-                        title: string
-                        description?: string | null
-                        showImageBorder?: boolean | null
-                        sectionLayout: "imageRight" | "imageLeft" | "imageFullscreen" | "imageRightFullscreen" | "imageLeftFullscreen"
-                        gradient?: ("blue" | "yellow" | "pink" | "aqua" | "brand" | "lime" | "magenta" | "neutral") | null
-                        gradientDirection?: ("topLeft" | "topRight" | "bottomLeft" | "bottomRight") | null
-                        bulletPoints?: string[] | null
-                        mediaType: "image" | "playground"
-                        image?: (number | null) | Media
-                        playgroundUrl?: string | null
-                        link?: {
-                            label?: string | null
-                            url?: string | null
-                        }
-                        id?: string | null
-                    }[]
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "scrollCards"
-                }
-              | {
-                    title: string
-                    description?: string | null
-                    showImageBorder?: boolean | null
-                    sectionLayout: "imageRight" | "imageLeft" | "imageFullscreen" | "imageRightFullscreen" | "imageLeftFullscreen"
-                    gradient?: ("blue" | "yellow" | "pink" | "aqua" | "brand" | "lime" | "magenta" | "neutral") | null
-                    gradientDirection?: ("topLeft" | "topRight" | "bottomLeft" | "bottomRight") | null
-                    bulletPoints?: string[] | null
-                    mediaType: "image" | "playground"
-                    image?: (number | null) | Media
-                    playgroundUrl?: string | null
-                    link?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "standaloneCard"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    sourceType: "url" | "media"
-                    videoUrl?: string | null
-                    video?: (number | null) | Media
-                    poster?: (number | null) | Media
-                    controls?: boolean | null
-                    autoPlay?: boolean | null
-                    muted?: boolean | null
-                    loop?: boolean | null
-                    playsInline?: boolean | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "video"
-                }
-              | {
-                    badge?: string | null
-                    badge_link?: string | null
-                    heading: string
-                    image?: (number | null) | Media
-                    showImageBorder?: boolean | null
-                    mask?: ("top" | "right" | "bottom" | "left")[] | null
-                    shineColors?: {
-                        color1?: string | null
-                        color2?: string | null
-                        color3?: string | null
-                    }
-                    texts?:
-                        | {
-                              text: string
-                              id?: string | null
-                          }[]
-                        | null
-                    buttons?:
-                        | {
-                              label: string
-                              url: string
-                              variant?: ("none" | "normal" | "outlined" | "filled") | null
-                              id?: string | null
-                          }[]
-                        | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "widehero"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    features?:
-                        | {
-                              icon: string
-                              title: string
-                              description?: string | null
-                              id?: string | null
-                          }[]
-                        | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "listFeature"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    items: {
-                        number: number
-                        description: string
-                        enableNumberFlow?: boolean | null
-                        suffix?: string | null
-                        id?: string | null
-                    }[]
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "stats"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    contentHeading?: string | null
-                    contentDescription?: string | null
-                    flowLayout: "left" | "right"
-                    playgroundUrl?: string | null
-                    showBorder?: boolean | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "flowExample"
-                }
-              | {
-                    pageIntro?: {
-                        heading?: string | null
-                        description?: string | null
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "subscriptionConfigurator"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    popularPill?: {
-                        icon?: string | null
-                        text?: string | null
-                        color?: ("brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta") | null
-                    }
-                    whatsIncludedText?: string | null
-                    /**
-                     * Optional color applied to all card titles. Leave empty to use white.
-                     */
-                    titleColor?: string | null
-                    /**
-                     * Optional accent color for the highlighted card background. Leave empty to use the white gradient.
-                     */
-                    highlightedCardColor?: ("brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta") | null
-                    pro?: {
-                        features?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        missing?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        button?: {
-                            label?: string | null
-                            url?: string | null
-                            variant?: ("none" | "normal" | "outlined" | "filled") | null
-                        }
-                    }
-                    max?: {
-                        features?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        missing?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        button?: {
-                            label?: string | null
-                            url?: string | null
-                            variant?: ("none" | "normal" | "outlined" | "filled") | null
-                        }
-                    }
-                    custom?: {
-                        features?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        missing?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        button?: {
-                            label?: string | null
-                            url?: string | null
-                            variant?: ("none" | "normal" | "outlined" | "filled") | null
-                        }
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "pricing"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    pricingPeriod: "monthly" | "quarterly" | "yearly"
-                    gradient?: ("blue" | "yellow" | "pink" | "aqua" | "brand" | "lime" | "magenta" | "neutral") | null
-                    gradientDirection?: ("topLeft" | "topRight" | "bottomLeft" | "bottomRight") | null
-                    pro?: {
-                        features?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        missing?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        button?: {
-                            label?: string | null
-                            url?: string | null
-                            variant?: ("none" | "normal" | "outlined" | "filled") | null
-                        }
-                    }
-                    max?: {
-                        features?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        missing?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        button?: {
-                            label?: string | null
-                            url?: string | null
-                            variant?: ("none" | "normal" | "outlined" | "filled") | null
-                        }
-                    }
-                    custom?: {
-                        features?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        missing?:
-                            | {
-                                  text: string
-                                  id?: string | null
-                              }[]
-                            | null
-                        button?: {
-                            label?: string | null
-                            url?: string | null
-                            variant?: ("none" | "normal" | "outlined" | "filled") | null
-                        }
-                    }
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "smallPricing"
-                }
-              | {
-                    sectionHeading?: string | null
-                    sectionLayout: "center" | "left"
-                    sectionDescription?: string | null
-                    sectionLinkButton?: {
-                        label?: string | null
-                        url?: string | null
-                    }
-                    apps: {
-                        logo: number | Media
-                        name: string
-                        features?:
-                            | {
-                                  title: string
-                                  exists?: boolean | null
-                                  id?: string | null
-                              }[]
-                            | null
-                        id?: string | null
-                    }[]
-                    showIcon?: boolean | null
-                    gradient?: ("blue" | "yellow" | "pink" | "aqua" | "brand" | "lime" | "magenta" | "neutral") | null
-                    gradientDirection?: ("topLeft" | "topRight" | "bottomLeft" | "bottomRight") | null
-                    buttons?:
-                        | {
-                              label: string
-                              url: string
-                              variant?: ("none" | "normal" | "outlined" | "filled") | null
-                              id?: string | null
-                          }[]
-                        | null
-                    id?: string | null
-                    blockName?: string | null
-                    blockType: "compareApplication"
-                }
-          )[]
-        | null
-    meta?: {
-        title?: string | null
-        description?: string | null
-        /**
-         * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-         */
-        image?: (number | null) | Media
-    }
-    updatedAt: string
-    createdAt: string
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "blog".
  */
 export interface Blog {
-    id: number
-    title: string
-    slug: string
-    isPinned?: boolean | null
-    author: number | TeamMember
-    content: {
-        root: {
-            type: string
-            children: {
-                type: any
-                version: number
-                [k: string]: unknown
-            }[]
-            direction: ("ltr" | "rtl") | null
-            format: "left" | "start" | "center" | "right" | "end" | "justify" | ""
-            indent: number
-            version: number
-        }
-        [k: string]: unknown
-    }
-    shortDescription?: string | null
-    heroImage?: (number | null) | Media
-    meta?: {
-        title?: string | null
-        description?: string | null
-        /**
-         * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-         */
-        image?: (number | null) | Media
-    }
-    updatedAt: string
-    createdAt: string
+  id: number;
+  title: string;
+  slug: string;
+  isPinned?: boolean | null;
+  author: number | TeamMember;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  shortDescription?: string | null;
+  heroImage?: (number | null) | Media;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "team-members".
  */
 export interface TeamMember {
-    id: number
-    name: string
-    image?: (number | null) | Media
-    shortDescription?: string | null
-    about?: string | null
-    role?: string | null
-    joinedAt?: string | null
-    updatedAt: string
-    createdAt: string
+  id: number;
+  name: string;
+  image?: (number | null) | Media;
+  shortDescription?: string | null;
+  about?: string | null;
+  role?: string | null;
+  joinedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "actions".
  */
 export interface Action {
-    id: number
-    identifier: string
-    module: number | Media
-    tags?:
-        | (
-              | "AI"
-              | "Analytics"
-              | "Communication"
-              | "Cybersecurity"
-              | "Data & Storage"
-              | "Developer Tools"
-              | "Development"
-              | "Finance & Accounting"
-              | "HITL"
-              | "Marketing"
-              | "Miscellaneous"
-              | "Productivity"
-              | "Sales"
-              | "Utility"
-          )[]
-        | null
-    references?: (number | Action)[] | null
-    updatedAt: string
-    createdAt: string
+  id: number;
+  identifier: string;
+  module: number | Media;
+  tags?:
+    | (
+        | 'AI'
+        | 'Analytics'
+        | 'Communication'
+        | 'Cybersecurity'
+        | 'Data & Storage'
+        | 'Developer Tools'
+        | 'Development'
+        | 'Finance & Accounting'
+        | 'HITL'
+        | 'Marketing'
+        | 'Miscellaneous'
+        | 'Productivity'
+        | 'Sales'
+        | 'Utility'
+      )[]
+    | null;
+  references?: (number | Action)[] | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "jobs".
  */
 export interface Job {
-    id: number
-    title: string
-    slug: string
-    category: "engineering" | "marketing" | "design" | "product" | "sales" | "operations"
-    type: "full-time" | "part-time" | "contract" | "internship" | "working-student" | "freelance"
-    location: "remote" | "hybrid" | "leipzig" | "solingen"
-    description: string
-    content: {
-        root: {
-            type: string
-            children: {
-                type: any
-                version: number
-                [k: string]: unknown
-            }[]
-            direction: ("ltr" | "rtl") | null
-            format: "left" | "start" | "center" | "right" | "end" | "justify" | ""
-            indent: number
-            version: number
-        }
-        [k: string]: unknown
-    }
-    /**
-     * Optional manual sort order. Lower values appear first.
-     */
-    order?: number | null
-    updatedAt: string
-    createdAt: string
+  id: number;
+  title: string;
+  slug: string;
+  category: 'engineering' | 'marketing' | 'design' | 'product' | 'sales' | 'operations';
+  type: 'full-time' | 'part-time' | 'contract' | 'internship' | 'working-student' | 'freelance';
+  location: 'remote' | 'hybrid' | 'leipzig' | 'solingen';
+  description: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Optional manual sort order. Lower values appear first.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-ai-auditlog".
  */
 export interface PayloadAiAuditlog {
-    id: number
-    title: string
-    action: "create" | "update" | "delete" | "updateGlobal"
-    targetType: "collection" | "global"
-    collection?: string | null
-    slug?: string | null
-    documentID?: string | null
-    targetURL?: string | null
-    additions?: number | null
-    removals?: number | null
-    before?:
-        | {
-              [k: string]: unknown
-          }
-        | unknown[]
-        | string
-        | number
-        | boolean
-        | null
-    after?:
-        | {
-              [k: string]: unknown
-          }
-        | unknown[]
-        | string
-        | number
-        | boolean
-        | null
-    proposal?:
-        | {
-              [k: string]: unknown
-          }
-        | unknown[]
-        | string
-        | number
-        | boolean
-        | null
-    prompt?: string | null
-    inputTokens?: number | null
-    outputTokens?: number | null
-    totalTokens?: number | null
-    aiResponse?: string | null
-    userID?: string | null
-    userLabel?: string | null
-    updatedAt: string
-    createdAt: string
+  id: number;
+  title: string;
+  action: 'create' | 'update' | 'delete' | 'updateGlobal';
+  targetType: 'collection' | 'global';
+  collection?: string | null;
+  slug?: string | null;
+  documentID?: string | null;
+  targetURL?: string | null;
+  additions?: number | null;
+  removals?: number | null;
+  before?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  after?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  proposal?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  prompt?: string | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  totalTokens?: number | null;
+  aiResponse?: string | null;
+  userID?: string | null;
+  userLabel?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-    id: number
-    key: string
-    data:
-        | {
-              [k: string]: unknown
-          }
-        | unknown[]
-        | string
-        | number
-        | boolean
-        | null
+  id: number;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-    id: number
-    document?:
-        | ({
-              relationTo: "users"
-              value: number | User
-          } | null)
-        | ({
-              relationTo: "media"
-              value: number | Media
-          } | null)
-        | ({
-              relationTo: "pages"
-              value: number | Page
-          } | null)
-        | ({
-              relationTo: "actions"
-              value: number | Action
-          } | null)
-        | ({
-              relationTo: "jobs"
-              value: number | Job
-          } | null)
-        | ({
-              relationTo: "blog"
-              value: number | Blog
-          } | null)
-        | ({
-              relationTo: "team-members"
-              value: number | TeamMember
-          } | null)
-        | ({
-              relationTo: "payload-ai-auditlog"
-              value: number | PayloadAiAuditlog
-          } | null)
-    globalSlug?: string | null
-    user: {
-        relationTo: "users"
-        value: number | User
-    }
-    updatedAt: string
-    createdAt: string
+  id: number;
+  document?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'actions';
+        value: number | Action;
+      } | null)
+    | ({
+        relationTo: 'jobs';
+        value: number | Job;
+      } | null)
+    | ({
+        relationTo: 'blog';
+        value: number | Blog;
+      } | null)
+    | ({
+        relationTo: 'team-members';
+        value: number | TeamMember;
+      } | null)
+    | ({
+        relationTo: 'payload-ai-auditlog';
+        value: number | PayloadAiAuditlog;
+      } | null);
+  globalSlug?: string | null;
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-    id: number
-    user: {
-        relationTo: "users"
-        value: number | User
-    }
-    key?: string | null
-    value?:
-        | {
-              [k: string]: unknown
-          }
-        | unknown[]
-        | string
-        | number
-        | boolean
-        | null
-    updatedAt: string
-    createdAt: string
+  id: number;
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
+  key?: string | null;
+  value?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-    id: number
-    name?: string | null
-    batch?: number | null
-    updatedAt: string
-    createdAt: string
+  id: number;
+  name?: string | null;
+  batch?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-    name?: T
-    image?: T
-    aiProvider?: T
-    aiApiKey?: T
-    updatedAt?: T
-    createdAt?: T
-    email?: T
-    resetPasswordToken?: T
-    resetPasswordExpiration?: T
-    salt?: T
-    hash?: T
-    resetPasswordRequestedAt?: T
-    loginAttempts?: T
-    lockUntil?: T
-    sessions?:
-        | T
-        | {
-              id?: T
-              createdAt?: T
-              expiresAt?: T
-          }
+  name?: T;
+  image?: T;
+  aiProvider?: T;
+  aiApiKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
-    alt?: T
-    href?: T
-    updatedAt?: T
-    createdAt?: T
-    url?: T
-    thumbnailURL?: T
-    filename?: T
-    mimeType?: T
-    filesize?: T
-    width?: T
-    height?: T
-    focalX?: T
-    focalY?: T
+  alt?: T;
+  href?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages_select".
  */
 export interface PagesSelect<T extends boolean = true> {
-    title?: T
-    customPage?: T
-    slug?: T
-    customSlug?: T
-    layout?:
-        | T
-        | {
-              hero?:
-                  | T
-                  | {
-                        badge?: T
-                        badge_link?: T
-                        heading?: T
-                        centered?: T
-                        image?: T
-                        imageBackground?: T
-                        grainientColors?:
+  title?: T;
+  customPage?: T;
+  slug?: T;
+  customSlug?: T;
+  layout?:
+    | T
+    | {
+        hero?:
+          | T
+          | {
+              badge?: T;
+              badge_link?: T;
+              heading?: T;
+              centered?: T;
+              image?: T;
+              imageBackground?: T;
+              grainientColors?:
+                | T
+                | {
+                    color1?: T;
+                    color2?: T;
+                    color3?: T;
+                    backgroundColor?: T;
+                  };
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        bento?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              variant?: T;
+              featureContent?:
+                | T
+                | {
+                    projects?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
                             | T
                             | {
-                                  color1?: T
-                                  color2?: T
-                                  color3?: T
-                                  backgroundColor?: T
-                              }
-                        texts?:
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    roleSystem?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
                             | T
                             | {
-                                  text?: T
-                                  id?: T
-                              }
-                        buttons?:
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    organizations?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
                             | T
                             | {
-                                  label?: T
-                                  url?: T
-                                  variant?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              bento?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    memberManagement?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
                             | T
                             | {
-                                  label?: T
-                                  url?: T
-                              }
-                        variant?: T
-                        featureContent?:
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                  };
+              runtimeContent?:
+                | T
+                | {
+                    nodes?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
                             | T
                             | {
-                                  projects?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            description?: T
-                                            link?:
-                                                | T
-                                                | {
-                                                      label?: T
-                                                      url?: T
-                                                  }
-                                        }
-                                  roleSystem?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            description?: T
-                                            link?:
-                                                | T
-                                                | {
-                                                      label?: T
-                                                      url?: T
-                                                  }
-                                        }
-                                  organizations?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            description?: T
-                                            link?:
-                                                | T
-                                                | {
-                                                      label?: T
-                                                      url?: T
-                                                  }
-                                        }
-                                  memberManagement?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            description?: T
-                                            link?:
-                                                | T
-                                                | {
-                                                      label?: T
-                                                      url?: T
-                                                  }
-                                        }
-                              }
-                        runtimeContent?:
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    suggestionMenu?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
                             | T
                             | {
-                                  nodes?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            description?: T
-                                            link?:
-                                                | T
-                                                | {
-                                                      label?: T
-                                                      url?: T
-                                                  }
-                                        }
-                                  suggestionMenu?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            description?: T
-                                            link?:
-                                                | T
-                                                | {
-                                                      label?: T
-                                                      url?: T
-                                                  }
-                                        }
-                                  actionList?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            description?: T
-                                            link?:
-                                                | T
-                                                | {
-                                                      label?: T
-                                                      url?: T
-                                                  }
-                                        }
-                                  runtimeTypes?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            description?: T
-                                            link?:
-                                                | T
-                                                | {
-                                                      label?: T
-                                                      url?: T
-                                                  }
-                                        }
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              offsetCards?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        cardPlacement?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    actionList?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
                             | T
                             | {
-                                  label?: T
-                                  url?: T
-                              }
-                        cards?:
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                    runtimeTypes?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          link?:
                             | T
                             | {
-                                  label?: T
-                                  title?: T
-                                  description?: T
-                                  mediaType?: T
-                                  image?: T
-                                  playgroundUrl?: T
-                                  showImageBorder?: T
-                                  mask?: T
-                                  bulletPoints?: T
-                                  link?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                        }
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              install?:
-                  | T
-                  | {
-                        heading?: T
-                        subheading?: T
-                        label?: T
-                        language?: T
-                        code?: T
-                        id?: T
-                        blockName?: T
-                    }
-              swipeCards?:
-                  | T
-                  | {
-                        heading?: T
-                        subheading?: T
-                        cards?:
-                            | T
-                            | {
-                                  title?: T
-                                  description?: T
-                                  mediaType?: T
-                                  image?: T
-                                  playgroundUrl?: T
-                                  link?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                        }
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              brand?:
-                  | T
-                  | {
-                        description?: T
-                        logos?:
-                            | T
-                            | {
-                                  logo?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              faq?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        items?:
-                            | T
-                            | {
-                                  question?: T
-                                  answer?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              cta?:
-                  | T
-                  | {
-                        heading?: T
-                        subheading?: T
-                        ctaLink?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              ctaImage?:
-                  | T
-                  | {
-                        title?: T
-                        texts?:
-                            | T
-                            | {
-                                  text?: T
-                                  id?: T
-                              }
-                        buttons?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                                  variant?: T
-                                  id?: T
-                              }
-                        mediaType?: T
-                        image?: T
-                        playgroundUrl?: T
-                        showCard?: T
-                        showImageBorder?: T
-                        imageMask?: T
-                        id?: T
-                        blockName?: T
-                    }
-              jobs?:
-                  | T
-                  | {
-                        heading?: T
-                        searchPlaceholder?: T
-                        allLocationsLabel?: T
-                        allJobTypesLabel?: T
-                        allCategoriesLabel?: T
-                        noJobsFoundLabel?: T
-                        applicationHeading?: T
-                        applicationNameLabel?: T
-                        applicationNamePlaceholder?: T
-                        applicationEmailLabel?: T
-                        applicationEmailPlaceholder?: T
-                        applicationMessageLabel?: T
-                        applicationMessagePlaceholder?: T
-                        applicationSubmitLabel?: T
-                        id?: T
-                        blockName?: T
-                    }
-              blog?:
-                  | T
-                  | {
-                        viewOtherBlogsLabel?: T
-                        noPostsLabel?: T
-                        loadMoreLabel?: T
-                        loadingLabel?: T
-                        id?: T
-                        blockName?: T
-                    }
-              blogPreview?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        blog?: T
-                        showBorder?: T
-                        id?: T
-                        blockName?: T
-                    }
-              border?:
-                  | T
-                  | {
-                        paddingTop?: T
-                        paddingBottom?: T
-                        id?: T
-                        blockName?: T
-                    }
-              actionHero?:
-                  | T
-                  | {
-                        badge?: T
-                        badge_link?: T
-                        heading?: T
-                        grainientColors?:
-                            | T
-                            | {
-                                  color1?: T
-                                  color2?: T
-                                  color3?: T
-                                  backgroundColor?: T
-                              }
-                        texts?:
-                            | T
-                            | {
-                                  text?: T
-                                  id?: T
-                              }
-                        buttons?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                                  variant?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              actionFunctions?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        functionDefinitionLabel?: T
-                        parametersLabel?: T
-                        id?: T
-                        blockName?: T
-                    }
-              actionEvents?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        flowTypeLabel?: T
-                        settingsLabel?: T
-                        id?: T
-                        blockName?: T
-                    }
-              actionReferences?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              actionList?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        searchPlaceholder?: T
-                        sortNewestLabel?: T
-                        sortOldestLabel?: T
-                        loadMoreLabel?: T
-                        noActionsFoundLabel?: T
-                        allCategoriesLabel?: T
-                        categoryLabels?:
-                            | T
-                            | {
-                                  ai?: T
-                                  analytics?: T
-                                  communication?: T
-                                  cybersecurity?: T
-                                  dataStorage?: T
-                                  developerTools?: T
-                                  development?: T
-                                  financeAccounting?: T
-                                  hitl?: T
-                                  marketing?: T
-                                  miscellaneous?: T
-                                  productivity?: T
-                                  sales?: T
-                                  utility?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              markdown?:
-                  | T
-                  | {
-                        content?: T
-                        id?: T
-                        blockName?: T
-                    }
-              contact?:
-                  | T
-                  | {
-                        heading?: T
-                        description?: T
-                        nameLabel?: T
-                        namePlaceholder?: T
-                        emailLabel?: T
-                        emailPlaceholder?: T
-                        messageLabel?: T
-                        messagePlaceholder?: T
-                        submitLabel?: T
-                        id?: T
-                        blockName?: T
-                    }
-              cardRow?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        cards?:
-                            | T
-                            | {
-                                  title?: T
-                                  description?: T
-                                  link?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                        }
-                                  mediaType?: T
-                                  image?: T
-                                  playgroundUrl?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              roadmap?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        items?:
-                            | T
-                            | {
-                                  time?: T
-                                  title?: T
-                                  description?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              scrollCards?:
-                  | T
-                  | {
-                        items?:
-                            | T
-                            | {
-                                  title?: T
-                                  description?: T
-                                  showImageBorder?: T
-                                  sectionLayout?: T
-                                  gradient?: T
-                                  gradientDirection?: T
-                                  bulletPoints?: T
-                                  mediaType?: T
-                                  image?: T
-                                  playgroundUrl?: T
-                                  link?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                        }
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              standaloneCard?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                        showImageBorder?: T
-                        sectionLayout?: T
-                        gradient?: T
-                        gradientDirection?: T
-                        bulletPoints?: T
-                        mediaType?: T
-                        image?: T
-                        playgroundUrl?: T
-                        link?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              video?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        sourceType?: T
-                        videoUrl?: T
-                        video?: T
-                        poster?: T
-                        controls?: T
-                        autoPlay?: T
-                        muted?: T
-                        loop?: T
-                        playsInline?: T
-                        id?: T
-                        blockName?: T
-                    }
-              widehero?:
-                  | T
-                  | {
-                        badge?: T
-                        badge_link?: T
-                        heading?: T
-                        image?: T
-                        showImageBorder?: T
-                        mask?: T
-                        shineColors?:
-                            | T
-                            | {
-                                  color1?: T
-                                  color2?: T
-                                  color3?: T
-                              }
-                        texts?:
-                            | T
-                            | {
-                                  text?: T
-                                  id?: T
-                              }
-                        buttons?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                                  variant?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              listFeature?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        features?:
-                            | T
-                            | {
-                                  icon?: T
-                                  title?: T
-                                  description?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              stats?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        items?:
-                            | T
-                            | {
-                                  number?: T
-                                  description?: T
-                                  enableNumberFlow?: T
-                                  suffix?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              flowExample?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        contentHeading?: T
-                        contentDescription?: T
-                        flowLayout?: T
-                        playgroundUrl?: T
-                        showBorder?: T
-                        id?: T
-                        blockName?: T
-                    }
-              subscriptionConfigurator?:
-                  | T
-                  | {
-                        pageIntro?:
-                            | T
-                            | {
-                                  heading?: T
-                                  description?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              pricing?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        popularPill?:
-                            | T
-                            | {
-                                  icon?: T
-                                  text?: T
-                                  color?: T
-                              }
-                        whatsIncludedText?: T
-                        titleColor?: T
-                        highlightedCardColor?: T
-                        pro?:
-                            | T
-                            | {
-                                  features?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  missing?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  button?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                            variant?: T
-                                        }
-                              }
-                        max?:
-                            | T
-                            | {
-                                  features?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  missing?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  button?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                            variant?: T
-                                        }
-                              }
-                        custom?:
-                            | T
-                            | {
-                                  features?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  missing?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  button?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                            variant?: T
-                                        }
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              smallPricing?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        pricingPeriod?: T
-                        gradient?: T
-                        gradientDirection?: T
-                        pro?:
-                            | T
-                            | {
-                                  features?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  missing?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  button?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                            variant?: T
-                                        }
-                              }
-                        max?:
-                            | T
-                            | {
-                                  features?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  missing?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  button?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                            variant?: T
-                                        }
-                              }
-                        custom?:
-                            | T
-                            | {
-                                  features?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  missing?:
-                                      | T
-                                      | {
-                                            text?: T
-                                            id?: T
-                                        }
-                                  button?:
-                                      | T
-                                      | {
-                                            label?: T
-                                            url?: T
-                                            variant?: T
-                                        }
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-              compareApplication?:
-                  | T
-                  | {
-                        sectionHeading?: T
-                        sectionLayout?: T
-                        sectionDescription?: T
-                        sectionLinkButton?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                              }
-                        apps?:
-                            | T
-                            | {
-                                  logo?: T
-                                  name?: T
-                                  features?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            exists?: T
-                                            id?: T
-                                        }
-                                  id?: T
-                              }
-                        showIcon?: T
-                        gradient?: T
-                        gradientDirection?: T
-                        buttons?:
-                            | T
-                            | {
-                                  label?: T
-                                  url?: T
-                                  variant?: T
-                                  id?: T
-                              }
-                        id?: T
-                        blockName?: T
-                    }
-          }
-    meta?:
-        | T
-        | {
-              title?: T
-              description?: T
-              image?: T
-          }
-    updatedAt?: T
-    createdAt?: T
+                                label?: T;
+                                url?: T;
+                              };
+                        };
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        offsetCards?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              cardPlacement?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              cards?:
+                | T
+                | {
+                    label?: T;
+                    title?: T;
+                    description?: T;
+                    mediaType?: T;
+                    image?: T;
+                    playgroundUrl?: T;
+                    showImageBorder?: T;
+                    mask?: T;
+                    bulletPoints?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        install?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              label?: T;
+              language?: T;
+              code?: T;
+              id?: T;
+              blockName?: T;
+            };
+        swipeCards?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              cards?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    mediaType?: T;
+                    image?: T;
+                    playgroundUrl?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        brand?:
+          | T
+          | {
+              description?: T;
+              logos?:
+                | T
+                | {
+                    logo?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              items?:
+                | T
+                | {
+                    question?: T;
+                    answer?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              heading?: T;
+              subheading?: T;
+              ctaLink?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        ctaImage?:
+          | T
+          | {
+              title?: T;
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              mediaType?: T;
+              image?: T;
+              playgroundUrl?: T;
+              showCard?: T;
+              showImageBorder?: T;
+              imageMask?: T;
+              id?: T;
+              blockName?: T;
+            };
+        jobs?:
+          | T
+          | {
+              heading?: T;
+              searchPlaceholder?: T;
+              allLocationsLabel?: T;
+              allJobTypesLabel?: T;
+              allCategoriesLabel?: T;
+              noJobsFoundLabel?: T;
+              applicationHeading?: T;
+              applicationNameLabel?: T;
+              applicationNamePlaceholder?: T;
+              applicationEmailLabel?: T;
+              applicationEmailPlaceholder?: T;
+              applicationMessageLabel?: T;
+              applicationMessagePlaceholder?: T;
+              applicationSubmitLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        blog?:
+          | T
+          | {
+              viewOtherBlogsLabel?: T;
+              noPostsLabel?: T;
+              loadMoreLabel?: T;
+              loadingLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        blogPreview?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              blog?: T;
+              showBorder?: T;
+              id?: T;
+              blockName?: T;
+            };
+        border?:
+          | T
+          | {
+              paddingTop?: T;
+              paddingBottom?: T;
+              id?: T;
+              blockName?: T;
+            };
+        actionHero?:
+          | T
+          | {
+              badge?: T;
+              badge_link?: T;
+              heading?: T;
+              grainientColors?:
+                | T
+                | {
+                    color1?: T;
+                    color2?: T;
+                    color3?: T;
+                    backgroundColor?: T;
+                  };
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        actionFunctions?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              functionDefinitionLabel?: T;
+              parametersLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        actionEvents?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              flowTypeLabel?: T;
+              settingsLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        actionReferences?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        actionList?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              searchPlaceholder?: T;
+              sortNewestLabel?: T;
+              sortOldestLabel?: T;
+              loadMoreLabel?: T;
+              noActionsFoundLabel?: T;
+              allCategoriesLabel?: T;
+              categoryLabels?:
+                | T
+                | {
+                    ai?: T;
+                    analytics?: T;
+                    communication?: T;
+                    cybersecurity?: T;
+                    dataStorage?: T;
+                    developerTools?: T;
+                    development?: T;
+                    financeAccounting?: T;
+                    hitl?: T;
+                    marketing?: T;
+                    miscellaneous?: T;
+                    productivity?: T;
+                    sales?: T;
+                    utility?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        markdown?:
+          | T
+          | {
+              content?: T;
+              id?: T;
+              blockName?: T;
+            };
+        contact?:
+          | T
+          | {
+              heading?: T;
+              description?: T;
+              nameLabel?: T;
+              namePlaceholder?: T;
+              emailLabel?: T;
+              emailPlaceholder?: T;
+              messageLabel?: T;
+              messagePlaceholder?: T;
+              submitLabel?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cardRow?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              cards?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    mediaType?: T;
+                    image?: T;
+                    playgroundUrl?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        roadmap?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              items?:
+                | T
+                | {
+                    time?: T;
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        scrollCards?:
+          | T
+          | {
+              items?:
+                | T
+                | {
+                    title?: T;
+                    description?: T;
+                    showImageBorder?: T;
+                    sectionLayout?: T;
+                    gradient?: T;
+                    gradientDirection?: T;
+                    bulletPoints?: T;
+                    mediaType?: T;
+                    image?: T;
+                    playgroundUrl?: T;
+                    link?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                        };
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        standaloneCard?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              showImageBorder?: T;
+              sectionLayout?: T;
+              gradient?: T;
+              gradientDirection?: T;
+              bulletPoints?: T;
+              mediaType?: T;
+              image?: T;
+              playgroundUrl?: T;
+              link?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        video?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              sourceType?: T;
+              videoUrl?: T;
+              video?: T;
+              poster?: T;
+              controls?: T;
+              autoPlay?: T;
+              muted?: T;
+              loop?: T;
+              playsInline?: T;
+              id?: T;
+              blockName?: T;
+            };
+        widehero?:
+          | T
+          | {
+              badge?: T;
+              badge_link?: T;
+              heading?: T;
+              image?: T;
+              showImageBorder?: T;
+              mask?: T;
+              shineColors?:
+                | T
+                | {
+                    color1?: T;
+                    color2?: T;
+                    color3?: T;
+                  };
+              texts?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        listFeature?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              features?:
+                | T
+                | {
+                    icon?: T;
+                    title?: T;
+                    description?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        stats?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              items?:
+                | T
+                | {
+                    number?: T;
+                    description?: T;
+                    enableNumberFlow?: T;
+                    suffix?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        flowExample?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              contentHeading?: T;
+              contentDescription?: T;
+              flowLayout?: T;
+              playgroundUrl?: T;
+              showBorder?: T;
+              id?: T;
+              blockName?: T;
+            };
+        subscriptionConfigurator?:
+          | T
+          | {
+              pageIntro?:
+                | T
+                | {
+                    heading?: T;
+                    description?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        pricing?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              popularPill?:
+                | T
+                | {
+                    icon?: T;
+                    text?: T;
+                    color?: T;
+                  };
+              whatsIncludedText?: T;
+              titleColor?: T;
+              highlightedCardColor?: T;
+              pro?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missing?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              max?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missing?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              custom?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missing?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        smallPricing?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              pricingPeriod?: T;
+              gradient?: T;
+              gradientDirection?: T;
+              pro?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missing?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              max?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missing?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              custom?:
+                | T
+                | {
+                    features?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    missing?:
+                      | T
+                      | {
+                          text?: T;
+                          id?: T;
+                        };
+                    button?:
+                      | T
+                      | {
+                          label?: T;
+                          url?: T;
+                          variant?: T;
+                        };
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        compareApplication?:
+          | T
+          | {
+              sectionHeading?: T;
+              sectionLayout?: T;
+              sectionDescription?: T;
+              sectionLinkButton?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                  };
+              apps?:
+                | T
+                | {
+                    logo?: T;
+                    name?: T;
+                    features?:
+                      | T
+                      | {
+                          title?: T;
+                          exists?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              showIcon?: T;
+              gradient?: T;
+              gradientDirection?: T;
+              buttons?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    variant?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "actions_select".
  */
 export interface ActionsSelect<T extends boolean = true> {
-    identifier?: T
-    module?: T
-    tags?: T
-    references?: T
-    updatedAt?: T
-    createdAt?: T
+  identifier?: T;
+  module?: T;
+  tags?: T;
+  references?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "jobs_select".
  */
 export interface JobsSelect<T extends boolean = true> {
-    title?: T
-    slug?: T
-    category?: T
-    type?: T
-    location?: T
-    description?: T
-    content?: T
-    order?: T
-    updatedAt?: T
-    createdAt?: T
+  title?: T;
+  slug?: T;
+  category?: T;
+  type?: T;
+  location?: T;
+  description?: T;
+  content?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "blog_select".
  */
 export interface BlogSelect<T extends boolean = true> {
-    title?: T
-    slug?: T
-    isPinned?: T
-    author?: T
-    content?: T
-    shortDescription?: T
-    heroImage?: T
-    meta?:
-        | T
-        | {
-              title?: T
-              description?: T
-              image?: T
-          }
-    updatedAt?: T
-    createdAt?: T
+  title?: T;
+  slug?: T;
+  isPinned?: T;
+  author?: T;
+  content?: T;
+  shortDescription?: T;
+  heroImage?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "team-members_select".
  */
 export interface TeamMembersSelect<T extends boolean = true> {
-    name?: T
-    image?: T
-    shortDescription?: T
-    about?: T
-    role?: T
-    joinedAt?: T
-    updatedAt?: T
-    createdAt?: T
+  name?: T;
+  image?: T;
+  shortDescription?: T;
+  about?: T;
+  role?: T;
+  joinedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-ai-auditlog_select".
  */
 export interface PayloadAiAuditlogSelect<T extends boolean = true> {
-    title?: T
-    action?: T
-    targetType?: T
-    collection?: T
-    slug?: T
-    documentID?: T
-    targetURL?: T
-    additions?: T
-    removals?: T
-    before?: T
-    after?: T
-    proposal?: T
-    prompt?: T
-    inputTokens?: T
-    outputTokens?: T
-    totalTokens?: T
-    aiResponse?: T
-    userID?: T
-    userLabel?: T
-    updatedAt?: T
-    createdAt?: T
+  title?: T;
+  action?: T;
+  targetType?: T;
+  collection?: T;
+  slug?: T;
+  documentID?: T;
+  targetURL?: T;
+  additions?: T;
+  removals?: T;
+  before?: T;
+  after?: T;
+  proposal?: T;
+  prompt?: T;
+  inputTokens?: T;
+  outputTokens?: T;
+  totalTokens?: T;
+  aiResponse?: T;
+  userID?: T;
+  userLabel?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
-    key?: T
-    data?: T
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
-    document?: T
-    globalSlug?: T
-    user?: T
-    updatedAt?: T
-    createdAt?: T
+  document?: T;
+  globalSlug?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences_select".
  */
 export interface PayloadPreferencesSelect<T extends boolean = true> {
-    user?: T
-    key?: T
-    value?: T
-    updatedAt?: T
-    createdAt?: T
+  user?: T;
+  key?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-migrations_select".
  */
 export interface PayloadMigrationsSelect<T extends boolean = true> {
-    name?: T
-    batch?: T
-    updatedAt?: T
-    createdAt?: T
+  name?: T;
+  batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "navigation".
  */
 export interface Navigation {
-    id: number
-    /**
-     * Optionales Navigationslogo. Wenn leer, wird das hardcoded Code0 Logo verwendet.
-     */
-    logo?: (number | null) | Media
+  id: number;
+  /**
+   * Optionales Navigationslogo. Wenn leer, wird das hardcoded Code0 Logo verwendet.
+   */
+  logo?: (number | null) | Media;
+  items: {
     items: {
-        items: {
-            title: string
-            /**
-             * Leer lassen, wenn ein Submenu angezeigt werden soll.
-             */
-            href?: string | null
-            order: number
-            subMenuGroups?:
-                | {
-                      title: string
-                      items: {
-                          key: string
-                          title: string
-                          href: string
-                          description: string
-                          icon: string
-                          id?: string | null
-                      }[]
-                      id?: string | null
-                  }[]
-                | null
-            shortLinkGroups?:
-                | {
-                      title: string
-                      links: {
-                          title: string
-                          href: string
-                          newTab?: boolean | null
-                          id?: string | null
-                      }[]
-                      id?: string | null
-                  }[]
-                | null
-            id?: string | null
-        }[]
-    }
+      title: string;
+      /**
+       * Leer lassen, wenn ein Submenu angezeigt werden soll.
+       */
+      href?: string | null;
+      order: number;
+      subMenuGroups?:
+        | {
+            title: string;
+            items: {
+              key: string;
+              title: string;
+              href: string;
+              description: string;
+              icon: string;
+              id?: string | null;
+            }[];
+            id?: string | null;
+          }[]
+        | null;
+      shortLinkGroups?:
+        | {
+            title: string;
+            links: {
+              title: string;
+              href: string;
+              newTab?: boolean | null;
+              id?: string | null;
+            }[];
+            id?: string | null;
+          }[]
+        | null;
+      id?: string | null;
+    }[];
+  };
+  buttons: {
     buttons: {
-        buttons: {
-            title: string
-            href: string
-            order: number
-            icon: string
-            newTab?: boolean | null
-            variant: "none" | "normal" | "outlined" | "filled"
-            id?: string | null
-        }[]
-    }
-    updatedAt?: string | null
-    createdAt?: string | null
+      title: string;
+      href: string;
+      order: number;
+      icon: string;
+      newTab?: boolean | null;
+      variant: 'none' | 'normal' | 'outlined' | 'filled';
+      id?: string | null;
+    }[];
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
  */
 export interface Footer {
-    id: number
-    company_name: string
-    description?: string | null
-    image?: (number | null) | Media
-    contactEmail?: string | null
-    legalLinks: {
-        privacy: {
-            label: string
-            url: string
-        }
-        legalNotice: {
-            label: string
-            url: string
-        }
-        terms: {
-            label: string
-            url: string
-        }
-    }
-    socialLinks?:
-        | {
-              platform: "instagram" | "discord" | "x" | "linkedin" | "github"
-              url: string
-              id?: string | null
-          }[]
-        | null
-    groups: {
-        heading: string
-        items: {
-            label: string
-            url: string
-            id?: string | null
-        }[]
-        id?: string | null
-    }[]
-    updatedAt?: string | null
-    createdAt?: string | null
+  id: number;
+  company_name: string;
+  description?: string | null;
+  image?: (number | null) | Media;
+  contactEmail?: string | null;
+  legalLinks: {
+    privacy: {
+      label: string;
+      url: string;
+    };
+    legalNotice: {
+      label: string;
+      url: string;
+    };
+    terms: {
+      label: string;
+      url: string;
+    };
+  };
+  socialLinks?:
+    | {
+        platform: 'instagram' | 'discord' | 'x' | 'linkedin' | 'github';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  groups: {
+    heading: string;
+    items: {
+      label: string;
+      url: string;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[];
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "cookie-banner".
  */
 export interface CookieBanner {
-    id: number
-    common?: {
-        acceptAll?: string | null
-        rejectAll?: string | null
-        customize?: string | null
-        save?: string | null
-    }
-    cookieBanner?: {
-        title?: string | null
-        description?: string | null
-    }
-    consentManagerDialog?: {
-        title?: string | null
-        description?: string | null
-    }
-    consentTypes?: {
-        necessary?: {
-            title?: string | null
-            description?: string | null
-        }
-        measurement?: {
-            title?: string | null
-            description?: string | null
-        }
-        marketing?: {
-            title?: string | null
-            description?: string | null
-        }
-    }
-    legalLinks?: {
-        privacyPolicy?: {
-            label?: string | null
-            href?: string | null
-        }
-        termsOfService?: {
-            label?: string | null
-            href?: string | null
-        }
-    }
-    updatedAt?: string | null
-    createdAt?: string | null
+  id: number;
+  common?: {
+    acceptAll?: string | null;
+    rejectAll?: string | null;
+    customize?: string | null;
+    save?: string | null;
+  };
+  cookieBanner?: {
+    title?: string | null;
+    description?: string | null;
+  };
+  consentManagerDialog?: {
+    title?: string | null;
+    description?: string | null;
+  };
+  consentTypes?: {
+    necessary?: {
+      title?: string | null;
+      description?: string | null;
+    };
+    measurement?: {
+      title?: string | null;
+      description?: string | null;
+    };
+    marketing?: {
+      title?: string | null;
+      description?: string | null;
+    };
+  };
+  legalLinks?: {
+    privacyPolicy?: {
+      label?: string | null;
+      href?: string | null;
+    };
+    termsOfService?: {
+      label?: string | null;
+      href?: string | null;
+    };
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "subscriptionConfig".
  */
 export interface SubscriptionConfig {
-    id: number
-    defaults: {
-        deployment: "self_hosted" | "cloud"
-        customerType: "b2b" | "b2c"
-        paymentPeriod: {
-            b2b: "monthly" | "quarterly" | "yearly"
-            b2c: "monthly" | "quarterly" | "yearly"
-        }
-    }
-    subscribe: {
-        label: string
-        baseUrl: string
-    }
-    contactSales: {
-        prompt: string
-        label: string
-        href: string
-    }
-    deployment: {
-        label: string
-        description?: string | null
-        /**
-         * Highlight color of the selected option in this step.
-         */
-        color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        selfHosted: {
-            title: string
-            description: string
-            image?: (number | null) | Media
-        }
-        cloud: {
-            title: string
-            description: string
-            image?: (number | null) | Media
-        }
-    }
-    customerType: {
-        label: string
-        description?: string | null
-        /**
-         * Highlight color of the selected option in this step.
-         */
-        color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        b2b: {
-            title: string
-            description: string
-            image?: (number | null) | Media
-        }
-        b2c: {
-            title: string
-            description: string
-            image?: (number | null) | Media
-        }
-    }
+  id: number;
+  defaults: {
+    deployment: 'self_hosted' | 'cloud';
+    customerType: 'b2b' | 'b2c';
     paymentPeriod: {
-        label: string
-        description?: string | null
-        monthlyText: string
-        /**
-         * Text before what the whole payment period saves compared to paying monthly, for example Save €30.
-         */
-        savingsLabel: string
-        quarterlyText: string
-        yearlyText: string
-        monthlyPeriodSuffix: string
-        quarterlyPeriodSuffix: string
-        yearlyPeriodSuffix: string
-        /**
-         * Highlight color of the selected option in this step.
-         */
-        color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-    }
-    plan: {
-        title: string
-        description?: string | null
-        /**
-         * Highlight color of the selected option in this step.
-         */
-        color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-        /**
-         * Name of the AI token quantity in the plan options.
-         */
-        aiTokensLabel: string
-        /**
-         * Name of the workflow execution quantity in the plan options.
-         */
-        workflowExecutionsLabel: string
-        /**
-         * Shown below how many times the workflow executions of Pro a plan includes, for example 12.5× more workflows.
-         */
-        moreWorkflowsLabel: string
-        pro: {
-            title: string
-            description: string
-            features: {
-                text: string
-                id?: string | null
-            }[]
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-            image?: (number | null) | Media
-        }
-        max: {
-            title: string
-            description: string
-            features: {
-                text: string
-                id?: string | null
-            }[]
-            /**
-             * Compares a quantity of the selected Max plan with Pro. Use {multiplier} to insert how many times the Pro quantity it is, for example 8×.
-             */
-            comparisonText: string
-            /**
-             * Shown below the price of the selected Max plan. Use {amount} to insert what Max costs more than Pro in the same payment period.
-             */
-            priceDifferenceText: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-            image?: (number | null) | Media
-        }
-        custom: {
-            title: string
-            description: string
-            features: {
-                text: string
-                id?: string | null
-            }[]
-            /**
-             * Shown while Custom is not selected. Use {quantities} to insert the smallest AI token and workflow execution packages.
-             */
-            quantitiesText: string
-            /**
-             * Shown instead of a price while Custom is not selected.
-             */
-            priceFallbackText: string
-            color: "brand" | "pink" | "yellow" | "aqua" | "blue" | "lime" | "magenta"
-            image?: (number | null) | Media
-        }
-    }
-    workflowExecutions: {
-        title: string
-        description?: string | null
-        suffix: string
-    }
-    aiTokens: {
-        title: string
-        description?: string | null
-        suffix: string
-    }
-    updatedAt?: string | null
-    createdAt?: string | null
+      b2b: 'monthly' | 'quarterly' | 'yearly';
+      b2c: 'monthly' | 'quarterly' | 'yearly';
+    };
+  };
+  subscribe: {
+    label: string;
+    baseUrl: string;
+  };
+  contactSales: {
+    prompt: string;
+    label: string;
+    href: string;
+  };
+  deployment: {
+    label: string;
+    description?: string | null;
+    /**
+     * Highlight color of the selected option in this step.
+     */
+    color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    selfHosted: {
+      title: string;
+      description: string;
+      image?: (number | null) | Media;
+    };
+    cloud: {
+      title: string;
+      description: string;
+      image?: (number | null) | Media;
+    };
+  };
+  customerType: {
+    label: string;
+    description?: string | null;
+    /**
+     * Highlight color of the selected option in this step.
+     */
+    color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    b2b: {
+      title: string;
+      description: string;
+      image?: (number | null) | Media;
+    };
+    b2c: {
+      title: string;
+      description: string;
+      image?: (number | null) | Media;
+    };
+  };
+  paymentPeriod: {
+    label: string;
+    description?: string | null;
+    monthlyText: string;
+    /**
+     * Text before what the whole payment period saves compared to paying monthly, for example Save €30.
+     */
+    savingsLabel: string;
+    quarterlyText: string;
+    yearlyText: string;
+    monthlyPeriodSuffix: string;
+    quarterlyPeriodSuffix: string;
+    yearlyPeriodSuffix: string;
+    /**
+     * Highlight color of the selected option in this step.
+     */
+    color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+  };
+  plan: {
+    title: string;
+    description?: string | null;
+    /**
+     * Highlight color of the selected option in this step.
+     */
+    color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+    /**
+     * Name of the AI token quantity in the plan options.
+     */
+    aiTokensLabel: string;
+    /**
+     * Name of the workflow execution quantity in the plan options.
+     */
+    workflowExecutionsLabel: string;
+    /**
+     * Shown below how many times the workflow executions of Pro a plan includes, for example 12.5× more workflows.
+     */
+    moreWorkflowsLabel: string;
+    pro: {
+      title: string;
+      description: string;
+      features: {
+        text: string;
+        id?: string | null;
+      }[];
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
+    };
+    max: {
+      title: string;
+      description: string;
+      features: {
+        text: string;
+        id?: string | null;
+      }[];
+      /**
+       * Compares a quantity of the selected Max plan with Pro. Use {multiplier} to insert how many times the Pro quantity it is, for example 8×.
+       */
+      comparisonText: string;
+      /**
+       * Shown below the price of the selected Max plan. Use {amount} to insert what Max costs more than Pro in the same payment period.
+       */
+      priceDifferenceText: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
+    };
+    custom: {
+      title: string;
+      description: string;
+      features: {
+        text: string;
+        id?: string | null;
+      }[];
+      /**
+       * Shown while Custom is not selected. Use {quantities} to insert the smallest AI token and workflow execution packages.
+       */
+      quantitiesText: string;
+      /**
+       * Shown instead of a price while Custom is not selected.
+       */
+      priceFallbackText: string;
+      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
+      image?: (number | null) | Media;
+    };
+  };
+  workflowExecutions: {
+    title: string;
+    description?: string | null;
+    suffix: string;
+  };
+  aiTokens: {
+    title: string;
+    description?: string | null;
+    suffix: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "checkout".
  */
 export interface Checkout {
-    id: number
-    login: {
-        heading: string
-        description: string
-        loginLabel: string
-        guestHeading: string
-        guestDescription: string
-        guestLabel: string
-    }
-    summary: {
-        eyebrow: string
-        /**
-         * {plan} is replaced with the selected plan title.
-         */
-        heading: string
-        description: string
-        /**
-         * Shown below the order summary. {date} is replaced with the end of the first billing period.
-         */
-        nextChargeText: string
-        deploymentIcons: {
-            cloud: string
-            selfHosted: string
-        }
-        deploymentIconColor: "neutral" | "brand" | "aqua" | "blue" | "pink" | "yellow" | "lime" | "magenta"
-        customerTypeIcons: {
-            b2b: string
-            b2c: string
-        }
-        customerTypeIconColor: "neutral" | "brand" | "aqua" | "blue" | "pink" | "yellow" | "lime" | "magenta"
-        pricing: {
-            planLabel: string
-            baseLabel: string
-            workflowExecutionsLabel: string
-            quarterlyDiscountLabel: string
-            yearlyDiscountLabel: string
-            discountInputPlaceholder: string
-            discountButtonLabel: string
-            discountPromptLabel: string
-            /**
-             * Shown below the title of the discount code dialog.
-             */
-            discountDialogDescription: string
-            discountRemoveLabel: string
-            taxLabel: string
-            taxInclusiveLabel: string
-            taxExclusiveLabel: string
-            subtotalLabel: string
-            totalExcludingTaxLabel: string
-            /**
-             * Shown after the tax name, for example VAT – Germany (19% on €65.67). {rate} and {amount} are replaced.
-             */
-            taxRateLabel: string
-            totalDueTodayLabel: string
-            /**
-             * Shown next to the total when tax applies.
-             */
-            totalIncludingTaxSuffix: string
-            totalLabel: string
-            perMonthSuffix: string
-        }
-    }
-    form: {
-        /**
-         * Shown with a lock icon in the checkout header.
-         */
-        secureCheckoutLabel: string
-        /**
-         * Heading above the customer selection and email.
-         */
-        contactHeading: string
-        /**
-         * Heading above the billing address.
-         */
-        billingHeading: string
-        continueLabel: string
-        /**
-         * Shown below the continue to payment button.
-         */
-        notChargedYetText: string
-        backToBillingLabel: string
-        billingChangeLabel: string
-        payNowLabel: string
-        /**
-         * Shown with a lock icon below the pay button.
-         */
-        securePaymentText: string
-        sendOfferPrompt: string
-        /**
-         * Shown below the primary billing button for business customers only.
-         */
-        sendOfferLabel: string
-        sendOfferTitle: string
-        sendOfferDescription: string
-        /**
-         * Use {email} to insert the recipient address.
-         */
-        sendOfferSuccess: string
-        sendOfferBillingRequired: string
-        processingLabel: string
-        customerSelectLabel: string
-        newCustomerLabel: string
-        nameLabel: string
-        emailLabel: string
-        emailPlaceholder: string
-        phoneLabel: string
-        line1Label: string
-        line2Label: string
-        cityLabel: string
-        stateLabel: string
-        postalCodeLabel: string
-        countryLabel: string
-    }
+  id: number;
+  login: {
+    heading: string;
+    description: string;
+    loginLabel: string;
+    guestHeading: string;
+    guestDescription: string;
+    guestLabel: string;
+  };
+  summary: {
+    eyebrow: string;
     /**
-     * Checklist of what happens after paying, always shown below the order summary. Each step shows its title in bold followed by the description.
+     * {plan} is replaced with the selected plan title.
      */
-    nextSteps: {
-        heading: string
-        step1Title: string
-        step1Description: string
-        step2Title: string
-        step2Description: string
-        step3Title: string
-        step3Description: string
-    }
-    success: {
-        heading: string
-        description: string
-        licenseDashboardLabel: string
-        sculptorLabel: string
-        licenseDownloadLabel: string
-        licenseDownloadError: string
-        licensePendingLabel: string
-        licenseStatusRetryLabel: string
-        delayedHeading: string
-        /**
-         * Shown when polling pauses after payment has been confirmed, while the license is still being prepared.
-         */
-        delayedConfirmedDescription: string
-        /**
-         * Shown when polling pauses before payment has been confirmed.
-         */
-        delayedPendingDescription: string
-        /**
-         * Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page.
-         */
-        receiptHint: string
-        /**
-         * Shown after payment confirmation for guest checkouts only.
-         */
-        guestAccountHint: string
-        failedHeading: string
-        failedDescription: string
-        invalidHeading: string
-        invalidDescription: string
-        checkoutRetryLabel: string
-    }
-    updatedAt?: string | null
-    createdAt?: string | null
+    heading: string;
+    description: string;
+    /**
+     * Shown below the order summary. {date} is replaced with the end of the first billing period.
+     */
+    nextChargeText: string;
+    deploymentIcons: {
+      cloud: string;
+      selfHosted: string;
+    };
+    deploymentIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
+    customerTypeIcons: {
+      b2b: string;
+      b2c: string;
+    };
+    customerTypeIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
+    pricing: {
+      planLabel: string;
+      baseLabel: string;
+      workflowExecutionsLabel: string;
+      quarterlyDiscountLabel: string;
+      yearlyDiscountLabel: string;
+      discountInputPlaceholder: string;
+      discountButtonLabel: string;
+      discountPromptLabel: string;
+      /**
+       * Shown below the title of the discount code dialog.
+       */
+      discountDialogDescription: string;
+      discountRemoveLabel: string;
+      taxLabel: string;
+      taxInclusiveLabel: string;
+      taxExclusiveLabel: string;
+      subtotalLabel: string;
+      totalExcludingTaxLabel: string;
+      /**
+       * Shown after the tax name, for example VAT – Germany (19% on €65.67). {rate} and {amount} are replaced.
+       */
+      taxRateLabel: string;
+      totalDueTodayLabel: string;
+      /**
+       * Shown next to the total when tax applies.
+       */
+      totalIncludingTaxSuffix: string;
+      totalLabel: string;
+      perMonthSuffix: string;
+    };
+  };
+  form: {
+    /**
+     * Shown with a lock icon in the checkout header.
+     */
+    secureCheckoutLabel: string;
+    /**
+     * Heading above the customer selection and email.
+     */
+    contactHeading: string;
+    /**
+     * Heading above the billing address.
+     */
+    billingHeading: string;
+    continueLabel: string;
+    /**
+     * Shown below the continue to payment button.
+     */
+    notChargedYetText: string;
+    backToBillingLabel: string;
+    /**
+     * Button in the selected billing address card at the top of the payment step.
+     */
+    billingChangeLabel: string;
+    payNowLabel: string;
+    /**
+     * Shown with a lock icon below the pay button.
+     */
+    securePaymentText: string;
+    sendOfferPrompt: string;
+    /**
+     * Shown below the primary billing button for business customers only.
+     */
+    sendOfferLabel: string;
+    sendOfferTitle: string;
+    sendOfferDescription: string;
+    /**
+     * Use {email} to insert the recipient address.
+     */
+    sendOfferSuccess: string;
+    sendOfferBillingRequired: string;
+    processingLabel: string;
+    customerSelectLabel: string;
+    newCustomerLabel: string;
+    nameLabel: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    phoneLabel: string;
+    line1Label: string;
+    line2Label: string;
+    cityLabel: string;
+    stateLabel: string;
+    postalCodeLabel: string;
+    countryLabel: string;
+  };
+  /**
+   * Checklist of what happens after paying, always shown below the order summary. Each step shows its title in bold followed by the description.
+   */
+  nextSteps: {
+    heading: string;
+    step1Title: string;
+    step1Description: string;
+    step2Title: string;
+    step2Description: string;
+    step3Title: string;
+    step3Description: string;
+  };
+  success: {
+    heading: string;
+    description: string;
+    licenseDashboardLabel: string;
+    sculptorLabel: string;
+    licenseDownloadLabel: string;
+    licenseDownloadError: string;
+    licensePendingLabel: string;
+    licenseStatusRetryLabel: string;
+    delayedHeading: string;
+    /**
+     * Shown when polling pauses after payment has been confirmed, while the license is still being prepared.
+     */
+    delayedConfirmedDescription: string;
+    /**
+     * Shown when polling pauses before payment has been confirmed.
+     */
+    delayedPendingDescription: string;
+    /**
+     * Shown once the payment is confirmed. The exact amount is on the Stripe receipt, not on this page.
+     */
+    receiptHint: string;
+    /**
+     * Shown after payment confirmation for guest checkouts only.
+     */
+    guestAccountHint: string;
+    failedHeading: string;
+    failedDescription: string;
+    invalidHeading: string;
+    invalidDescription: string;
+    checkoutRetryLabel: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "licenses".
  */
 export interface License {
-    id: number
-    licenses: string
-    license: string
-    licenseDescription: string
-    emptyLicenses: string
-    sidebar: {
-        logout: string
-        loggingOut: string
-        backToCustomerLabel: string
-        backToCustomersLabel: string
-        downloadLicenseLabel: string
-        homeLabel: string
-        applicationSettingsLabel: string
-        userMenuLabel: string
-        profileLabel: string
-        settingsLabel: string
-        workspacesLabel: string
-    }
-    dashboard: {
-        customersLabel: string
-        customersDescription: string
-        emptyCustomers: string
-        recentLicensesLabel: string
-        recentLicensesDescription: string
-        activeLicensesLabel: string
-        typeLabel: string
-        customerLabel: string
-        nameLabel: string
-        emailLabel: string
-        lastEditedLabel: string
-        statusLabel: string
-        paymentPeriodLabel: string
-        workflowExecutionsLabel: string
-        aiTokensLabel: string
-        editionLabel: string
-        nextBillingDateLabel: string
-    }
-    values: {
-        customerTypes: {
-            personal: string
-            business: string
-        }
-        deploymentTypes: {
-            cloud: string
-            selfHosted: string
-        }
-        paymentPeriods: {
-            monthly: string
-            quarterly: string
-            yearly: string
-        }
-        statuses: {
-            active: string
-            pending: string
-            incomplete: string
-            paused: string
-            trialing: string
-            unpaid: string
-            pastDue: string
-            canceled: string
-            incompleteExpired: string
-        }
-        invoiceStatuses: {
-            paid: string
-            draft: string
-            open: string
-            uncollectible: string
-            void: string
-        }
-        plans: {
-            pro: string
-            max: string
-            custom: string
-        }
-        editions: {
-            cloud: string
-            selfHosted: string
-        }
-        unknown: string
-    }
-    invoices: {
-        title: string
-        description: string
-        empty: string
-        taxLabel: string
-        numberLabel: string
-        numberPendingLabel: string
-        billingDateLabel: string
-        amountLabel: string
-        statusLabel: string
-        downloadLabel: string
-        viewLabel: string
-        unavailableLabel: string
-        payLabel: string
-        pendingPaymentDescription: string
-    }
-    pagination: {
-        loadMoreLabel: string
-        loadingLabel: string
-        previousPageLabel: string
-        nextPageLabel: string
-    }
+  id: number;
+  licenses: string;
+  license: string;
+  licenseDescription: string;
+  emptyLicenses: string;
+  sidebar: {
+    logout: string;
+    loggingOut: string;
+    backToCustomerLabel: string;
+    backToCustomersLabel: string;
+    downloadLicenseLabel: string;
+    homeLabel: string;
+    applicationSettingsLabel: string;
+    userMenuLabel: string;
+    profileLabel: string;
+    settingsLabel: string;
+    workspacesLabel: string;
+  };
+  dashboard: {
+    customersLabel: string;
+    customersDescription: string;
+    emptyCustomers: string;
+    recentLicensesLabel: string;
+    recentLicensesDescription: string;
+    activeLicensesLabel: string;
+    typeLabel: string;
+    customerLabel: string;
+    nameLabel: string;
+    emailLabel: string;
+    lastEditedLabel: string;
+    statusLabel: string;
+    paymentPeriodLabel: string;
+    workflowExecutionsLabel: string;
+    aiTokensLabel: string;
+    editionLabel: string;
+    nextBillingDateLabel: string;
+  };
+  values: {
+    customerTypes: {
+      personal: string;
+      business: string;
+    };
+    deploymentTypes: {
+      cloud: string;
+      selfHosted: string;
+    };
+    paymentPeriods: {
+      monthly: string;
+      quarterly: string;
+      yearly: string;
+    };
+    statuses: {
+      active: string;
+      pending: string;
+      incomplete: string;
+      paused: string;
+      trialing: string;
+      unpaid: string;
+      pastDue: string;
+      canceled: string;
+      incompleteExpired: string;
+    };
+    invoiceStatuses: {
+      paid: string;
+      draft: string;
+      open: string;
+      uncollectible: string;
+      void: string;
+    };
+    plans: {
+      pro: string;
+      max: string;
+      custom: string;
+    };
+    editions: {
+      cloud: string;
+      selfHosted: string;
+    };
+    unknown: string;
+  };
+  invoices: {
+    title: string;
+    description: string;
+    empty: string;
+    taxLabel: string;
+    numberLabel: string;
+    numberPendingLabel: string;
+    billingDateLabel: string;
+    amountLabel: string;
+    statusLabel: string;
+    downloadLabel: string;
+    viewLabel: string;
+    unavailableLabel: string;
+    payLabel: string;
+    pendingPaymentDescription: string;
+  };
+  pagination: {
+    loadMoreLabel: string;
+    loadingLabel: string;
+    previousPageLabel: string;
+    nextPageLabel: string;
+  };
+  /**
+   * Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.
+   */
+  withdrawal: {
     /**
-     * Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.
+     * Use {date} as a placeholder for the withdrawal deadline.
      */
-    withdrawal: {
-        /**
-         * Use {date} as a placeholder for the withdrawal deadline.
-         */
-        text: string
-    }
-    updatedAt?: string | null
-    createdAt?: string | null
+    text: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "license-dialogs".
  */
 export interface LicenseDialog {
-    id: number
-    editor: {
-        customerTitle: string
-        customerDescription: string
-        contactHeading: string
-        /**
-         * Descriptions shown below the inputs of the customer edit dialog.
-         */
-        fieldDescriptions: {
-            name: string
-            email: string
-            phone: string
-            line1: string
-            line2: string
-            postalCode: string
-            city: string
-            state: string
-            country: string
-        }
-        paymentMethodDescription: string
-        loadingPaymentMethodLabel: string
-        savePaymentMethodLabel: string
-        savingPaymentMethodLabel: string
-        paymentMethodSuccess: string
-        noPaymentMethodsLabel: string
-        addPaymentMethodLabel: string
-        removePaymentMethodLabel: string
-        removingPaymentMethodLabel: string
-        settingPaymentMethodLabel: string
-        licenseTitle: string
-        licenseEditDescription: string
-        licenseDescription: string
-        noNamespaceLabel: string
-        changeNamespaceLabel: string
-        cancellationHeading: string
-        saveLabel: string
-        closeLabel: string
-        generalTabLabel: string
-        paymentMethodsTabLabel: string
-        paymentMethodTabLabel: string
-    }
-    billing: {
-        heading: string
-        title: string
-        description: string
-        statusDescription: string
-        periodLabel: string
-        currentPeriodEndLabel: string
-        /**
-         * Use {date} as a placeholder for the end of the current period.
-         */
-        currentPeriodEndDescription: string
-        /**
-         * Replaces the renewal text while a change is scheduled. Use {selection} for the new plan and {date} for the day it applies.
-         */
-        currentPeriodEndPendingDescription: string
-        /**
-         * Replaces the renewal text once the subscription is canceled. Use {date} for the day access ends.
-         */
-        currentPeriodEndCanceledDescription: string
-        /**
-         * Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.
-         */
-        pendingChangeNote: string
-        currentPeriodEndUnknownDescription: string
-        changePeriodLabel: string
-    }
-    upgrade: {
-        title: string
-        description: string
-        planHeading: string
-        previewHeading: string
-        submitLabel: string
-    }
-    subscriptionPreview: {
-        totalLabel: string
-        totalDescription: string
-        prorationLabel: string
-        prorationDescription: string
-        immediateNote: string
-        scheduledNote: string
-        loadingLabel: string
-    }
-    cancel: {
-        description: string
-        confirmLabel: string
-        immediateConfirmLabel: string
-        immediateDescription: string
-        immediateUntilLabel: string
-        immediateConfirmDescription: string
-        immediateConfirmSubmitLabel: string
-        immediateConfirmBackLabel: string
-        pendingHeading: string
-        pendingDescription: string
-        resumeLabel: string
-    }
-    updatedAt?: string | null
-    createdAt?: string | null
+  id: number;
+  editor: {
+    customerTitle: string;
+    customerDescription: string;
+    contactHeading: string;
+    /**
+     * Descriptions shown below the inputs of the customer edit dialog.
+     */
+    fieldDescriptions: {
+      name: string;
+      email: string;
+      phone: string;
+      line1: string;
+      line2: string;
+      postalCode: string;
+      city: string;
+      state: string;
+      country: string;
+    };
+    paymentMethodDescription: string;
+    loadingPaymentMethodLabel: string;
+    savePaymentMethodLabel: string;
+    savingPaymentMethodLabel: string;
+    paymentMethodSuccess: string;
+    noPaymentMethodsLabel: string;
+    addPaymentMethodLabel: string;
+    removePaymentMethodLabel: string;
+    removingPaymentMethodLabel: string;
+    settingPaymentMethodLabel: string;
+    licenseTitle: string;
+    licenseEditDescription: string;
+    licenseDescription: string;
+    noNamespaceLabel: string;
+    changeNamespaceLabel: string;
+    cancellationHeading: string;
+    saveLabel: string;
+    closeLabel: string;
+    generalTabLabel: string;
+    paymentMethodsTabLabel: string;
+    paymentMethodTabLabel: string;
+  };
+  billing: {
+    heading: string;
+    title: string;
+    description: string;
+    statusDescription: string;
+    periodLabel: string;
+    currentPeriodEndLabel: string;
+    /**
+     * Use {date} as a placeholder for the end of the current period.
+     */
+    currentPeriodEndDescription: string;
+    /**
+     * Replaces the renewal text while a change is scheduled. Use {selection} for the new plan and {date} for the day it applies.
+     */
+    currentPeriodEndPendingDescription: string;
+    /**
+     * Replaces the renewal text once the subscription is canceled. Use {date} for the day access ends.
+     */
+    currentPeriodEndCanceledDescription: string;
+    /**
+     * Shown below the next billing date on the license page. Use {selection} as a placeholder for the scheduled change.
+     */
+    pendingChangeNote: string;
+    currentPeriodEndUnknownDescription: string;
+    changePeriodLabel: string;
+  };
+  upgrade: {
+    title: string;
+    description: string;
+    planHeading: string;
+    previewHeading: string;
+    submitLabel: string;
+  };
+  subscriptionPreview: {
+    totalLabel: string;
+    totalDescription: string;
+    prorationLabel: string;
+    prorationDescription: string;
+    immediateNote: string;
+    scheduledNote: string;
+    loadingLabel: string;
+  };
+  cancel: {
+    description: string;
+    confirmLabel: string;
+    immediateConfirmLabel: string;
+    immediateDescription: string;
+    immediateUntilLabel: string;
+    immediateConfirmDescription: string;
+    immediateConfirmSubmitLabel: string;
+    immediateConfirmBackLabel: string;
+    pendingHeading: string;
+    pendingDescription: string;
+    resumeLabel: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * Use {date} in a description to insert the date the change takes effect.
@@ -3443,973 +3448,974 @@ export interface LicenseDialog {
  * via the `definition` "license-toasts".
  */
 export interface LicenseToast {
-    id: number
-    /**
-     * Title of every error toast; the specific error message from the Errors global is shown below it.
-     */
-    errorTitle: string
-    customerSaved: {
-        title: string
-        description: string
-    }
-    planUpdated: {
-        title: string
-        description: string
-    }
-    changeScheduled: {
-        title: string
-        description: string
-    }
-    periodUpdated: {
-        title: string
-        description: string
-    }
-    canceled: {
-        title: string
-        description: string
-    }
-    cancellationScheduled: {
-        title: string
-        description: string
-    }
-    resumed: {
-        title: string
-        description: string
-    }
-    paymentAssigned: {
-        title: string
-        description: string
-    }
-    paymentRemoved: {
-        title: string
-        description: string
-    }
-    paymentConfirmed: {
-        title: string
-        description: string
-    }
-    invoicePaid: {
-        title: string
-        description: string
-    }
-    paymentProcessing: {
-        title: string
-        description: string
-    }
-    namespaceLinked: {
-        title: string
-        description: string
-    }
-    updatedAt?: string | null
-    createdAt?: string | null
+  id: number;
+  /**
+   * Title of every error toast; the specific error message from the Errors global is shown below it.
+   */
+  errorTitle: string;
+  customerSaved: {
+    title: string;
+    description: string;
+  };
+  planUpdated: {
+    title: string;
+    description: string;
+  };
+  changeScheduled: {
+    title: string;
+    description: string;
+  };
+  periodUpdated: {
+    title: string;
+    description: string;
+  };
+  canceled: {
+    title: string;
+    description: string;
+  };
+  cancellationScheduled: {
+    title: string;
+    description: string;
+  };
+  resumed: {
+    title: string;
+    description: string;
+  };
+  paymentAssigned: {
+    title: string;
+    description: string;
+  };
+  paymentRemoved: {
+    title: string;
+    description: string;
+  };
+  paymentConfirmed: {
+    title: string;
+    description: string;
+  };
+  invoicePaid: {
+    title: string;
+    description: string;
+  };
+  paymentProcessing: {
+    title: string;
+    description: string;
+  };
+  namespaceLinked: {
+    title: string;
+    description: string;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "errors".
  */
 export interface Error {
-    id: number
-    dashboardLoad: string
-    retry: string
-    customerUpdate: string
-    paymentMethodLoad: string
-    paymentMethodUpdate: string
-    paymentMethodRemove: string
-    paymentMethodInUse: string
-    paymentMethodAssign: string
-    namespaceInUse: string
-    licenseUpdate: string
-    subscriptionPreview: string
-    billingUpdate: string
-    subscriptionCancel: string
-    subscriptionResume: string
-    planUpgrade: string
-    upgradePaymentPending: string
-    paymentFallback: string
-    sessionUnavailable: string
-    customerCreation: string
-    customerTypeMismatch: string
-    checkoutCustomer: string
-    checkoutSession: string
-    checkoutRateLimit: string
-    checkoutSessionExpired: string
-    billingAddressUpdate: string
-    emailUpdate: string
-    paymentConfirmation: string
-    discountSessionRequired: string
-    discountValidation: string
-    offerSend: string
-    offerDelivery: string
-    checkoutLicenseStatus: string
-    updatedAt?: string | null
-    createdAt?: string | null
+  id: number;
+  dashboardLoad: string;
+  retry: string;
+  customerUpdate: string;
+  paymentMethodLoad: string;
+  paymentMethodUpdate: string;
+  paymentMethodRemove: string;
+  paymentMethodInUse: string;
+  paymentMethodAssign: string;
+  namespaceInUse: string;
+  licenseUpdate: string;
+  subscriptionPreview: string;
+  billingUpdate: string;
+  subscriptionCancel: string;
+  subscriptionResume: string;
+  planUpgrade: string;
+  upgradePaymentPending: string;
+  paymentFallback: string;
+  sessionUnavailable: string;
+  customerCreation: string;
+  customerTypeMismatch: string;
+  checkoutCustomer: string;
+  checkoutSession: string;
+  checkoutRateLimit: string;
+  checkoutSessionExpired: string;
+  billingAddressUpdate: string;
+  emailUpdate: string;
+  paymentConfirmation: string;
+  discountSessionRequired: string;
+  discountValidation: string;
+  offerSend: string;
+  offerDelivery: string;
+  checkoutLicenseStatus: string;
+  updatedAt?: string | null;
+  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "navigation_select".
  */
 export interface NavigationSelect<T extends boolean = true> {
-    logo?: T
-    items?:
-        | T
-        | {
-              items?:
-                  | T
-                  | {
-                        title?: T
-                        href?: T
-                        order?: T
-                        subMenuGroups?:
-                            | T
-                            | {
-                                  title?: T
-                                  items?:
-                                      | T
-                                      | {
-                                            key?: T
-                                            title?: T
-                                            href?: T
-                                            description?: T
-                                            icon?: T
-                                            id?: T
-                                        }
-                                  id?: T
-                              }
-                        shortLinkGroups?:
-                            | T
-                            | {
-                                  title?: T
-                                  links?:
-                                      | T
-                                      | {
-                                            title?: T
-                                            href?: T
-                                            newTab?: T
-                                            id?: T
-                                        }
-                                  id?: T
-                              }
-                        id?: T
-                    }
-          }
-    buttons?:
-        | T
-        | {
-              buttons?:
-                  | T
-                  | {
-                        title?: T
-                        href?: T
-                        order?: T
-                        icon?: T
-                        newTab?: T
-                        variant?: T
-                        id?: T
-                    }
-          }
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  logo?: T;
+  items?:
+    | T
+    | {
+        items?:
+          | T
+          | {
+              title?: T;
+              href?: T;
+              order?: T;
+              subMenuGroups?:
+                | T
+                | {
+                    title?: T;
+                    items?:
+                      | T
+                      | {
+                          key?: T;
+                          title?: T;
+                          href?: T;
+                          description?: T;
+                          icon?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              shortLinkGroups?:
+                | T
+                | {
+                    title?: T;
+                    links?:
+                      | T
+                      | {
+                          title?: T;
+                          href?: T;
+                          newTab?: T;
+                          id?: T;
+                        };
+                    id?: T;
+                  };
+              id?: T;
+            };
+      };
+  buttons?:
+    | T
+    | {
+        buttons?:
+          | T
+          | {
+              title?: T;
+              href?: T;
+              order?: T;
+              icon?: T;
+              newTab?: T;
+              variant?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
-    company_name?: T
-    description?: T
-    image?: T
-    contactEmail?: T
-    legalLinks?:
-        | T
-        | {
-              privacy?:
-                  | T
-                  | {
-                        label?: T
-                        url?: T
-                    }
-              legalNotice?:
-                  | T
-                  | {
-                        label?: T
-                        url?: T
-                    }
-              terms?:
-                  | T
-                  | {
-                        label?: T
-                        url?: T
-                    }
-          }
-    socialLinks?:
-        | T
-        | {
-              platform?: T
-              url?: T
-              id?: T
-          }
-    groups?:
-        | T
-        | {
-              heading?: T
-              items?:
-                  | T
-                  | {
-                        label?: T
-                        url?: T
-                        id?: T
-                    }
-              id?: T
-          }
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  company_name?: T;
+  description?: T;
+  image?: T;
+  contactEmail?: T;
+  legalLinks?:
+    | T
+    | {
+        privacy?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+        legalNotice?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+        terms?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+            };
+      };
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  groups?:
+    | T
+    | {
+        heading?: T;
+        items?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "cookie-banner_select".
  */
 export interface CookieBannerSelect<T extends boolean = true> {
-    common?:
-        | T
-        | {
-              acceptAll?: T
-              rejectAll?: T
-              customize?: T
-              save?: T
-          }
-    cookieBanner?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    consentManagerDialog?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    consentTypes?:
-        | T
-        | {
-              necessary?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                    }
-              measurement?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                    }
-              marketing?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                    }
-          }
-    legalLinks?:
-        | T
-        | {
-              privacyPolicy?:
-                  | T
-                  | {
-                        label?: T
-                        href?: T
-                    }
-              termsOfService?:
-                  | T
-                  | {
-                        label?: T
-                        href?: T
-                    }
-          }
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  common?:
+    | T
+    | {
+        acceptAll?: T;
+        rejectAll?: T;
+        customize?: T;
+        save?: T;
+      };
+  cookieBanner?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  consentManagerDialog?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  consentTypes?:
+    | T
+    | {
+        necessary?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+        measurement?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+        marketing?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+            };
+      };
+  legalLinks?:
+    | T
+    | {
+        privacyPolicy?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+            };
+        termsOfService?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "subscriptionConfig_select".
  */
 export interface SubscriptionConfigSelect<T extends boolean = true> {
-    defaults?:
-        | T
-        | {
-              deployment?: T
-              customerType?: T
-              paymentPeriod?:
-                  | T
-                  | {
-                        b2b?: T
-                        b2c?: T
-                    }
-          }
-    subscribe?:
-        | T
-        | {
-              label?: T
-              baseUrl?: T
-          }
-    contactSales?:
-        | T
-        | {
-              prompt?: T
-              label?: T
-              href?: T
-          }
-    deployment?:
-        | T
-        | {
-              label?: T
-              description?: T
-              color?: T
-              selfHosted?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                        image?: T
-                    }
-              cloud?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                        image?: T
-                    }
-          }
-    customerType?:
-        | T
-        | {
-              label?: T
-              description?: T
-              color?: T
-              b2b?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                        image?: T
-                    }
-              b2c?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                        image?: T
-                    }
-          }
-    paymentPeriod?:
-        | T
-        | {
-              label?: T
-              description?: T
-              monthlyText?: T
-              savingsLabel?: T
-              quarterlyText?: T
-              yearlyText?: T
-              monthlyPeriodSuffix?: T
-              quarterlyPeriodSuffix?: T
-              yearlyPeriodSuffix?: T
-              color?: T
-          }
-    plan?:
-        | T
-        | {
-              title?: T
-              description?: T
-              color?: T
-              aiTokensLabel?: T
-              workflowExecutionsLabel?: T
-              moreWorkflowsLabel?: T
-              pro?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                        features?:
-                            | T
-                            | {
-                                  text?: T
-                                  id?: T
-                              }
-                        color?: T
-                        image?: T
-                    }
-              max?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                        features?:
-                            | T
-                            | {
-                                  text?: T
-                                  id?: T
-                              }
-                        comparisonText?: T
-                        priceDifferenceText?: T
-                        color?: T
-                        image?: T
-                    }
-              custom?:
-                  | T
-                  | {
-                        title?: T
-                        description?: T
-                        features?:
-                            | T
-                            | {
-                                  text?: T
-                                  id?: T
-                              }
-                        quantitiesText?: T
-                        priceFallbackText?: T
-                        color?: T
-                        image?: T
-                    }
-          }
-    workflowExecutions?:
-        | T
-        | {
-              title?: T
-              description?: T
-              suffix?: T
-          }
-    aiTokens?:
-        | T
-        | {
-              title?: T
-              description?: T
-              suffix?: T
-          }
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  defaults?:
+    | T
+    | {
+        deployment?: T;
+        customerType?: T;
+        paymentPeriod?:
+          | T
+          | {
+              b2b?: T;
+              b2c?: T;
+            };
+      };
+  subscribe?:
+    | T
+    | {
+        label?: T;
+        baseUrl?: T;
+      };
+  contactSales?:
+    | T
+    | {
+        prompt?: T;
+        label?: T;
+        href?: T;
+      };
+  deployment?:
+    | T
+    | {
+        label?: T;
+        description?: T;
+        color?: T;
+        selfHosted?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+        cloud?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  customerType?:
+    | T
+    | {
+        label?: T;
+        description?: T;
+        color?: T;
+        b2b?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+        b2c?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              image?: T;
+            };
+      };
+  paymentPeriod?:
+    | T
+    | {
+        label?: T;
+        description?: T;
+        monthlyText?: T;
+        savingsLabel?: T;
+        quarterlyText?: T;
+        yearlyText?: T;
+        monthlyPeriodSuffix?: T;
+        quarterlyPeriodSuffix?: T;
+        yearlyPeriodSuffix?: T;
+        color?: T;
+      };
+  plan?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        color?: T;
+        aiTokensLabel?: T;
+        workflowExecutionsLabel?: T;
+        moreWorkflowsLabel?: T;
+        pro?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              color?: T;
+              image?: T;
+            };
+        max?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              comparisonText?: T;
+              priceDifferenceText?: T;
+              color?: T;
+              image?: T;
+            };
+        custom?:
+          | T
+          | {
+              title?: T;
+              description?: T;
+              features?:
+                | T
+                | {
+                    text?: T;
+                    id?: T;
+                  };
+              quantitiesText?: T;
+              priceFallbackText?: T;
+              color?: T;
+              image?: T;
+            };
+      };
+  workflowExecutions?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        suffix?: T;
+      };
+  aiTokens?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        suffix?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "checkout_select".
  */
 export interface CheckoutSelect<T extends boolean = true> {
-    login?:
-        | T
-        | {
-              heading?: T
-              description?: T
-              loginLabel?: T
-              guestHeading?: T
-              guestDescription?: T
-              guestLabel?: T
-          }
-    summary?:
-        | T
-        | {
-              eyebrow?: T
-              heading?: T
-              description?: T
-              nextChargeText?: T
-              deploymentIcons?:
-                  | T
-                  | {
-                        cloud?: T
-                        selfHosted?: T
-                    }
-              deploymentIconColor?: T
-              customerTypeIcons?:
-                  | T
-                  | {
-                        b2b?: T
-                        b2c?: T
-                    }
-              customerTypeIconColor?: T
-              pricing?:
-                  | T
-                  | {
-                        planLabel?: T
-                        baseLabel?: T
-                        workflowExecutionsLabel?: T
-                        quarterlyDiscountLabel?: T
-                        yearlyDiscountLabel?: T
-                        discountInputPlaceholder?: T
-                        discountButtonLabel?: T
-                        discountPromptLabel?: T
-                        discountDialogDescription?: T
-                        discountRemoveLabel?: T
-                        taxLabel?: T
-                        taxInclusiveLabel?: T
-                        taxExclusiveLabel?: T
-                        subtotalLabel?: T
-                        totalExcludingTaxLabel?: T
-                        taxRateLabel?: T
-                        totalDueTodayLabel?: T
-                        totalIncludingTaxSuffix?: T
-                        totalLabel?: T
-                        perMonthSuffix?: T
-                    }
-          }
-    form?:
-        | T
-        | {
-              secureCheckoutLabel?: T
-              contactHeading?: T
-              billingHeading?: T
-              continueLabel?: T
-              notChargedYetText?: T
-              backToBillingLabel?: T
-              billingChangeLabel?: T
-              payNowLabel?: T
-              securePaymentText?: T
-              sendOfferPrompt?: T
-              sendOfferLabel?: T
-              sendOfferTitle?: T
-              sendOfferDescription?: T
-              sendOfferSuccess?: T
-              sendOfferBillingRequired?: T
-              processingLabel?: T
-              customerSelectLabel?: T
-              newCustomerLabel?: T
-              nameLabel?: T
-              emailLabel?: T
-              emailPlaceholder?: T
-              phoneLabel?: T
-              line1Label?: T
-              line2Label?: T
-              cityLabel?: T
-              stateLabel?: T
-              postalCodeLabel?: T
-              countryLabel?: T
-          }
-    nextSteps?:
-        | T
-        | {
-              heading?: T
-              step1Title?: T
-              step1Description?: T
-              step2Title?: T
-              step2Description?: T
-              step3Title?: T
-              step3Description?: T
-          }
-    success?:
-        | T
-        | {
-              heading?: T
-              description?: T
-              licenseDashboardLabel?: T
-              sculptorLabel?: T
-              licenseDownloadLabel?: T
-              licenseDownloadError?: T
-              licensePendingLabel?: T
-              licenseStatusRetryLabel?: T
-              delayedHeading?: T
-              delayedConfirmedDescription?: T
-              delayedPendingDescription?: T
-              receiptHint?: T
-              guestAccountHint?: T
-              failedHeading?: T
-              failedDescription?: T
-              invalidHeading?: T
-              invalidDescription?: T
-              checkoutRetryLabel?: T
-          }
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  login?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+        loginLabel?: T;
+        guestHeading?: T;
+        guestDescription?: T;
+        guestLabel?: T;
+      };
+  summary?:
+    | T
+    | {
+        eyebrow?: T;
+        heading?: T;
+        description?: T;
+        nextChargeText?: T;
+        deploymentIcons?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
+        deploymentIconColor?: T;
+        customerTypeIcons?:
+          | T
+          | {
+              b2b?: T;
+              b2c?: T;
+            };
+        customerTypeIconColor?: T;
+        pricing?:
+          | T
+          | {
+              planLabel?: T;
+              baseLabel?: T;
+              workflowExecutionsLabel?: T;
+              quarterlyDiscountLabel?: T;
+              yearlyDiscountLabel?: T;
+              discountInputPlaceholder?: T;
+              discountButtonLabel?: T;
+              discountPromptLabel?: T;
+              discountDialogDescription?: T;
+              discountRemoveLabel?: T;
+              taxLabel?: T;
+              taxInclusiveLabel?: T;
+              taxExclusiveLabel?: T;
+              subtotalLabel?: T;
+              totalExcludingTaxLabel?: T;
+              taxRateLabel?: T;
+              totalDueTodayLabel?: T;
+              totalIncludingTaxSuffix?: T;
+              totalLabel?: T;
+              perMonthSuffix?: T;
+            };
+      };
+  form?:
+    | T
+    | {
+        secureCheckoutLabel?: T;
+        contactHeading?: T;
+        billingHeading?: T;
+        continueLabel?: T;
+        notChargedYetText?: T;
+        backToBillingLabel?: T;
+        billingChangeLabel?: T;
+        payNowLabel?: T;
+        securePaymentText?: T;
+        sendOfferPrompt?: T;
+        sendOfferLabel?: T;
+        sendOfferTitle?: T;
+        sendOfferDescription?: T;
+        sendOfferSuccess?: T;
+        sendOfferBillingRequired?: T;
+        processingLabel?: T;
+        customerSelectLabel?: T;
+        newCustomerLabel?: T;
+        nameLabel?: T;
+        emailLabel?: T;
+        emailPlaceholder?: T;
+        phoneLabel?: T;
+        line1Label?: T;
+        line2Label?: T;
+        cityLabel?: T;
+        stateLabel?: T;
+        postalCodeLabel?: T;
+        countryLabel?: T;
+      };
+  nextSteps?:
+    | T
+    | {
+        heading?: T;
+        step1Title?: T;
+        step1Description?: T;
+        step2Title?: T;
+        step2Description?: T;
+        step3Title?: T;
+        step3Description?: T;
+      };
+  success?:
+    | T
+    | {
+        heading?: T;
+        description?: T;
+        licenseDashboardLabel?: T;
+        sculptorLabel?: T;
+        licenseDownloadLabel?: T;
+        licenseDownloadError?: T;
+        licensePendingLabel?: T;
+        licenseStatusRetryLabel?: T;
+        delayedHeading?: T;
+        delayedConfirmedDescription?: T;
+        delayedPendingDescription?: T;
+        receiptHint?: T;
+        guestAccountHint?: T;
+        failedHeading?: T;
+        failedDescription?: T;
+        invalidHeading?: T;
+        invalidDescription?: T;
+        checkoutRetryLabel?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "licenses_select".
  */
 export interface LicensesSelect<T extends boolean = true> {
-    licenses?: T
-    license?: T
-    licenseDescription?: T
-    emptyLicenses?: T
-    sidebar?:
-        | T
-        | {
-              logout?: T
-              loggingOut?: T
-              backToCustomerLabel?: T
-              backToCustomersLabel?: T
-              downloadLicenseLabel?: T
-              homeLabel?: T
-              applicationSettingsLabel?: T
-              userMenuLabel?: T
-              profileLabel?: T
-              settingsLabel?: T
-              workspacesLabel?: T
-          }
-    dashboard?:
-        | T
-        | {
-              customersLabel?: T
-              customersDescription?: T
-              emptyCustomers?: T
-              recentLicensesLabel?: T
-              recentLicensesDescription?: T
-              activeLicensesLabel?: T
-              typeLabel?: T
-              customerLabel?: T
-              nameLabel?: T
-              emailLabel?: T
-              lastEditedLabel?: T
-              statusLabel?: T
-              paymentPeriodLabel?: T
-              workflowExecutionsLabel?: T
-              aiTokensLabel?: T
-              editionLabel?: T
-              nextBillingDateLabel?: T
-          }
-    values?:
-        | T
-        | {
-              customerTypes?:
-                  | T
-                  | {
-                        personal?: T
-                        business?: T
-                    }
-              deploymentTypes?:
-                  | T
-                  | {
-                        cloud?: T
-                        selfHosted?: T
-                    }
-              paymentPeriods?:
-                  | T
-                  | {
-                        monthly?: T
-                        quarterly?: T
-                        yearly?: T
-                    }
-              statuses?:
-                  | T
-                  | {
-                        active?: T
-                        pending?: T
-                        incomplete?: T
-                        paused?: T
-                        trialing?: T
-                        unpaid?: T
-                        pastDue?: T
-                        canceled?: T
-                        incompleteExpired?: T
-                    }
-              invoiceStatuses?:
-                  | T
-                  | {
-                        paid?: T
-                        draft?: T
-                        open?: T
-                        uncollectible?: T
-                        void?: T
-                    }
-              plans?:
-                  | T
-                  | {
-                        pro?: T
-                        max?: T
-                        custom?: T
-                    }
-              editions?:
-                  | T
-                  | {
-                        cloud?: T
-                        selfHosted?: T
-                    }
-              unknown?: T
-          }
-    invoices?:
-        | T
-        | {
-              title?: T
-              description?: T
-              empty?: T
-              taxLabel?: T
-              numberLabel?: T
-              numberPendingLabel?: T
-              billingDateLabel?: T
-              amountLabel?: T
-              statusLabel?: T
-              downloadLabel?: T
-              viewLabel?: T
-              unavailableLabel?: T
-              payLabel?: T
-              pendingPaymentDescription?: T
-          }
-    pagination?:
-        | T
-        | {
-              loadMoreLabel?: T
-              loadingLabel?: T
-              previousPageLabel?: T
-              nextPageLabel?: T
-          }
-    withdrawal?:
-        | T
-        | {
-              text?: T
-          }
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  licenses?: T;
+  license?: T;
+  licenseDescription?: T;
+  emptyLicenses?: T;
+  sidebar?:
+    | T
+    | {
+        logout?: T;
+        loggingOut?: T;
+        backToCustomerLabel?: T;
+        backToCustomersLabel?: T;
+        downloadLicenseLabel?: T;
+        homeLabel?: T;
+        applicationSettingsLabel?: T;
+        userMenuLabel?: T;
+        profileLabel?: T;
+        settingsLabel?: T;
+        workspacesLabel?: T;
+      };
+  dashboard?:
+    | T
+    | {
+        customersLabel?: T;
+        customersDescription?: T;
+        emptyCustomers?: T;
+        recentLicensesLabel?: T;
+        recentLicensesDescription?: T;
+        activeLicensesLabel?: T;
+        typeLabel?: T;
+        customerLabel?: T;
+        nameLabel?: T;
+        emailLabel?: T;
+        lastEditedLabel?: T;
+        statusLabel?: T;
+        paymentPeriodLabel?: T;
+        workflowExecutionsLabel?: T;
+        aiTokensLabel?: T;
+        editionLabel?: T;
+        nextBillingDateLabel?: T;
+      };
+  values?:
+    | T
+    | {
+        customerTypes?:
+          | T
+          | {
+              personal?: T;
+              business?: T;
+            };
+        deploymentTypes?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
+        paymentPeriods?:
+          | T
+          | {
+              monthly?: T;
+              quarterly?: T;
+              yearly?: T;
+            };
+        statuses?:
+          | T
+          | {
+              active?: T;
+              pending?: T;
+              incomplete?: T;
+              paused?: T;
+              trialing?: T;
+              unpaid?: T;
+              pastDue?: T;
+              canceled?: T;
+              incompleteExpired?: T;
+            };
+        invoiceStatuses?:
+          | T
+          | {
+              paid?: T;
+              draft?: T;
+              open?: T;
+              uncollectible?: T;
+              void?: T;
+            };
+        plans?:
+          | T
+          | {
+              pro?: T;
+              max?: T;
+              custom?: T;
+            };
+        editions?:
+          | T
+          | {
+              cloud?: T;
+              selfHosted?: T;
+            };
+        unknown?: T;
+      };
+  invoices?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        empty?: T;
+        taxLabel?: T;
+        numberLabel?: T;
+        numberPendingLabel?: T;
+        billingDateLabel?: T;
+        amountLabel?: T;
+        statusLabel?: T;
+        downloadLabel?: T;
+        viewLabel?: T;
+        unavailableLabel?: T;
+        payLabel?: T;
+        pendingPaymentDescription?: T;
+      };
+  pagination?:
+    | T
+    | {
+        loadMoreLabel?: T;
+        loadingLabel?: T;
+        previousPageLabel?: T;
+        nextPageLabel?: T;
+      };
+  withdrawal?:
+    | T
+    | {
+        text?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "license-dialogs_select".
  */
 export interface LicenseDialogsSelect<T extends boolean = true> {
-    editor?:
-        | T
-        | {
-              customerTitle?: T
-              customerDescription?: T
-              contactHeading?: T
-              fieldDescriptions?:
-                  | T
-                  | {
-                        name?: T
-                        email?: T
-                        phone?: T
-                        line1?: T
-                        line2?: T
-                        postalCode?: T
-                        city?: T
-                        state?: T
-                        country?: T
-                    }
-              paymentMethodDescription?: T
-              loadingPaymentMethodLabel?: T
-              savePaymentMethodLabel?: T
-              savingPaymentMethodLabel?: T
-              paymentMethodSuccess?: T
-              noPaymentMethodsLabel?: T
-              addPaymentMethodLabel?: T
-              removePaymentMethodLabel?: T
-              removingPaymentMethodLabel?: T
-              settingPaymentMethodLabel?: T
-              licenseTitle?: T
-              licenseEditDescription?: T
-              licenseDescription?: T
-              noNamespaceLabel?: T
-              changeNamespaceLabel?: T
-              cancellationHeading?: T
-              saveLabel?: T
-              closeLabel?: T
-              generalTabLabel?: T
-              paymentMethodsTabLabel?: T
-              paymentMethodTabLabel?: T
-          }
-    billing?:
-        | T
-        | {
-              heading?: T
-              title?: T
-              description?: T
-              statusDescription?: T
-              periodLabel?: T
-              currentPeriodEndLabel?: T
-              currentPeriodEndDescription?: T
-              currentPeriodEndPendingDescription?: T
-              currentPeriodEndCanceledDescription?: T
-              pendingChangeNote?: T
-              currentPeriodEndUnknownDescription?: T
-              changePeriodLabel?: T
-          }
-    upgrade?:
-        | T
-        | {
-              title?: T
-              description?: T
-              planHeading?: T
-              previewHeading?: T
-              submitLabel?: T
-          }
-    subscriptionPreview?:
-        | T
-        | {
-              totalLabel?: T
-              totalDescription?: T
-              prorationLabel?: T
-              prorationDescription?: T
-              immediateNote?: T
-              scheduledNote?: T
-              loadingLabel?: T
-          }
-    cancel?:
-        | T
-        | {
-              description?: T
-              confirmLabel?: T
-              immediateConfirmLabel?: T
-              immediateDescription?: T
-              immediateUntilLabel?: T
-              immediateConfirmDescription?: T
-              immediateConfirmSubmitLabel?: T
-              immediateConfirmBackLabel?: T
-              pendingHeading?: T
-              pendingDescription?: T
-              resumeLabel?: T
-          }
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  editor?:
+    | T
+    | {
+        customerTitle?: T;
+        customerDescription?: T;
+        contactHeading?: T;
+        fieldDescriptions?:
+          | T
+          | {
+              name?: T;
+              email?: T;
+              phone?: T;
+              line1?: T;
+              line2?: T;
+              postalCode?: T;
+              city?: T;
+              state?: T;
+              country?: T;
+            };
+        paymentMethodDescription?: T;
+        loadingPaymentMethodLabel?: T;
+        savePaymentMethodLabel?: T;
+        savingPaymentMethodLabel?: T;
+        paymentMethodSuccess?: T;
+        noPaymentMethodsLabel?: T;
+        addPaymentMethodLabel?: T;
+        removePaymentMethodLabel?: T;
+        removingPaymentMethodLabel?: T;
+        settingPaymentMethodLabel?: T;
+        licenseTitle?: T;
+        licenseEditDescription?: T;
+        licenseDescription?: T;
+        noNamespaceLabel?: T;
+        changeNamespaceLabel?: T;
+        cancellationHeading?: T;
+        saveLabel?: T;
+        closeLabel?: T;
+        generalTabLabel?: T;
+        paymentMethodsTabLabel?: T;
+        paymentMethodTabLabel?: T;
+      };
+  billing?:
+    | T
+    | {
+        heading?: T;
+        title?: T;
+        description?: T;
+        statusDescription?: T;
+        periodLabel?: T;
+        currentPeriodEndLabel?: T;
+        currentPeriodEndDescription?: T;
+        currentPeriodEndPendingDescription?: T;
+        currentPeriodEndCanceledDescription?: T;
+        pendingChangeNote?: T;
+        currentPeriodEndUnknownDescription?: T;
+        changePeriodLabel?: T;
+      };
+  upgrade?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        planHeading?: T;
+        previewHeading?: T;
+        submitLabel?: T;
+      };
+  subscriptionPreview?:
+    | T
+    | {
+        totalLabel?: T;
+        totalDescription?: T;
+        prorationLabel?: T;
+        prorationDescription?: T;
+        immediateNote?: T;
+        scheduledNote?: T;
+        loadingLabel?: T;
+      };
+  cancel?:
+    | T
+    | {
+        description?: T;
+        confirmLabel?: T;
+        immediateConfirmLabel?: T;
+        immediateDescription?: T;
+        immediateUntilLabel?: T;
+        immediateConfirmDescription?: T;
+        immediateConfirmSubmitLabel?: T;
+        immediateConfirmBackLabel?: T;
+        pendingHeading?: T;
+        pendingDescription?: T;
+        resumeLabel?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "license-toasts_select".
  */
 export interface LicenseToastsSelect<T extends boolean = true> {
-    errorTitle?: T
-    customerSaved?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    planUpdated?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    changeScheduled?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    periodUpdated?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    canceled?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    cancellationScheduled?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    resumed?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    paymentAssigned?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    paymentRemoved?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    paymentConfirmed?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    invoicePaid?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    paymentProcessing?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    namespaceLinked?:
-        | T
-        | {
-              title?: T
-              description?: T
-          }
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  errorTitle?: T;
+  customerSaved?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  planUpdated?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  changeScheduled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  periodUpdated?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  canceled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  cancellationScheduled?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  resumed?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentAssigned?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentRemoved?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentConfirmed?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  invoicePaid?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  paymentProcessing?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  namespaceLinked?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "errors_select".
  */
 export interface ErrorsSelect<T extends boolean = true> {
-    dashboardLoad?: T
-    retry?: T
-    customerUpdate?: T
-    paymentMethodLoad?: T
-    paymentMethodUpdate?: T
-    paymentMethodRemove?: T
-    paymentMethodInUse?: T
-    paymentMethodAssign?: T
-    namespaceInUse?: T
-    licenseUpdate?: T
-    subscriptionPreview?: T
-    billingUpdate?: T
-    subscriptionCancel?: T
-    subscriptionResume?: T
-    planUpgrade?: T
-    upgradePaymentPending?: T
-    paymentFallback?: T
-    sessionUnavailable?: T
-    customerCreation?: T
-    customerTypeMismatch?: T
-    checkoutCustomer?: T
-    checkoutSession?: T
-    checkoutRateLimit?: T
-    checkoutSessionExpired?: T
-    billingAddressUpdate?: T
-    emailUpdate?: T
-    paymentConfirmation?: T
-    discountSessionRequired?: T
-    discountValidation?: T
-    offerSend?: T
-    offerDelivery?: T
-    checkoutLicenseStatus?: T
-    updatedAt?: T
-    createdAt?: T
-    globalType?: T
+  dashboardLoad?: T;
+  retry?: T;
+  customerUpdate?: T;
+  paymentMethodLoad?: T;
+  paymentMethodUpdate?: T;
+  paymentMethodRemove?: T;
+  paymentMethodInUse?: T;
+  paymentMethodAssign?: T;
+  namespaceInUse?: T;
+  licenseUpdate?: T;
+  subscriptionPreview?: T;
+  billingUpdate?: T;
+  subscriptionCancel?: T;
+  subscriptionResume?: T;
+  planUpgrade?: T;
+  upgradePaymentPending?: T;
+  paymentFallback?: T;
+  sessionUnavailable?: T;
+  customerCreation?: T;
+  customerTypeMismatch?: T;
+  checkoutCustomer?: T;
+  checkoutSession?: T;
+  checkoutRateLimit?: T;
+  checkoutSessionExpired?: T;
+  billingAddressUpdate?: T;
+  emailUpdate?: T;
+  paymentConfirmation?: T;
+  discountSessionRequired?: T;
+  discountValidation?: T;
+  offerSend?: T;
+  offerDelivery?: T;
+  checkoutLicenseStatus?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
 export interface CollectionsWidget {
-    data?: {
-        [k: string]: unknown
-    }
-    width: "full"
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "auth".
  */
 export interface Auth {
-    [k: string]: unknown
+  [k: string]: unknown;
 }
 
-declare module "payload" {
-    export interface GeneratedTypes extends Config {}
+
+declare module 'payload' {
+  export interface GeneratedTypes extends Config {}
 }

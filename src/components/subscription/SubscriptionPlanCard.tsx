@@ -120,18 +120,19 @@ export function SubscriptionPlanCard({ title, description, active, onClick, acce
 }
 
 type SubscriptionPlanUsageSliderProps = Omit<ComponentProps<typeof PackageSlider>, "hideCenterLabel" | "centerLabelSuffix"> & {
+    accent?: SubscriptionOptionAccent
     label: string
     valueLabel: string
 }
 
-export function SubscriptionPlanUsageSlider({ label, valueLabel, ...props }: SubscriptionPlanUsageSliderProps) {
+export function SubscriptionPlanUsageSlider({ accent = "aqua", label, valueLabel, ...props }: SubscriptionPlanUsageSliderProps) {
     return (
-        <div className="rounded-xl border border-white/8 bg-primary/60 px-4 py-3">
+        <div style={{ background: mixAccent(`var(--bg-${accent})`, 8) }} className="rounded-xl px-4 py-3">
             <div className="flex items-baseline justify-between gap-4">
                 <p className="text-sm text-secondary">{label}</p>
                 <p className="text-sm font-semibold tabular-nums text-white">{valueLabel}</p>
             </div>
-            <PackageSlider {...props} hideCenterLabel />
+            <PackageSlider {...props} flat hideCenterLabel />
         </div>
     )
 }
