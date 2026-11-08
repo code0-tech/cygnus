@@ -67,6 +67,9 @@ let paymentElementOptions: unknown = null
 let paymentElementOnReady: (() => void) | null = null
 let paymentElementOnChange: ((event: { complete: boolean }) => void) | null = null
 let taxIdElementOptions: unknown = null
+type TaxIdChangeEvent = { complete: boolean; empty: boolean; value: { businessName: string; externalTaxIdType: string; taxId: string; taxIdType: string }; visible: boolean }
+let taxIdElementOnChange: ((event: TaxIdChangeEvent) => void) | null = null
+let stripeTaxIdInfoUpdates: unknown[] = []
 let stripeLoadOptions: unknown = null
 let checkoutStages: string[] = []
 let checkoutStage = "billingAddress"
@@ -244,8 +247,9 @@ mock.module("@stripe/react-stripe-js/checkout", {
             paymentElementOnChange = onChange ?? null
             return <div data-testid="stripe-payment">Payment details</div>
         },
-        TaxIdElement: ({ options }: { options: unknown }) => {
+        TaxIdElement: ({ onChange, options }: { onChange?: (event: TaxIdChangeEvent) => void; options: unknown }) => {
             taxIdElementOptions = options
+            taxIdElementOnChange = onChange ?? null
             return <div data-testid="stripe-tax-id">Tax ID</div>
         },
         useCheckoutElements: () =>
@@ -269,6 +273,10 @@ mock.module("@stripe/react-stripe-js/checkout", {
                               stripeBillingAddressUpdates.push(address)
                               await stripeBillingAddressUpdateGate
                               return { type: "success", session: {} }
+                          },
+                          updateTaxIdInfo: async (taxIdInfo: unknown) => {
+                              stripeTaxIdInfoUpdates.push(taxIdInfo)
+                              return { type: "success", session: { taxIdInfo } }
                           },
                           updateEmail: async (email: unknown) => {
                               stripeEmailUpdates.push(email)
@@ -329,6 +337,8 @@ afterEach(() => {
     paymentElementOnReady = null
     paymentElementOnChange = null
     taxIdElementOptions = null
+    taxIdElementOnChange = null
+    stripeTaxIdInfoUpdates = []
     checkoutStages = []
     checkoutStage = "billingAddress"
     stripeConfirmCalls = 0
@@ -602,6 +612,7 @@ test("creates a customer with contact details only when continuing to payment", 
     assert.ok(screen.getByText("Ada Lovelace"))
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST").length, 1)
     await user.click(screen.getByRole("button", { name: content.continueLabel }))
+    await screen.findByRole("button", { name: content.payNowLabel })
     act(() => paymentElementOnReady?.())
     act(() => paymentElementOnChange?.({ complete: true }))
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
@@ -995,13 +1006,20 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.ok(screen.getByTestId("stripe-tax-id"))
     assert.ok(screen.getByRole("button", { name: content.sendOfferLabel }))
-    assert.deepEqual(taxIdElementOptions, { fields: { businessName: "never" }, visibility: "auto" })
+    assert.deepEqual(taxIdElementOptions, { fields: { businessName: "always" }, visibility: "auto" })
     assert.deepEqual(stripeLoadOptions, { betas: ["custom_checkout_tax_id_1"], locale: "en" })
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    const taxIdValue = { businessName: "Code0 GmbH", externalTaxIdType: "eu_vat", taxId: "DE123456789", taxIdType: "de_vat" }
+    act(() => taxIdElementOnChange?.({ complete: false, empty: false, value: { ...taxIdValue, taxId: "DE1" }, visible: true }))
+    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
+    act(() => taxIdElementOnChange?.({ complete: true, empty: false, value: taxIdValue, visible: true }))
+    const taxIdElement = screen.getByTestId("stripe-tax-id")
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
 
     assert.ok(await screen.findByTestId("stripe-payment"))
-    assert.equal(screen.queryByTestId("stripe-tax-id"), null)
+    // The checkout SDK cannot prefill the Tax ID Element, so the billing step stays mounted and is only hidden.
+    assert.ok(screen.getByTestId("stripe-tax-id") === taxIdElement, "the Tax ID Element was remounted")
+    assert.ok(taxIdElement.closest("[hidden]"))
     assert.deepEqual(stripeEmailUpdates, [])
     assert.equal(screen.queryByRole("button", { name: content.sendOfferLabel }), null)
     assert.equal(screen.queryByRole("checkbox", { name: content.withdrawalConsentText }), null)
@@ -1009,9 +1027,11 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     act(() => paymentElementOnChange?.({ complete: true }))
     await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
     assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, false)
+    assert.deepEqual(stripeTaxIdInfoUpdates, [{ businessName: "Code0 GmbH", taxId: { type: "eu_vat", value: "DE123456789" } }])
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
+    await waitFor(() => assert.ok(!taxIdElement.closest("[hidden]"), "the billing step is still hidden"))
+    assert.ok(screen.getByTestId("stripe-tax-id") === taxIdElement, "the Tax ID Element was remounted")
     assert.ok(screen.getByTestId("stripe-billing-address"))
-    assert.ok(screen.getByTestId("stripe-tax-id"))
 })
 
 test("does not write a draft customer email again after restoring the payment stage", async () => {

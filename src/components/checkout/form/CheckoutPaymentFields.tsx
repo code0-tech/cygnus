@@ -1,6 +1,6 @@
 "use client"
 
-import { getStripePricingFromSession, getTaxQuoteFromSession } from "@/lib/checkout/stripeCheckout"
+import { getStripePricingFromSession, getTaxIdInfoFromDraft, getTaxQuoteFromSession, type CheckoutTaxIdDraft } from "@/lib/checkout/stripeCheckout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -75,6 +75,8 @@ export function CheckoutPaymentFields({
     const [isContactElementReady, setIsContactElementReady] = useState(false)
     const [isAddressElementReady, setIsAddressElementReady] = useState(false)
     const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
+    const [taxIdDraft, setTaxIdDraft] = useState<CheckoutTaxIdDraft | null>(null)
+    const isTaxIdIncomplete = collectTaxId && taxIdDraft !== null && taxIdDraft.visible && !taxIdDraft.empty && !taxIdDraft.complete
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
     const liveStripePricing = checkoutState.type === "success" ? getStripePricingFromSession(checkoutState.checkout) : null
     const restoredBillingRef = useRef(false)
@@ -158,7 +160,7 @@ export function CheckoutPaymentFields({
 
     const updateCheckoutBilling = useCallback(
         async (moveToPayment: boolean) => {
-            if (!billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || checkoutState.type !== "success" || isUpdatingBilling) return
+            if (!billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || isTaxIdIncomplete || checkoutState.type !== "success" || isUpdatingBilling) return
 
             setIsUpdatingBilling(true)
             setErrorMessage(null)
@@ -169,6 +171,19 @@ export function CheckoutPaymentFields({
                     return
                 }
                 let updatedSession = billingResult.session
+
+                // Storing the tax ID on the session before the payment step lets the tax preview account for it (reverse charge).
+                if (collectTaxId && taxIdDraft) {
+                    const taxIdInfo = getTaxIdInfoFromDraft(taxIdDraft)
+                    if (taxIdInfo || updatedSession.taxIdInfo) {
+                        const taxIdResult = await checkoutState.checkout.updateTaxIdInfo(taxIdInfo)
+                        if (taxIdResult.type === "error") {
+                            setErrorMessage(taxIdResult.error.code === "invalidTaxId" ? taxIdResult.error.message : errors.billingAddressUpdate)
+                            return
+                        }
+                        updatedSession = taxIdResult.session
+                    }
+                }
 
                 if (!emailSyncedToStripe && !customerEmail && !checkoutState.checkout.email) {
                     const emailResult = await checkoutState.checkout.updateEmail(email)
@@ -201,6 +216,7 @@ export function CheckoutPaymentFields({
         [
             billingAddress,
             checkoutState,
+            collectTaxId,
             customerEmail,
             emailSyncedToStripe,
             errors.billingAddressUpdate,
@@ -209,11 +225,13 @@ export function CheckoutPaymentFields({
             email,
             isBillingAddressComplete,
             isContactDetailsComplete,
+            isTaxIdIncomplete,
             isUpdatingBilling,
             onEmailSyncedChange,
             onPricingChange,
             onTaxQuoteChange,
             setStage,
+            taxIdDraft,
         ]
     )
 
@@ -280,8 +298,9 @@ export function CheckoutPaymentFields({
     }
 
     return (
-        <CheckoutStageTransition stage={activeStep}>
-            {activeStep === "billingAddress" ? (
+        <CheckoutStageTransition
+            stage={activeStep}
+            billing={
                 <>
                     <section className="w-full space-y-4">
                         <h3 className="text-lg text-white">{content.contactHeading}</h3>
@@ -319,19 +338,24 @@ export function CheckoutPaymentFields({
                                     onReady={markAddressElementReady}
                                 />
                                 {collectTaxId && (
-                                    <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} onLoaderStart={markTaxIdElementLoading} onReady={markTaxIdElementReady} />
+                                    <TaxIdElement
+                                        options={{ fields: { businessName: "always" }, visibility: "auto" }}
+                                        onChange={(event) => setTaxIdDraft({ complete: event.complete, empty: event.empty, value: event.value, visible: event.visible })}
+                                        onLoaderStart={markTaxIdElementLoading}
+                                        onReady={markTaxIdElementReady}
+                                    />
                                 )}
                             </div>
                         </StripeElementSlot>
                     </section>
 
-                    {errorMessage && <Alert color="error">{errorMessage}</Alert>}
+                    {activeStep === "billingAddress" && errorMessage && <Alert color="error">{errorMessage}</Alert>}
 
                     <div className="space-y-3">
                         <Button
                             type="button"
                             variant="normal"
-                            disabled={!billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || isUpdatingBilling}
+                            disabled={!billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || isTaxIdIncomplete || isUpdatingBilling}
                             onClick={() => void showPayment()}
                             className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                         >
@@ -341,7 +365,8 @@ export function CheckoutPaymentFields({
                         {isBusinessCustomer && <SendOfferDialog content={content} emailLocked={offerEmailLocked} initialEmail={email} onSend={onSendOffer} />}
                     </div>
                 </>
-            ) : (
+            }
+            payment={
                 <>
                     <button
                         type="button"
@@ -389,7 +414,7 @@ export function CheckoutPaymentFields({
                         </p>
                     </div>
                 </>
-            )}
-        </CheckoutStageTransition>
+            }
+        />
     )
 }

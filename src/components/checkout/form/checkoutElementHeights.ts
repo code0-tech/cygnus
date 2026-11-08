@@ -9,7 +9,7 @@ export type CheckoutElementHeightKey = "contactDetails" | "billingAddress" | "bi
 export const FALLBACK_ELEMENT_HEIGHTS: Record<CheckoutElementHeightKey, number> = {
     contactDetails: 62,
     billingAddress: 374,
-    billingAddressWithTaxId: 452,
+    billingAddressWithTaxId: 530,
     payment: 300,
 }
 
