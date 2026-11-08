@@ -23,6 +23,18 @@ export function createCheckoutQuery(searchParams: CheckoutSearchParams): string 
     return query.toString()
 }
 
+/**
+ * Where to send a checkout request that cannot have a Crater session, decided on the server before anything renders.
+ * Without the account login marker and outside a guest checkout no session can exist, so the visitor goes straight to
+ * the login choice instead of seeing the checkout flash before the browser redirects. A failed login callback
+ * (`authError`) stays on the checkout, which shows its error message. `null` means the checkout should render.
+ */
+export function resolveCheckoutLoginRedirect(locale: string, searchParams: CheckoutSearchParams, hasAccountLogin: boolean) {
+    if (hasAccountLogin || searchParams.guestCheckout !== undefined || searchParams.authError !== undefined) return null
+    const query = createCheckoutQuery(searchParams)
+    return `/${locale}/checkout/login${query ? `?${query}` : ""}`
+}
+
 export function createCraterLoginCallbackUrl(siteUrl: URL, checkoutPath: string, state?: string) {
     const callbackUrl = new URL("/api/crater/auth/callback", siteUrl)
     callbackUrl.searchParams.set("returnPath", checkoutPath)

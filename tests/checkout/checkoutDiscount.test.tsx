@@ -207,3 +207,40 @@ test("keeps the code and amount when Stripe refuses removal and displays its err
     assert.deepEqual(applied, ["SAVE"])
     assert.equal(window.location.search, "?promotionCode=SAVE")
 })
+
+test("locks the discount while the payment is being confirmed", async () => {
+    const user = userEvent.setup()
+    const requestedCodes: Array<string | null> = []
+    const checkoutRef = sdk(async (code) => { requestedCodes.push(code) })
+    const view = render(<CheckoutDiscount {...props} disabled checkoutRef={checkoutRef} />)
+
+    const trigger = screen.getByRole("button", { name: props.promptLabel }) as HTMLButtonElement
+    assert.equal(trigger.disabled, true)
+    await user.click(trigger)
+    assert.equal(screen.queryByRole("dialog"), null)
+
+    // Once the confirmation fails and the checkout is usable again, the discount is too.
+    view.rerender(<CheckoutDiscount {...props} disabled={false} checkoutRef={checkoutRef} />)
+    await user.click(screen.getByRole("button", { name: props.promptLabel }))
+    await user.type(screen.getByPlaceholderText(props.inputPlaceholder), "SAVE10")
+    await user.click(screen.getByRole("button", { name: "Apply" }))
+    await waitFor(() => assert.deepEqual(requestedCodes, ["SAVE10"]))
+
+    view.rerender(<CheckoutDiscount {...props} disabled checkoutRef={checkoutRef} />)
+    const remove = screen.getByRole("button", { name: "(Remove)" }) as HTMLButtonElement
+    assert.equal(remove.disabled, true)
+    await user.click(remove)
+    assert.deepEqual(requestedCodes, ["SAVE10"])
+})
+
+test("does not apply a code from the URL while the payment is being confirmed", async () => {
+    currentSearchParams = new URLSearchParams("plan=pro&promotionCode=WELCOME")
+    let requests = 0
+    const checkoutRef = sdk(async () => { requests += 1 })
+    const view = render(<CheckoutDiscount {...props} disabled checkoutRef={checkoutRef} />)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    assert.equal(requests, 0)
+
+    view.rerender(<CheckoutDiscount {...props} disabled={false} checkoutRef={checkoutRef} />)
+    await waitFor(() => assert.equal(requests, 1))
+})

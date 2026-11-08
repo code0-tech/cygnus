@@ -184,32 +184,72 @@ function parseCheckoutCustomer(value: unknown): CheckoutCustomerData | null {
     }
 }
 
-export async function getCheckoutCustomers() {
+export interface CheckoutCustomerPage {
+    customers: CheckoutCustomerData[]
+    endCursor: string | null
+    hasNextPage: boolean
+}
+
+function readCheckoutCustomerPage(body: unknown): CheckoutCustomerPage {
+    const source = body && typeof body === "object" ? (body as Record<string, unknown>) : null
+    const values = source && Array.isArray(source.customers) ? source.customers : null
+    if (!values) throw new CheckoutSubmissionError("customer", null, "Crater returned no customer list.")
+
+    const pageInfo = source?.pageInfo && typeof source.pageInfo === "object" ? source.pageInfo : null
+    return {
+        customers: values.map(parseCheckoutCustomer).filter((customer): customer is CheckoutCustomerData => customer !== null),
+        endCursor: pageInfo && "endCursor" in pageInfo && typeof pageInfo.endCursor === "string" ? pageInfo.endCursor : null,
+        hasNextPage: Boolean(pageInfo && "hasNextPage" in pageInfo && pageInfo.hasNextPage === true),
+    }
+}
+
+/**
+ * Validates the Crater session and loads the first page of customers in one request. `null` when there is no usable
+ * session. `customerPage` is `null` when the response carries no customer list, so the caller loads it separately.
+ */
+export async function bootstrapCheckout() {
+    const response = await checkoutFetch("/api/crater/checkout/bootstrap", {
+        credentials: "same-origin",
+        cache: "no-store",
+    })
+    if (response.status === 401 || response.status === 403) return null
+    if (!response.ok) throw new Error(await readCraterSessionError(response, "Failed to validate the Crater session."))
+
+    const body: unknown = await response.json()
+    const guestEmail = body && typeof body === "object" && "guestEmail" in body && typeof body.guestEmail === "string" ? body.guestEmail : null
+    let customerPage: CheckoutCustomerPage | null = null
+    try {
+        customerPage = readCheckoutCustomerPage(body)
+    } catch {
+        customerPage = null
+    }
+    return { customerPage, guestEmail }
+}
+
+/** Loads every customer page, starting after `firstPage` when the checkout bootstrap already delivered it. */
+export async function getCheckoutCustomers(firstPage: CheckoutCustomerPage | null = null) {
     const customers: CheckoutCustomerData[] = []
     const seenCursors = new Set<string>()
-    let after: string | null = null
+    let page = firstPage
 
-    do {
-        const url = new URL("/api/crater/customer", window.location.origin)
-        if (after) url.searchParams.set("after", after)
-        const response = await checkoutFetch(`${url.pathname}${url.search}`, { credentials: "same-origin" })
-        if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to load billing customers.", "customer")
-        const body: unknown = await response.json()
-        const source = body && typeof body === "object" ? (body as Record<string, unknown>) : null
-        const values = source && Array.isArray(source.customers) ? source.customers : null
-        if (!values) throw new CheckoutSubmissionError("customer", null, "Crater returned no customer list.")
-        customers.push(...values.map(parseCheckoutCustomer).filter((customer): customer is CheckoutCustomerData => customer !== null))
-
-        const pageInfo = source?.pageInfo && typeof source.pageInfo === "object" ? source.pageInfo : null
-        const hasNextPage = Boolean(pageInfo && "hasNextPage" in pageInfo && pageInfo.hasNextPage === true)
-        const endCursor = pageInfo && "endCursor" in pageInfo && typeof pageInfo.endCursor === "string" ? pageInfo.endCursor : null
-        if (!hasNextPage) break
-        if (!endCursor || seenCursors.has(endCursor)) throw new CheckoutSubmissionError("customer", null, "Crater returned an invalid customer cursor.")
-        seenCursors.add(endCursor)
-        after = endCursor
-    } while (after)
+    while (true) {
+        if (!page) page = await fetchCheckoutCustomerPage(null)
+        customers.push(...page.customers)
+        if (!page.hasNextPage) break
+        if (!page.endCursor || seenCursors.has(page.endCursor)) throw new CheckoutSubmissionError("customer", null, "Crater returned an invalid customer cursor.")
+        seenCursors.add(page.endCursor)
+        page = await fetchCheckoutCustomerPage(page.endCursor)
+    }
 
     return customers
+}
+
+async function fetchCheckoutCustomerPage(after: string | null) {
+    const url = new URL("/api/crater/customer", window.location.origin)
+    if (after) url.searchParams.set("after", after)
+    const response = await checkoutFetch(`${url.pathname}${url.search}`, { credentials: "same-origin" })
+    if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to load billing customers.", "customer")
+    return readCheckoutCustomerPage(await response.json())
 }
 
 export async function createCheckoutCustomer({ customerType, email, billingAddress }: { customerType: CraterCustomerType; email: string; billingAddress: StripeCheckoutContact }) {

@@ -1,15 +1,16 @@
 "use client"
 
 import { hasCheckoutConfiguration } from "@/lib/checkout/checkoutLogin"
-import { restoreCraterSession } from "@/lib/checkout/client"
+import { bootstrapCheckout, restoreCraterSession, type CheckoutCustomerPage } from "@/lib/checkout/client"
 import { clearCraterUserLoginMarker, hasCraterUserLoginMarker } from "@/lib/crater/userLogin.client"
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
 interface CraterSessionContextValue {
     guestEmail?: string | null
     authenticated: boolean
     error: string | null
     isLoading: boolean
+    takeBootstrapCustomers?: () => CheckoutCustomerPage | null
 }
 
 const SESSION_RECHECK_INTERVAL_MS = 60_000
@@ -22,6 +23,12 @@ const CraterSessionContext = createContext<CraterSessionContextValue>({
 
 export function CraterSessionProvider({ children, errorMessage = "An unexpected error occurred." }: { children: ReactNode; errorMessage?: string }) {
     const sessionRequestRef = useRef<Promise<"redirecting" | { guestEmail: string | null } | undefined> | null>(null)
+    const bootstrapCustomersRef = useRef<CheckoutCustomerPage | null>(null)
+    const takeBootstrapCustomers = useCallback(() => {
+        const page = bootstrapCustomersRef.current
+        bootstrapCustomersRef.current = null
+        return page
+    }, [])
     const [session, setSession] = useState<CraterSessionContextValue>({
         authenticated: false,
         error: null,
@@ -43,9 +50,19 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
             }
         }
 
-        const restoreOrCreateSession = async () => {
+        const restoreOrCreateSession = async (recheck: boolean) => {
             const currentUrl = new URL(window.location.href)
-            const restoredSession = await restoreCraterSession()
+            // On the checkout itself the first check also loads the customers, saving the form a sequential request.
+            // Rechecks and other pages only need to know whether the session is still valid.
+            const isCheckoutPage = currentUrl.pathname.replace(/\/$/, "").endsWith("/checkout")
+            let restoredSession: { guestEmail: string | null } | null
+            if (isCheckoutPage && !recheck) {
+                const bootstrap = await bootstrapCheckout()
+                bootstrapCustomersRef.current = bootstrap?.customerPage ?? null
+                restoredSession = bootstrap
+            } else {
+                restoredSession = await restoreCraterSession()
+            }
             if (restoredSession) return { guestEmail: currentUrl.searchParams.has("guestCheckout") ? restoredSession.guestEmail : null }
 
             if (currentUrl.searchParams.has("guestCheckout")) {
@@ -75,7 +92,7 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
             checking = true
             if (recheck) sessionRequestRef.current = null
             try {
-                sessionRequestRef.current ??= restoreOrCreateSession()
+                sessionRequestRef.current ??= restoreOrCreateSession(recheck)
 
                 const outcome = await sessionRequestRef.current
                 if (!active || outcome === "redirecting") return
@@ -115,7 +132,8 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
         }
     }, [errorMessage])
 
-    return <CraterSessionContext.Provider value={session}>{children}</CraterSessionContext.Provider>
+    const value = useMemo(() => ({ ...session, takeBootstrapCustomers }), [session, takeBootstrapCustomers])
+    return <CraterSessionContext.Provider value={value}>{children}</CraterSessionContext.Provider>
 }
 
 export function useCraterSession() {

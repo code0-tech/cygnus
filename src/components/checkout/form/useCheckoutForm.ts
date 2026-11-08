@@ -92,7 +92,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     stripeEmailRef.current = stripeEmail
     stripeEmailCompleteRef.current = stripeEmailComplete
     stripeEmailSyncedRef.current = stripeEmailSynced
-    const { authenticated, guestEmail, error: sessionError, isLoading: isSessionLoading } = useCraterSession()
+    const { authenticated, guestEmail, error: sessionError, isLoading: isSessionLoading, takeBootstrapCustomers } = useCraterSession()
     const customerType = resolveCraterCustomerType(searchParams.get("customerType"))
     const searchParamsString = searchParams.toString()
     const resolvedError = errorMessage ?? sessionError ?? stripeSessionError
@@ -276,7 +276,8 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
 
         void (async () => {
             try {
-                const availableCustomers = await getCheckoutCustomers()
+                // The first preparation reuses the customers the session bootstrap already loaded; retries load them fresh.
+                const availableCustomers = await getCheckoutCustomers(takeBootstrapCustomers?.() ?? null)
                 if (requestId !== sessionRefreshRequestRef.current) return
                 const matchingCustomers = availableCustomers.filter((candidate) => candidate.customerType === customerType)
                 const restoredCustomerId = restoredContactDraft?.customerId ?? null
@@ -320,7 +321,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                 if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
             }
         })()
-    }, [authenticated, content, customerType, guestEmail, handlePreparationError, isSessionLoading, locale, preparationAttempt, searchParamsString, setStage])
+    }, [authenticated, content, customerType, guestEmail, handlePreparationError, isSessionLoading, locale, preparationAttempt, searchParamsString, setStage, takeBootstrapCustomers])
 
     // Restore/reset the configuration above before persisting any form changes.
     useEffect(() => {

@@ -202,6 +202,7 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                         dialogDescription={content.pricing.discountDialogDescription}
                         removeLabel={content.pricing.discountRemoveLabel}
                         sessionReady={Boolean(checkoutFormState?.selectedCustomerId && checkoutFormState.checkoutSession && checkoutFormState.stripeCheckoutReady)}
+                        disabled={Boolean(checkoutFormState?.isConfirmingPayment)}
                     />
                 )}
             </div>
@@ -231,6 +232,7 @@ interface CheckoutDiscountProps {
     appliedAmount?: string | null
     buttonLabel: string
     dialogDescription?: string
+    disabled?: boolean
     discountSessionRequiredError: string
     discountValidationError: string
     inputPlaceholder: string
@@ -248,6 +250,7 @@ export function CheckoutDiscount({
     authenticated,
     buttonLabel,
     dialogDescription,
+    disabled = false,
     discountSessionRequiredError,
     discountValidationError,
     inputPlaceholder,
@@ -338,17 +341,17 @@ export function CheckoutDiscount({
     useEffect(() => {
         const promotionCode = searchParams.get("promotionCode")?.trim()
 
-        if (!isAuthenticated || !sessionReady || !checkoutRef?.current || !promotionCode || appliedCode === promotionCode || automaticallyAppliedCodeRef.current === promotionCode) {
+        if (disabled || !isAuthenticated || !sessionReady || !checkoutRef?.current || !promotionCode || appliedCode === promotionCode || automaticallyAppliedCodeRef.current === promotionCode) {
             return
         }
 
         automaticallyAppliedCodeRef.current = promotionCode
         setCode(promotionCode)
         void applyDiscount(promotionCode)
-    }, [appliedCode, checkoutRef, isAuthenticated, searchParams, sessionReady, applyDiscount])
+    }, [appliedCode, checkoutRef, disabled, isAuthenticated, searchParams, sessionReady, applyDiscount])
 
     const removeDiscount = async () => {
-        if (isApplying) return
+        if (isApplying || disabled) return
         const checkout = checkoutRef?.current
         if (!isAuthenticated || !sessionReady || !checkout) {
             setErrorMessage(discountSessionRequiredError)
@@ -396,7 +399,7 @@ export function CheckoutDiscount({
         event.preventDefault()
 
         const normalizedCode = code.trim()
-        if (isApplying) return
+        if (isApplying || disabled) return
 
         if (appliedCode && normalizedCode !== appliedCode) {
             automaticallyAppliedCodeRef.current = searchParams.get("promotionCode")?.trim() ?? null
@@ -420,7 +423,7 @@ export function CheckoutDiscount({
                     <span className="min-w-0 truncate text-secondary">{appliedCode}</span>
                     <button
                         type="button"
-                        disabled={isApplying}
+                        disabled={isApplying || disabled}
                         onClick={() => void removeDiscount()}
                         className="shrink-0 text-tertiary transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60"
                     >
@@ -470,14 +473,19 @@ export function CheckoutDiscount({
 
     return (
         <Dialog
-            open={isDialogOpen}
+            open={isDialogOpen && !disabled}
             onOpenChange={(open) => {
+                if (open && disabled) return
                 setIsDialogOpen(open)
                 if (open) setErrorMessage(null)
             }}
         >
             <DialogTrigger asChild>
-                <button type="button" className="shrink-0 text-sm font-medium text-secondary underline underline-offset-4 transition-colors hover:text-brand">
+                <button
+                    type="button"
+                    disabled={disabled}
+                    className="shrink-0 text-sm font-medium text-secondary underline underline-offset-4 transition-colors hover:text-brand disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:text-secondary"
+                >
                     {promptLabel}
                 </button>
             </DialogTrigger>

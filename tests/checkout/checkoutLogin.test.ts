@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, hasCheckoutConfiguration } from "../../src/lib/checkout/checkoutLogin"
+import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, hasCheckoutConfiguration, resolveCheckoutLoginRedirect } from "../../src/lib/checkout/checkoutLogin"
 import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "../../src/lib/licenses/routes"
 
 test("preserves the subscription configuration for guest checkout", () => {
@@ -82,4 +82,14 @@ test("does not request a namespace for non-cloud deployments", () => {
     )
 
     assert.equal(new URL(result).searchParams.has("selectNamespace"), false)
+})
+
+test("sends a checkout without account login or guest checkout to the login choice on the server", () => {
+    assert.equal(resolveCheckoutLoginRedirect("de", { plan: "pro", deploymentType: "cloud", token: "secret" }, false), "/de/checkout/login?plan=pro&deploymentType=cloud")
+})
+
+test("renders the checkout when a session can exist or a failed login has to be shown", () => {
+    assert.equal(resolveCheckoutLoginRedirect("en", { plan: "pro" }, true), null)
+    assert.equal(resolveCheckoutLoginRedirect("en", { plan: "pro", guestCheckout: "purchase-one" }, false), null)
+    assert.equal(resolveCheckoutLoginRedirect("en", { plan: "pro", authError: "session" }, false), null)
 })

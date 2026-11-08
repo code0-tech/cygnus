@@ -40,6 +40,8 @@ test("guest purchase isolation, expiry and completion", async (t) => {
                 token: "account-token",
             })
             assert.doesNotMatch(response.headers.get("set-cookie")!, /Max-Age|Expires|guest-token/)
+            // The checkout bootstrap replaces the separate session check and customer list for an active guest purchase.
+            assert.deepEqual(readCraterSessionAuthorization(request(cookies, "/api/crater/checkout/bootstrap")), { status: "authenticated", token: "guest-token" })
         })
 
         await t.test("missing, malformed and tampered guest credentials never fall back to the account", () => {
@@ -72,6 +74,7 @@ test("guest purchase isolation, expiry and completion", async (t) => {
             assert.equal(receipt.email, undefined)
             assert.ok(receipt.expiresAt <= Date.now() + 30 * 60 * 1000)
             assert.deepEqual(readCraterSessionAuthorization(request(receiptCookies)), { status: "invalid" })
+            assert.deepEqual(readCraterSessionAuthorization(request(receiptCookies, "/api/crater/checkout/bootstrap")), { status: "invalid" })
             assert.deepEqual(readCraterSessionAuthorization(request(receiptCookies, `/api/crater/checkout/status?sessionId=${sessionId}`)), { status: "authenticated", token: "guest-token" })
             assert.deepEqual(readCraterSessionAuthorization(request(receiptCookies, "/api/crater/checkout/status?sessionId=cs_test_other")), { status: "invalid" })
             const invalidExport = new Request(request(receiptCookies, "/api/crater/licenses/export", id, "POST"), { body: JSON.stringify({ id: "gid://crater/License/10" }) })

@@ -1,13 +1,14 @@
 import { CheckoutPageContent } from "@/components/checkout/CheckoutPageContent"
 import { StripePreloadHints } from "@/components/checkout/StripePreloadHints"
-import { createCheckoutQuery, hasCheckoutConfiguration, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { createCheckoutQuery, hasCheckoutConfiguration, resolveCheckoutLoginRedirect, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/crater/sessionCookies"
 import { assertCheckoutParameters } from "@/lib/checkout/checkoutParameters"
 import { getFooter, getGlobal } from "@/lib/cms"
 import { getCraterCheckoutPackages } from "@/lib/subscription/checkoutPackages.server"
 import { getCraterSubscriptionPrices } from "@/lib/subscription/prices.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
-import { headers } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 
 export const metadata: Metadata = { title: "Checkout" }
@@ -23,6 +24,10 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
     const checkoutParameters = new URLSearchParams(createCheckoutQuery(query))
     if (!hasCheckoutConfiguration(checkoutParameters)) redirect(`/${locale}/subscription`)
     assertCheckoutParameters(checkoutParameters)
+    // The session cookie is scoped to /api/crater and never reaches this page; the token-free marker does.
+    const hasAccountLogin = (await cookies()).get(CRATER_USER_LOGIN_COOKIE_NAME)?.value === CRATER_USER_LOGIN_COOKIE_VALUE
+    const loginRedirect = resolveCheckoutLoginRedirect(locale, query, hasAccountLogin)
+    if (loginRedirect) redirect(loginRedirect)
 
     const [checkoutContent, subscriptionConfig, subscriptionPrices, checkoutPackages, footer, errors, requestHeaders] = await Promise.all([
         getGlobal("checkout", locale),
