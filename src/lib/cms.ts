@@ -99,7 +99,6 @@ export type SubscriptionConfiguratorContent = SubscriptionConfigData & Subscript
 type GlobalSlug = keyof Config["globals"]
 type GlobalContent<S extends GlobalSlug> = Omit<Config["globals"][S], "id" | "updatedAt" | "createdAt">
 
-export type IconColor = Checkout["summary"]["deploymentIconColor"]
 export type CheckoutData = Checkout
 export type ErrorsContent = GlobalContent<"errors">
 export type LicenseToastsContent = GlobalContent<"license-toasts">

@@ -35,7 +35,6 @@ export const Licenses: GlobalConfig = {
                                 localizedText("backToCustomersLabel", "All customers", "Alle Kunden"),
                                 localizedText("downloadLicenseLabel", "Download license", "Lizenz herunterladen"),
                                 localizedText("homeLabel", "Home", "Startseite"),
-                                localizedText("applicationSettingsLabel", "Application settings", "Anwendungseinstellungen"),
                                 localizedText("userMenuLabel", "User menu", "Benutzermenü"),
                                 localizedText("profileLabel", "Profile", "Profil"),
                                 localizedText("settingsLabel", "Settings", "Einstellungen"),
@@ -142,7 +141,7 @@ export const Licenses: GlobalConfig = {
                     ],
                 },
                 {
-                    label: "Invoices and withdrawal",
+                    label: "Invoices",
                     fields: [
                         {
                             name: "invoices",
@@ -158,7 +157,6 @@ export const Licenses: GlobalConfig = {
                                     }
                                 ),
                                 localizedText("empty", "No invoices yet", "Noch keine Rechnungen"),
-                                localizedText("taxLabel", "Tax", "Steuer"),
                                 localizedText("numberLabel", "Invoice", "Rechnung"),
                                 localizedText("numberPendingLabel", "Not yet available", "Noch nicht verfügbar"),
                                 localizedText("billingDateLabel", "Billing date", "Rechnungsdatum"),
@@ -184,19 +182,6 @@ export const Licenses: GlobalConfig = {
                                 localizedText("loadingLabel", "Loading…", "Wird geladen …"),
                                 localizedText("previousPageLabel", "Previous page", "Vorherige Seite"),
                                 localizedText("nextPageLabel", "Next page", "Nächste Seite"),
-                            ],
-                        },
-                        {
-                            name: "withdrawal",
-                            type: "group",
-                            admin: {
-                                description:
-                                    "Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.",
-                            },
-                            fields: [
-                                localizedText("text", "You can withdraw from this purchase free of charge until {date}.", "Du kannst diesen Kauf bis zum {date} kostenlos widerrufen.", {
-                                    description: "Use {date} as a placeholder for the withdrawal deadline.",
-                                }),
                             ],
                         },
                     ],

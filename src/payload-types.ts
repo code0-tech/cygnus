@@ -2997,7 +2997,6 @@ export interface SubscriptionConfig {
         text: string;
         id?: string | null;
       }[];
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     max: {
@@ -3015,7 +3014,6 @@ export interface SubscriptionConfig {
        * Shown below the price of the selected Max plan. Use {amount} to insert what Max costs more than Pro in the same payment period.
        */
       priceDifferenceText: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
     custom: {
@@ -3033,18 +3031,15 @@ export interface SubscriptionConfig {
        * Shown instead of a price while Custom is not selected.
        */
       priceFallbackText: string;
-      color: 'brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta';
       image?: (number | null) | Media;
     };
   };
   workflowExecutions: {
     title: string;
-    description?: string | null;
     suffix: string;
   };
   aiTokens: {
     title: string;
-    description?: string | null;
     suffix: string;
   };
   updatedAt?: string | null;
@@ -3075,22 +3070,9 @@ export interface Checkout {
      * Shown below the order summary. {date} is replaced with the end of the first billing period.
      */
     nextChargeText: string;
-    deploymentIcons: {
-      cloud: string;
-      selfHosted: string;
-    };
-    deploymentIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
-    customerTypeIcons: {
-      b2b: string;
-      b2c: string;
-    };
-    customerTypeIconColor: 'neutral' | 'brand' | 'aqua' | 'blue' | 'pink' | 'yellow' | 'lime' | 'magenta';
     pricing: {
-      planLabel: string;
       baseLabel: string;
       workflowExecutionsLabel: string;
-      quarterlyDiscountLabel: string;
-      yearlyDiscountLabel: string;
       discountInputPlaceholder: string;
       discountButtonLabel: string;
       discountPromptLabel: string;
@@ -3239,7 +3221,6 @@ export interface License {
     backToCustomersLabel: string;
     downloadLicenseLabel: string;
     homeLabel: string;
-    applicationSettingsLabel: string;
     userMenuLabel: string;
     profileLabel: string;
     settingsLabel: string;
@@ -3311,7 +3292,6 @@ export interface License {
     title: string;
     description: string;
     empty: string;
-    taxLabel: string;
     numberLabel: string;
     numberPendingLabel: string;
     billingDateLabel: string;
@@ -3328,15 +3308,6 @@ export interface License {
     loadingLabel: string;
     previousPageLabel: string;
     nextPageLabel: string;
-  };
-  /**
-   * Notice shown on the license detail page while the customer's statutory 14-day right of withdrawal is still running. Only shown for personal (B2C) customers.
-   */
-  withdrawal: {
-    /**
-     * Use {date} as a placeholder for the withdrawal deadline.
-     */
-    text: string;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3389,7 +3360,6 @@ export interface LicenseDialog {
   };
   billing: {
     heading: string;
-    title: string;
     description: string;
     statusDescription: string;
     periodLabel: string;
@@ -3848,7 +3818,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
                     text?: T;
                     id?: T;
                   };
-              color?: T;
               image?: T;
             };
         max?:
@@ -3864,7 +3833,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
                   };
               comparisonText?: T;
               priceDifferenceText?: T;
-              color?: T;
               image?: T;
             };
         custom?:
@@ -3880,7 +3848,6 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
                   };
               quantitiesText?: T;
               priceFallbackText?: T;
-              color?: T;
               image?: T;
             };
       };
@@ -3888,14 +3855,12 @@ export interface SubscriptionConfigSelect<T extends boolean = true> {
     | T
     | {
         title?: T;
-        description?: T;
         suffix?: T;
       };
   aiTokens?:
     | T
     | {
         title?: T;
-        description?: T;
         suffix?: T;
       };
   updatedAt?: T;
@@ -3924,28 +3889,11 @@ export interface CheckoutSelect<T extends boolean = true> {
         heading?: T;
         description?: T;
         nextChargeText?: T;
-        deploymentIcons?:
-          | T
-          | {
-              cloud?: T;
-              selfHosted?: T;
-            };
-        deploymentIconColor?: T;
-        customerTypeIcons?:
-          | T
-          | {
-              b2b?: T;
-              b2c?: T;
-            };
-        customerTypeIconColor?: T;
         pricing?:
           | T
           | {
-              planLabel?: T;
               baseLabel?: T;
               workflowExecutionsLabel?: T;
-              quarterlyDiscountLabel?: T;
-              yearlyDiscountLabel?: T;
               discountInputPlaceholder?: T;
               discountButtonLabel?: T;
               discountPromptLabel?: T;
@@ -4051,7 +3999,6 @@ export interface LicensesSelect<T extends boolean = true> {
         backToCustomersLabel?: T;
         downloadLicenseLabel?: T;
         homeLabel?: T;
-        applicationSettingsLabel?: T;
         userMenuLabel?: T;
         profileLabel?: T;
         settingsLabel?: T;
@@ -4143,7 +4090,6 @@ export interface LicensesSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         empty?: T;
-        taxLabel?: T;
         numberLabel?: T;
         numberPendingLabel?: T;
         billingDateLabel?: T;
@@ -4162,11 +4108,6 @@ export interface LicensesSelect<T extends boolean = true> {
         loadingLabel?: T;
         previousPageLabel?: T;
         nextPageLabel?: T;
-      };
-  withdrawal?:
-    | T
-    | {
-        text?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -4222,7 +4163,6 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
     | T
     | {
         heading?: T;
-        title?: T;
         description?: T;
         statusDescription?: T;
         periodLabel?: T;

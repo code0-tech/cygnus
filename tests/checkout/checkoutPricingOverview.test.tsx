@@ -28,16 +28,9 @@ const content = {
     eyebrow: "Order summary",
     heading: "Review your configuration",
     description: "Your selected configuration",
-    deploymentIcons: { cloud: "cloud", selfHosted: "server" },
-    deploymentIconColor: "aqua",
-    customerTypeIcons: { b2b: "building", b2c: "user" },
-    customerTypeIconColor: "blue",
     pricing: {
-        planLabel: "Plan",
         baseLabel: "AI tokens",
         workflowExecutionsLabel: "Workflow executions",
-        quarterlyDiscountLabel: "Quarterly discount",
-        yearlyDiscountLabel: "Yearly discount",
         discountInputPlaceholder: "Code",
         discountButtonLabel: "Apply",
         discountPromptLabel: "Add discount",
@@ -57,9 +50,9 @@ const content = {
 
 const subscriptionConfig = {
     plan: {
-        pro: { title: "Pro", color: "yellow", description: "The plan for growing teams." },
-        max: { title: "Max", color: "aqua" },
-        custom: { title: "Custom", color: "magenta" },
+        pro: { title: "Pro", description: "The plan for growing teams." },
+        max: { title: "Max" },
+        custom: { title: "Custom" },
     },
     deployment: { cloud: { title: "Cloud" }, selfHosted: { title: "Self-hosted" } },
     customerType: { b2b: { title: "Business" }, b2c: { title: "Personal" } },

@@ -83,11 +83,6 @@ export const enum_subscription_config_deployment_color = pgEnum('enum_subscripti
 export const enum_subscription_config_customer_type_color = pgEnum('enum_subscription_config_customer_type_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_payment_period_color = pgEnum('enum_subscription_config_payment_period_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
 export const enum_subscription_config_plan_color = pgEnum('enum_subscription_config_plan_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_plan_pro_color = pgEnum('enum_subscription_config_plan_pro_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_plan_max_color = pgEnum('enum_subscription_config_plan_max_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_subscription_config_plan_custom_color = pgEnum('enum_subscription_config_plan_custom_color', ['brand', 'pink', 'yellow', 'aqua', 'blue', 'lime', 'magenta'])
-export const enum_checkout_summary_deployment_icon_color = pgEnum('enum_checkout_summary_deployment_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
-export const enum_checkout_summary_customer_type_icon_color = pgEnum('enum_checkout_summary_customer_type_icon_color', ['neutral', 'brand', 'aqua', 'blue', 'pink', 'yellow', 'lime', 'magenta'])
 
 export const users_sessions = pgTable('users_sessions', {
   _order: integer('_order').notNull(),
@@ -2394,15 +2389,12 @@ export const subscription_config = pgTable('subscription_config', {
   }),
   paymentPeriod_color: enum_subscription_config_payment_period_color('payment_period_color').notNull().default("brand"),
   plan_color: enum_subscription_config_plan_color('plan_color').notNull().default("lime"),
-  plan_pro_color: enum_subscription_config_plan_pro_color('plan_pro_color').notNull().default("lime"),
   plan_pro_image: integer('plan_pro_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  plan_max_color: enum_subscription_config_plan_max_color('plan_max_color').notNull().default("magenta"),
   plan_max_image: integer('plan_max_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
-  plan_custom_color: enum_subscription_config_plan_custom_color('plan_custom_color').notNull().default("yellow"),
   plan_custom_image: integer('plan_custom_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
@@ -2455,10 +2447,8 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
   plan_custom_quantitiesText: varchar('plan_custom_quantities_text').notNull(),
   plan_custom_priceFallbackText: varchar('plan_custom_price_fallback_text').notNull(),
   workflowExecutions_title: varchar('workflow_executions_title').notNull(),
-  workflowExecutions_description: varchar('workflow_executions_description'),
   workflowExecutions_suffix: varchar('workflow_executions_suffix').notNull(),
   aiTokens_title: varchar('ai_tokens_title').notNull(),
-  aiTokens_description: varchar('ai_tokens_description'),
   aiTokens_suffix: varchar('ai_tokens_suffix').notNull(),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
@@ -2475,12 +2465,6 @@ export const subscription_config_locales = pgTable('subscription_config_locales'
 
 export const checkout = pgTable('checkout', {
   id: serial('id').primaryKey(),
-  summary_deploymentIcons_cloud: varchar('summary_deployment_icons_cloud').notNull().default("tabler:IconCloud"),
-  summary_deploymentIcons_selfHosted: varchar('summary_deployment_icons_self_hosted').notNull().default("tabler:IconServer"),
-  summary_deploymentIconColor: enum_checkout_summary_deployment_icon_color('summary_deployment_icon_color').notNull().default("aqua"),
-  summary_customerTypeIcons_b2b: varchar('summary_customer_type_icons_b2b').notNull().default("tabler:IconUsers"),
-  summary_customerTypeIcons_b2c: varchar('summary_customer_type_icons_b2c').notNull().default("tabler:IconBuildingStore"),
-  summary_customerTypeIconColor: enum_checkout_summary_customer_type_icon_color('summary_customer_type_icon_color').notNull().default("yellow"),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}),
 }
@@ -2498,11 +2482,8 @@ export const checkout_locales = pgTable('checkout_locales', {
   summary_heading: varchar('summary_heading').notNull(),
   summary_description: varchar('summary_description').notNull().default("This checkout reflects the subscription shape you configured, including runtime."),
   summary_nextChargeText: varchar('summary_next_charge_text').notNull(),
-  summary_pricing_planLabel: varchar('summary_pricing_plan_label').notNull().default("Plan"),
   summary_pricing_baseLabel: varchar('summary_pricing_base_label').notNull().default("AI Tokens"),
   summary_pricing_workflowExecutionsLabel: varchar('summary_pricing_workflow_executions_label').notNull().default("Workflow Executions"),
-  summary_pricing_quarterlyDiscountLabel: varchar('summary_pricing_quarterly_discount_label').notNull().default("Quarterly discount"),
-  summary_pricing_yearlyDiscountLabel: varchar('summary_pricing_yearly_discount_label').notNull().default("Yearly discount"),
   summary_pricing_discountInputPlaceholder: varchar('summary_pricing_discount_input_placeholder').notNull().default("Discount code"),
   summary_pricing_discountButtonLabel: varchar('summary_pricing_discount_button_label').notNull().default("Apply"),
   summary_pricing_discountPromptLabel: varchar('summary_pricing_discount_prompt_label').notNull().default("Have a discount?"),
@@ -2604,7 +2585,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   sidebar_backToCustomersLabel: varchar('sidebar_back_to_customers_label').notNull(),
   sidebar_downloadLicenseLabel: varchar('sidebar_download_license_label').notNull(),
   sidebar_homeLabel: varchar('sidebar_home_label').notNull(),
-  sidebar_applicationSettingsLabel: varchar('sidebar_application_settings_label').notNull(),
   sidebar_userMenuLabel: varchar('sidebar_user_menu_label').notNull(),
   sidebar_profileLabel: varchar('sidebar_profile_label').notNull(),
   sidebar_settingsLabel: varchar('sidebar_settings_label').notNull(),
@@ -2656,7 +2636,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   invoices_title: varchar('invoices_title').notNull(),
   invoices_description: varchar('invoices_description').notNull(),
   invoices_empty: varchar('invoices_empty').notNull(),
-  invoices_taxLabel: varchar('invoices_tax_label').notNull(),
   invoices_numberLabel: varchar('invoices_number_label').notNull(),
   invoices_numberPendingLabel: varchar('invoices_number_pending_label').notNull(),
   invoices_billingDateLabel: varchar('invoices_billing_date_label').notNull(),
@@ -2671,7 +2650,6 @@ export const licenses_locales = pgTable('licenses_locales', {
   pagination_loadingLabel: varchar('pagination_loading_label').notNull(),
   pagination_previousPageLabel: varchar('pagination_previous_page_label').notNull(),
   pagination_nextPageLabel: varchar('pagination_next_page_label').notNull(),
-  withdrawal_text: varchar('withdrawal_text').notNull(),
   id: serial('id').primaryKey(),
   _locale: enum__locales('_locale').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -2728,7 +2706,6 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
   editor_paymentMethodsTabLabel: varchar('editor_payment_methods_tab_label').notNull(),
   editor_paymentMethodTabLabel: varchar('editor_payment_method_tab_label').notNull(),
   billing_heading: varchar('billing_heading').notNull(),
-  billing_title: varchar('billing_title').notNull(),
   billing_description: varchar('billing_description').notNull(),
   billing_statusDescription: varchar('billing_status_description').notNull(),
   billing_periodLabel: varchar('billing_period_label').notNull(),
@@ -4398,11 +4375,6 @@ type DatabaseSchema = {
   enum_subscription_config_customer_type_color: typeof enum_subscription_config_customer_type_color
   enum_subscription_config_payment_period_color: typeof enum_subscription_config_payment_period_color
   enum_subscription_config_plan_color: typeof enum_subscription_config_plan_color
-  enum_subscription_config_plan_pro_color: typeof enum_subscription_config_plan_pro_color
-  enum_subscription_config_plan_max_color: typeof enum_subscription_config_plan_max_color
-  enum_subscription_config_plan_custom_color: typeof enum_subscription_config_plan_custom_color
-  enum_checkout_summary_deployment_icon_color: typeof enum_checkout_summary_deployment_icon_color
-  enum_checkout_summary_customer_type_icon_color: typeof enum_checkout_summary_customer_type_icon_color
   users_sessions: typeof users_sessions
   users: typeof users
   media: typeof media

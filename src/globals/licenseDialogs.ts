@@ -120,7 +120,6 @@ export const LicenseDialogs: GlobalConfig = {
                             type: "group",
                             fields: [
                                 localizedText("heading", "Billing", "Abrechnung"),
-                                localizedText("title", "Change Period", "Zahlungsperiode ändern"),
                                 localizedText(
                                     "description",
                                     "Review your subscription and change how often you're billed.",

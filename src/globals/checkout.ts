@@ -1,36 +1,5 @@
-import { iconField } from "@mvriu5/payload-icon-picker"
-import type { Field, GlobalConfig } from "payload"
+import type { GlobalConfig } from "payload"
 import { localizedText } from "@/fields/localizedText"
-
-const iconColorOptions = [
-    { label: "Neutral", value: "neutral" },
-    { label: "Brand", value: "brand" },
-    { label: "Aqua", value: "aqua" },
-    { label: "Blue", value: "blue" },
-    { label: "Pink", value: "pink" },
-    { label: "Yellow", value: "yellow" },
-    { label: "Lime", value: "lime" },
-    { label: "Magenta", value: "magenta" },
-]
-
-const summaryIconField = (name: string, label: string, defaultValue: string): Field =>
-    iconField({
-        name,
-        label,
-        required: true,
-        defaultValue,
-        placeholder: "Search icons",
-        noResultsLabel: "No icons found",
-    })
-
-const summaryIconColorField = (name: string, defaultValue: string): Field => ({
-    name,
-    label: "Icon Color",
-    type: "select",
-    required: true,
-    defaultValue,
-    options: iconColorOptions,
-})
 
 export const Checkout: GlobalConfig = {
     slug: "checkout",
@@ -82,28 +51,11 @@ export const Checkout: GlobalConfig = {
                     description: "Shown below the order summary. {date} is replaced with the end of the first billing period.",
                 }),
                 {
-                    name: "deploymentIcons",
-                    label: "Deployment Icons",
-                    type: "group",
-                    fields: [summaryIconField("cloud", "Cloud Icon", "tabler:IconCloud"), summaryIconField("selfHosted", "Self-hosted Icon", "tabler:IconServer")],
-                },
-                summaryIconColorField("deploymentIconColor", "aqua"),
-                {
-                    name: "customerTypeIcons",
-                    label: "Customer Type Icons",
-                    type: "group",
-                    fields: [summaryIconField("b2b", "B2B Icon", "tabler:IconUsers"), summaryIconField("b2c", "B2C Icon", "tabler:IconBuildingStore")],
-                },
-                summaryIconColorField("customerTypeIconColor", "yellow"),
-                {
                     name: "pricing",
                     type: "group",
                     fields: [
-                        { name: "planLabel", type: "text", required: true, localized: true, defaultValue: "Plan" },
                         { name: "baseLabel", type: "text", required: true, localized: true, defaultValue: "AI Tokens" },
                         { name: "workflowExecutionsLabel", type: "text", required: true, localized: true, defaultValue: "Workflow Executions" },
-                        { name: "quarterlyDiscountLabel", type: "text", required: true, localized: true, defaultValue: "Quarterly discount" },
-                        { name: "yearlyDiscountLabel", type: "text", required: true, localized: true, defaultValue: "Yearly discount" },
                         { name: "discountInputPlaceholder", type: "text", required: true, localized: true, defaultValue: "Discount code" },
                         { name: "discountButtonLabel", type: "text", required: true, localized: true, defaultValue: "Apply" },
                         { name: "discountPromptLabel", type: "text", required: true, localized: true, defaultValue: "Have a discount?" },

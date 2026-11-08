@@ -75,12 +75,7 @@ const content: CheckoutData["success"] = {
 const errorMessage = "Could not confirm the license."
 const checkoutSearchParams = new URLSearchParams({ session_id: "cs_test", plan: "pro", customerType: "b2b", paymentPeriod: "monthly" }).toString()
 const pricingContent = {
-    deploymentIcons: { cloud: "cloud", selfHosted: "server" },
-    deploymentIconColor: "aqua",
-    customerTypeIcons: { b2b: "building", b2c: "user" },
-    customerTypeIconColor: "yellow",
     pricing: {
-        planLabel: "Plan",
         baseLabel: "AI Tokens",
         workflowExecutionsLabel: "Workflow Executions",
         discountInputPlaceholder: "Discount code",
@@ -94,9 +89,9 @@ const pricingContent = {
 const subscriptionConfig = {
     packages: { pro: { title: "Pro" }, max: { title: "Max" }, custom: { title: "Custom" } },
     plan: {
-        pro: { title: "Pro", icon: "pro", color: "lime" },
-        max: { title: "Max", icon: "max", color: "magenta" },
-        custom: { title: "Custom", icon: "custom", color: "yellow" },
+        pro: { title: "Pro" },
+        max: { title: "Max" },
+        custom: { title: "Custom" },
     },
     paymentPeriod: { monthlyPeriodSuffix: "/ month", quarterlyPeriodSuffix: "/ quarter", yearlyPeriodSuffix: "/ year" },
     deployment: { cloud: { title: "Cloud" }, selfHosted: { title: "Self-hosted" } },
