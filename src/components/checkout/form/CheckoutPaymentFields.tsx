@@ -348,7 +348,7 @@ export function CheckoutPaymentFields({
                         >
                             {isUpdatingBilling ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                         </Button>
-                        <p className="mb-4 text-center text-sm text-tertiary">{content.notChargedYetText}</p>
+                        <p className="text-center text-sm text-tertiary">{content.notChargedYetText}</p>
                         {isBusinessCustomer && <SendOfferDialog content={content} emailLocked={offerEmailLocked} initialEmail={email} onSend={onSendOffer} />}
                     </div>
                 </>
