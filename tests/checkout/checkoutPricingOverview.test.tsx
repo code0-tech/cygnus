@@ -188,3 +188,25 @@ test("omits usage tiles and the billing period when the confirmed purchase has n
     assert.match(text, /^MaxMax€100\.00Subtotal/)
     assert.doesNotMatch(text, /AI tokens|Workflow executions|Code|incl\. VAT/)
 })
+
+test("reserves the tax row with a loading placeholder while Stripe loads the session", () => {
+    const { container, getByTestId } = render(<CheckoutPricingOverview {...previewProps} taxAmount={0} taxPercentage={null} taxStatus="loading" totalPrice={100} />)
+
+    assert.match(container.textContent ?? "", /Total excluding tax€100\.00Tax…/)
+    assert.ok(getByTestId("checkout-tax-placeholder").className.includes("animate-pulse"))
+    assert.doesNotMatch(container.textContent ?? "", /incl\. VAT/)
+})
+
+test("shows a dash in the tax row while the tax still depends on the billing address", () => {
+    const { container, getByTestId } = render(<CheckoutPricingOverview {...previewProps} taxAmount={0} taxPercentage={null} taxStatus="unknown" totalPrice={100} />)
+
+    assert.equal(getByTestId("checkout-tax-placeholder").textContent, "—")
+    assert.match(container.textContent ?? "", /Tax—/)
+})
+
+test("replaces the placeholder with Stripe's tax once it is known", () => {
+    const { container, queryByTestId } = render(<CheckoutPricingOverview {...previewProps} taxAmount={19} taxPercentage={0.19} taxStatus="ready" totalPrice={119} />)
+
+    assert.equal(queryByTestId("checkout-tax-placeholder"), null)
+    assert.match(container.textContent ?? "", /Additional tax \(19% on €100\.00\)€19\.00/)
+})

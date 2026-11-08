@@ -96,6 +96,7 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
     const periodStart = new Date()
     const periodEnd = new Date(periodStart)
     periodEnd.setMonth(periodEnd.getMonth() + getPaymentPeriodMonths(paymentPeriod))
+    const taxStatus = stripePricing || taxQuote ? "ready" : checkoutFormState?.checkoutSession && !checkoutFormState.stripeCheckoutReady ? "loading" : "unknown"
     const periodDateFormatter = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-GB", { day: "numeric", month: "short", year: "numeric" })
 
     return (
@@ -107,58 +108,57 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                     <p className="mt-3 text-sm leading-6 text-secondary">{content.description}</p>
                 </div>
 
-                {stage !== "payment" && (
-                    <SegmentedControl
-                        type="single"
-                        color="secondary"
-                        aria-label={subscriptionConfig.paymentPeriod.label}
-                        className="mb-4 grid! w-full grid-cols-3! [&>span]:min-w-0"
-                        value={paymentPeriod}
-                        onValueChange={(value) => {
-                            const period = periodOptions.find((period) => period === value)
-                            if (period) handlePeriodChange(period)
-                        }}
-                    >
-                        {periodOptions.map((period) => {
-                            const { pricing: periodPricing } = resolveCheckoutPricing({
-                                aiTokensParam,
-                                checkoutPackages,
-                                customerTypeParam: customerType,
-                                deploymentTypeParam: deployment,
-                                fallbackPeriodSuffix: content.pricing.perMonthSuffix,
-                                paymentPeriodParam: period,
-                                planParam,
-                                subscriptionConfig,
-                                subscriptionPrices,
-                                workflowExecutionsParam,
-                            })
+                <SegmentedControl
+                    type="single"
+                    color="secondary"
+                    disabled={stage === "payment"}
+                    aria-label={subscriptionConfig.paymentPeriod.label}
+                    className="mb-4 grid! w-full grid-cols-3! disabled:opacity-60 data-disabled:opacity-60 [&>span]:min-w-0"
+                    value={paymentPeriod}
+                    onValueChange={(value) => {
+                        const period = periodOptions.find((period) => period === value)
+                        if (period) handlePeriodChange(period)
+                    }}
+                >
+                    {periodOptions.map((period) => {
+                        const { pricing: periodPricing } = resolveCheckoutPricing({
+                            aiTokensParam,
+                            checkoutPackages,
+                            customerTypeParam: customerType,
+                            deploymentTypeParam: deployment,
+                            fallbackPeriodSuffix: content.pricing.perMonthSuffix,
+                            paymentPeriodParam: period,
+                            planParam,
+                            subscriptionConfig,
+                            subscriptionPrices,
+                            workflowExecutionsParam,
+                        })
 
-                            const discountAmount = Math.max(0, periodPricing.totalBeforeDiscount - periodPricing.totalPrice)
+                        const discountAmount = Math.max(0, periodPricing.totalBeforeDiscount - periodPricing.totalPrice)
 
-                            const discountPercentage = periodPricing.totalBeforeDiscount > 0 ? discountAmount / periodPricing.totalBeforeDiscount : 0
+                        const discountPercentage = periodPricing.totalBeforeDiscount > 0 ? discountAmount / periodPricing.totalBeforeDiscount : 0
 
-                            const monthlyPrice = getMonthlyEquivalentAmount(Math.round(periodPricing.totalPrice * 100), period) / 100
+                        const monthlyPrice = getMonthlyEquivalentAmount(Math.round(periodPricing.totalPrice * 100), period) / 100
 
-                            return (
-                                <SegmentedControlItem key={period} value={period} className="w-full! min-w-0! justify-start! px-3! py-2! text-left! text-xs! sm:text-sm!">
-                                    <span className="flex w-full min-w-0 flex-col items-start gap-0.5">
-                                        <span className="flex min-w-0 max-w-full items-center justify-start gap-2">
-                                            <span className="truncate text-white">{subscriptionConfig.paymentPeriod[`${period}Text`]}</span>
-                                            {discountPercentage > 0 && (
-                                                <StableBadge color="info" border className="shrink-0">
-                                                    -{formatDiscountBadge(discountPercentage, locale)}
-                                                </StableBadge>
-                                            )}
-                                        </span>
-                                        <span className="max-w-full truncate text-xs font-normal tabular-nums text-tertiary">
-                                            {formatCurrency(monthlyPrice, currency, locale)} {monthlyPeriodSuffix}
-                                        </span>
+                        return (
+                            <SegmentedControlItem key={period} value={period} className="w-full! min-w-0! justify-start! px-3! py-2! text-left! text-xs! sm:text-sm!">
+                                <span className="flex w-full min-w-0 flex-col items-start gap-0.5">
+                                    <span className="flex min-w-0 max-w-full items-center justify-start gap-2">
+                                        <span className="truncate text-white">{subscriptionConfig.paymentPeriod[`${period}Text`]}</span>
+                                        {discountPercentage > 0 && (
+                                            <StableBadge color="info" border className="shrink-0">
+                                                -{formatDiscountBadge(discountPercentage, locale)}
+                                            </StableBadge>
+                                        )}
                                     </span>
-                                </SegmentedControlItem>
-                            )
-                        })}
-                    </SegmentedControl>
-                )}
+                                    <span className="max-w-full truncate text-xs font-normal tabular-nums text-tertiary">
+                                        {formatCurrency(monthlyPrice, currency, locale)} {monthlyPeriodSuffix}
+                                    </span>
+                                </span>
+                            </SegmentedControlItem>
+                        )
+                    })}
+                </SegmentedControl>
             </>
 
             <CheckoutPricingOverview
@@ -180,6 +180,7 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                 taxLines={stripePricing?.taxLines ?? []}
                 taxPercentage={taxPercentage}
                 taxPercentageInclusive={taxPercentageInclusive}
+                taxStatus={taxStatus}
                 totalPrice={totalPrice}
                 workflowExecutions={includedQuantities.workflowExecutions}
             />

@@ -10,6 +10,8 @@ import { getPaymentPeriodMonths } from "@/lib/subscription/calculator"
 import type { PaymentPeriod, SubscriptionPlan } from "@/lib/subscription/types"
 import type { ReactNode } from "react"
 
+export type CheckoutTaxStatus = "ready" | "loading" | "unknown"
+
 export interface CheckoutPricingOverviewData {
     aiTokens: number
     billingCountry?: string | null
@@ -26,6 +28,7 @@ export interface CheckoutPricingOverviewData {
     taxLines?: CheckoutStripeTaxLine[]
     taxPercentage: number | null
     taxPercentageInclusive?: number | null
+    taxStatus?: CheckoutTaxStatus
     totalPrice: number
     workflowExecutions: number
 }
@@ -69,6 +72,18 @@ function SummaryRow({ label, value }: { label: ReactNode; value: ReactNode }) {
     )
 }
 
+function TaxPlaceholder({ loading }: { loading: boolean }) {
+    return loading ? (
+        <span data-testid="checkout-tax-placeholder" className="inline-block h-3 w-12 animate-pulse rounded-full bg-white/10 align-middle motion-reduce:animate-none">
+            <span className="sr-only">…</span>
+        </span>
+    ) : (
+        <span data-testid="checkout-tax-placeholder" className="text-tertiary">
+            —
+        </span>
+    )
+}
+
 function formatCountryName(countryCode: string, locale: AppLocale) {
     try {
         return new Intl.DisplayNames([locale === "de" ? "de-DE" : "en-US"], { type: "region" }).of(countryCode.toUpperCase()) ?? countryCode
@@ -95,6 +110,7 @@ function CheckoutPreviewPricingOverview({
     taxLines = [],
     taxPercentage,
     taxPercentageInclusive = null,
+    taxStatus = "ready",
     totalPrice,
     workflowExecutions,
 }: CheckoutPricingOverviewBaseProps & CheckoutPricingOverviewData) {
@@ -147,7 +163,9 @@ function CheckoutPreviewPricingOverview({
 
                     <SummaryRow label={content.pricing.totalExcludingTaxLabel} value={formatAmount(totalExcludingTax)} />
 
-                    {taxLines.length > 0 ? (
+                    {taxStatus !== "ready" ? (
+                        <SummaryRow label={content.pricing.taxLabel} value={<TaxPlaceholder loading={taxStatus === "loading"} />} />
+                    ) : taxLines.length > 0 ? (
                         taxLines.map((tax) => (
                             <SummaryRow
                                 key={`${tax.displayName}-${tax.inclusive}-${tax.percentage}`}
