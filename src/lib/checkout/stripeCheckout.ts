@@ -1,29 +1,14 @@
-import type { StripeCheckoutLoadActionsSuccess, StripeCheckoutSession, StripeCheckoutTaxIdInfo, StripeCheckoutTaxIdType, StripeTaxIdElementChangeEvent } from "@stripe/stripe-js"
+import type { StripeCheckoutLoadActionsSuccess, StripeCheckoutSession, StripeTaxIdElementChangeEvent } from "@stripe/stripe-js"
 import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
 
 export type CheckoutPromotionCodeSdk = Pick<StripeCheckoutLoadActionsSuccess, "applyPromotionCode" | "removePromotionCode">
 
-/** Last state the TaxIdElement reported, stored on the session before the payment step unmounts the element. */
+/** Last state the TaxIdElement reported, used to hold the billing step back while a tax ID is only partially entered. */
 export interface CheckoutTaxIdDraft {
     complete: boolean
     empty: boolean
     value: StripeTaxIdElementChangeEvent["value"]
     visible: boolean
-}
-
-/**
- * Maps the TaxIdElement value onto the session's tax ID info. The element reports the country specific type
- * (`de_vat`) as `taxIdType` and the Stripe API type (`eu_vat`) as `externalTaxIdType`; the session expects the latter.
- * A hidden or empty element clears the tax ID.
- */
-export function getTaxIdInfoFromDraft(draft: CheckoutTaxIdDraft): StripeCheckoutTaxIdInfo | null {
-    const taxId = draft.value.taxId?.trim()
-    if (!draft.visible || draft.empty || !taxId || !draft.value.externalTaxIdType) return null
-
-    return {
-        businessName: draft.value.businessName?.trim() ?? "",
-        taxId: { type: draft.value.externalTaxIdType as StripeCheckoutTaxIdType, value: taxId },
-    }
 }
 
 export function getTaxQuoteFromSession(session: StripeCheckoutSession): CheckoutTaxQuoteData | null {

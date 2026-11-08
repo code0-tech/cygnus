@@ -1027,7 +1027,9 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     act(() => paymentElementOnChange?.({ complete: true }))
     await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
     assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, false)
-    assert.deepEqual(stripeTaxIdInfoUpdates, [{ businessName: "Code0 GmbH", taxId: { type: "eu_vat", value: "DE123456789" } }])
+    // Stripe rejects confirm() with the address element mounted after updateBillingAddress; only the Tax ID Element stays.
+    assert.equal(screen.queryByTestId("stripe-billing-address"), null)
+    assert.deepEqual(stripeTaxIdInfoUpdates, [])
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
     await waitFor(() => assert.ok(!taxIdElement.closest("[hidden]"), "the billing step is still hidden"))
     assert.ok(screen.getByTestId("stripe-tax-id") === taxIdElement, "the Tax ID Element was remounted")

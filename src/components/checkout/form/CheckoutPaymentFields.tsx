@@ -1,6 +1,6 @@
 "use client"
 
-import { getStripePricingFromSession, getTaxIdInfoFromDraft, getTaxQuoteFromSession, type CheckoutTaxIdDraft } from "@/lib/checkout/stripeCheckout"
+import { getStripePricingFromSession, getTaxQuoteFromSession, type CheckoutTaxIdDraft } from "@/lib/checkout/stripeCheckout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -172,19 +172,6 @@ export function CheckoutPaymentFields({
                 }
                 let updatedSession = billingResult.session
 
-                // Storing the tax ID on the session before the payment step lets the tax preview account for it (reverse charge).
-                if (collectTaxId && taxIdDraft) {
-                    const taxIdInfo = getTaxIdInfoFromDraft(taxIdDraft)
-                    if (taxIdInfo || updatedSession.taxIdInfo) {
-                        const taxIdResult = await checkoutState.checkout.updateTaxIdInfo(taxIdInfo)
-                        if (taxIdResult.type === "error") {
-                            setErrorMessage(taxIdResult.error.code === "invalidTaxId" ? taxIdResult.error.message : errors.billingAddressUpdate)
-                            return
-                        }
-                        updatedSession = taxIdResult.session
-                    }
-                }
-
                 if (!emailSyncedToStripe && !customerEmail && !checkoutState.checkout.email) {
                     const emailResult = await checkoutState.checkout.updateEmail(email)
                     if (emailResult.type === "error") {
@@ -216,7 +203,6 @@ export function CheckoutPaymentFields({
         [
             billingAddress,
             checkoutState,
-            collectTaxId,
             customerEmail,
             emailSyncedToStripe,
             errors.billingAddressUpdate,
@@ -231,7 +217,6 @@ export function CheckoutPaymentFields({
             onPricingChange,
             onTaxQuoteChange,
             setStage,
-            taxIdDraft,
         ]
     )
 
@@ -310,7 +295,7 @@ export function CheckoutPaymentFields({
                                 <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>
                                 <EmailInput id={emailInputId} value={customerEmail} disabled className="text-secondary! opacity-100!" />
                             </div>
-                        ) : (
+                        ) : activeStep === "billingAddress" ? (
                             <StripeElementSlot heightKey="contactDetails" ready={isContactElementReady}>
                                 <ContactDetailsElement
                                     onChange={(event) => {
@@ -321,22 +306,27 @@ export function CheckoutPaymentFields({
                                     onReady={markContactElementReady}
                                 />
                             </StripeElementSlot>
-                        )}
+                        ) : null}
                     </section>
 
                     <section className="w-full space-y-4">
                         <h3 className="text-lg text-white">{content.billingHeading}</h3>
                         <StripeElementSlot heightKey={collectTaxId ? "billingAddressWithTaxId" : "billingAddress"} ready={isAddressElementReady && isTaxIdElementReady}>
                             <div className="space-y-4">
-                                <BillingAddressElement
-                                    options={{ display: { name: "full" } }}
-                                    onChange={(event) => {
-                                        setIsBillingAddressComplete(event.complete)
-                                        onAddressChange({ name: event.value.name, address: event.value.address }, event.complete)
-                                    }}
-                                    onLoaderStart={markAddressElementLoading}
-                                    onReady={markAddressElementReady}
-                                />
+                                {/* The address and contact details are set through updateBillingAddress and updateEmail, which
+                                    Stripe refuses to combine with their elements still mounted on confirm, so only the Tax ID
+                                    Element stays mounted on the payment step. Stripe refills the others from the session. */}
+                                {activeStep === "billingAddress" && (
+                                    <BillingAddressElement
+                                        options={{ display: { name: "full" } }}
+                                        onChange={(event) => {
+                                            setIsBillingAddressComplete(event.complete)
+                                            onAddressChange({ name: event.value.name, address: event.value.address }, event.complete)
+                                        }}
+                                        onLoaderStart={markAddressElementLoading}
+                                        onReady={markAddressElementReady}
+                                    />
+                                )}
                                 {collectTaxId && (
                                     <TaxIdElement
                                         options={{ fields: { businessName: "always" }, visibility: "auto" }}
