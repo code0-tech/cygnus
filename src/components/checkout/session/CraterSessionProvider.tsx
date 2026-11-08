@@ -63,9 +63,7 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
             if (hasCraterUserLoginMarker()) clearCraterUserLoginMarker()
             const checkoutPath = currentUrl.pathname.replace(/\/$/, "")
             if (checkoutPath.endsWith("/checkout")) {
-                const target = hasCheckoutConfiguration(currentUrl.searchParams)
-                    ? `${checkoutPath}/login${currentUrl.search}`
-                    : `${checkoutPath.slice(0, -"/checkout".length)}/subscription`
+                const target = hasCheckoutConfiguration(currentUrl.searchParams) ? `${checkoutPath}/login${currentUrl.search}` : `${checkoutPath.slice(0, -"/checkout".length)}/subscription`
                 window.location.assign(target)
                 return "redirecting" as const
             }
@@ -75,17 +73,17 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
         const login = async (recheck = false) => {
             if (checking) return
             checking = true
-            if (recheck) {
-                sessionRequestRef.current = null
-                setSession((current) => ({ ...current, error: null, isLoading: true }))
-            }
+            if (recheck) sessionRequestRef.current = null
             try {
                 sessionRequestRef.current ??= restoreOrCreateSession()
 
                 const outcome = await sessionRequestRef.current
                 if (!active || outcome === "redirecting") return
 
-                setSession({ authenticated: true, guestEmail: outcome?.guestEmail ?? null, error: null, isLoading: false })
+                const guestEmail = outcome?.guestEmail ?? null
+                setSession((current) =>
+                    current.authenticated && !current.error && !current.isLoading && current.guestEmail === guestEmail ? current : { authenticated: true, guestEmail, error: null, isLoading: false }
+                )
             } catch (error) {
                 if (!active) return
 

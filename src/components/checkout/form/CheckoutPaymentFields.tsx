@@ -115,9 +115,11 @@ export function CheckoutPaymentFields({
         })
     }, [checkoutErrorMessage, checkoutState.type, errors.checkoutSession, errors.checkoutSessionExpired, onSessionExpired, onSessionLoadError, onSessionLoadErrorChange, sessionKey])
 
+    // Ready means every element of the visible step has loaded, so a session that replaces another can be swapped in.
+    const isStepReady = activeStep === "billingAddress" ? isContactElementReady && isAddressElementReady && isTaxIdElementReady : isPaymentElementReady
     useEffect(() => {
-        if (checkoutState.type === "success" && isContactElementReady && isAddressElementReady && isTaxIdElementReady) onSessionReady()
-    }, [checkoutState.type, isAddressElementReady, isContactElementReady, isTaxIdElementReady, onSessionReady])
+        if (checkoutState.type === "success" && isStepReady) onSessionReady()
+    }, [checkoutState.type, isStepReady, onSessionReady])
 
     const liveStripeTaxDetailsKey = liveStripePricing ? JSON.stringify([liveStripePricing.billingCountry, liveStripePricing.taxLines]) : null
 

@@ -64,7 +64,8 @@ test("keeps a valid session after returning and throttles repeated focus events"
         window.dispatchEvent(new Event("focus"))
         document.dispatchEvent(new Event("visibilitychange"))
     })
-    assert.ok(screen.getByText("loading"))
+    // The recheck runs in the background; reporting it as loading would unmount the checkout form and lose its input.
+    assert.ok(screen.getByText("authenticated"))
     assert.equal(requests, 2)
     await act(async () => finishRecheck?.())
     await screen.findByText("authenticated")

@@ -6,14 +6,36 @@ import { CheckoutErrorState } from "@/components/checkout/form/CheckoutErrorStat
 import { CheckoutPaymentForm } from "@/components/checkout/form/CheckoutPaymentForm"
 import { SendOfferDialog } from "@/components/checkout/shared/SendOfferDialog"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
+import type { CheckoutStripePricingData } from "@/lib/checkout/client"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { stripeAppearance } from "@/lib/stripeAppearance"
 import { useStripePromise } from "@/components/providers/StripeProvider"
 import { Elements } from "@stripe/react-stripe-js"
-import { useRef } from "react"
+import { useCallback } from "react"
 import { CheckoutFormSkeleton } from "./CheckoutFormSkeleton"
 import { CheckoutNewCustomerForm } from "./CheckoutNewCustomerForm"
+import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
+import { useSessionSwap } from "./useSessionSwap"
+
+const noop = () => {}
+const resolveFalse = () => Promise.resolve(false)
+
+// The outgoing form stays visible while its replacement loads, but must not write into the shared checkout state.
+const RETIRING_FORM_CALLBACKS = {
+    onAddressChange: noop,
+    onEmailChange: noop,
+    onEmailSyncedChange: noop,
+    onPaymentConfirmationChange: noop,
+    onPricingChange: noop,
+    onSendOffer: () => Promise.resolve(),
+    onSessionExpired: resolveFalse,
+    onSessionLoadError: resolveFalse,
+    onSessionLoadErrorChange: noop,
+    onSessionReady: noop,
+    onStripeCheckoutChange: noop,
+    onTaxQuoteChange: noop,
+} satisfies Partial<CheckoutPaymentFormProps>
 
 function CheckoutFormContent() {
     const stripePromise = useStripePromise("checkout")
@@ -54,6 +76,8 @@ function CheckoutFormContent() {
         stripeEmailComplete,
         stripeEmailSynced,
     } = useCheckoutFormState()
+    const { finishSwap, retiringSession } = useSessionSwap(checkoutSession)
+    const isSwappingSession = Boolean(retiringSession)
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
     const showCustomerSelect = stage === "billingAddress" && Boolean(hasExistingCustomers) && customers.length > 0
     const customerSelect = showCustomerSelect ? (
@@ -66,46 +90,67 @@ function CheckoutFormContent() {
         </div>
     ) : null
     const customerEmail = guestEmail ?? selectedCustomer?.email ?? null
-    const defaultBillingAddressValues = useRef(
-        stripeBillingAddress
-            ? {
-                  name: stripeBillingAddress.name,
-                  address: stripeBillingAddress.address,
-              }
-            : undefined
+
+    const handleSessionReady = useCallback(() => {
+        markCheckoutSessionReady()
+        finishSwap()
+    }, [finishSwap, markCheckoutSessionReady])
+    const handlePricingChange = useCallback(
+        (pricing: CheckoutStripePricingData | null) => {
+            if (pricing || !isSwappingSession) setStripePricing(pricing)
+        },
+        [isSwappingSession, setStripePricing]
     )
 
     if (resolvedError) return <CheckoutErrorState message={resolvedError} onRetry={retryCheckout} retryLabel={errors.retry} />
 
+    const paymentFormProps = {
+        billingAddress: stripeBillingAddress,
+        billingAddressComplete: stripeBillingAddressComplete,
+        collectTaxId: customerType === "business",
+        content,
+        errors,
+        customerSelectSkeleton,
+        customerEmail,
+        email: stripeEmail,
+        emailComplete: stripeEmailComplete,
+        emailSyncedToStripe: stripeEmailSynced,
+        isBusinessCustomer: customerType === "business",
+        offerEmailLocked: Boolean(guestEmail),
+    }
+
     const checkoutContent = checkoutSession ? (
-        <CheckoutPaymentForm
-            billingAddress={stripeBillingAddress}
-            billingAddressComplete={stripeBillingAddressComplete}
-            collectTaxId={customerType === "business"}
-            content={content}
-            errors={errors}
-            customerSelect={customerSelect}
-            customerSelectSkeleton={customerSelectSkeleton}
-            customerEmail={customerEmail}
-            email={stripeEmail}
-            emailComplete={stripeEmailComplete}
-            emailSyncedToStripe={stripeEmailSynced}
-            isBusinessCustomer={customerType === "business"}
-            offerEmailLocked={Boolean(guestEmail)}
-            onAddressChange={setStripeBillingAddress}
-            onEmailChange={setStripeEmail}
-            onEmailSyncedChange={setStripeEmailSynced}
-            onTaxQuoteChange={setTaxQuote}
-            onPaymentConfirmationChange={setIsConfirmingPayment}
-            onPricingChange={setStripePricing}
-            onSendOffer={sendOffer}
-            onStripeCheckoutChange={setStripeCheckout}
-            onSessionExpired={refreshExpiredCheckoutSession}
-            onSessionLoadError={recoverCheckoutSessionLoad}
-            onSessionLoadErrorChange={setStripeSessionError}
-            onSessionReady={markCheckoutSessionReady}
-            session={checkoutSession}
-        />
+        <div className="relative">
+            {retiringSession && (
+                <div key={retiringSession.clientSecret} aria-hidden="true" inert className="opacity-50 transition-opacity">
+                    <CheckoutPaymentForm {...paymentFormProps} {...RETIRING_FORM_CALLBACKS} customerSelect={customerSelectSkeleton} session={retiringSession} />
+                </div>
+            )}
+            <div
+                key={checkoutSession.clientSecret}
+                aria-busy={isRefreshingSession || isSwappingSession}
+                inert={isRefreshingSession || isSwappingSession}
+                className={isSwappingSession ? "invisible absolute inset-x-0 top-0" : isRefreshingSession ? "opacity-50 transition-opacity" : "transition-opacity"}
+            >
+                <CheckoutPaymentForm
+                    {...paymentFormProps}
+                    customerSelect={customerSelect}
+                    onAddressChange={setStripeBillingAddress}
+                    onEmailChange={setStripeEmail}
+                    onEmailSyncedChange={setStripeEmailSynced}
+                    onTaxQuoteChange={setTaxQuote}
+                    onPaymentConfirmationChange={setIsConfirmingPayment}
+                    onPricingChange={handlePricingChange}
+                    onSendOffer={sendOffer}
+                    onStripeCheckoutChange={setStripeCheckout}
+                    onSessionExpired={refreshExpiredCheckoutSession}
+                    onSessionLoadError={recoverCheckoutSessionLoad}
+                    onSessionLoadErrorChange={setStripeSessionError}
+                    onSessionReady={handleSessionReady}
+                    session={checkoutSession}
+                />
+            </div>
+        </div>
     ) : (!isLoading || isCreatingCustomer) && !isRefreshingSession && !isSessionLoading ? (
         !stripePromise ? (
             <CheckoutErrorState message="Stripe is not configured." />
@@ -113,7 +158,6 @@ function CheckoutFormContent() {
             <Elements stripe={stripePromise} options={{ appearance: stripeAppearance }}>
                 <CheckoutNewCustomerForm
                     customerSelect={customerSelect}
-                    defaultBillingAddress={defaultBillingAddressValues.current}
                     onSubmit={() => void continueNewCustomer()}
                     sendOffer={
                         customerType === "business" ? (

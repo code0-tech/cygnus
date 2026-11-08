@@ -9,17 +9,21 @@ import { useId, useState, type ReactNode } from "react"
 import { CheckoutFieldLabel } from "./CheckoutFieldLabel"
 import { StripeElementSlot } from "./CheckoutFormSkeleton"
 
+type DefaultBillingAddress = { name?: string | null; address: StripeCheckoutContact["address"] }
+
 interface CheckoutNewCustomerFormProps {
     customerSelect: ReactNode
-    defaultBillingAddress: { name?: string | null; address: StripeCheckoutContact["address"] } | undefined
     onSubmit: () => void
     sendOffer: ReactNode
 }
 
-export function CheckoutNewCustomerForm({ customerSelect, defaultBillingAddress, onSubmit, sendOffer }: CheckoutNewCustomerFormProps) {
+export function CheckoutNewCustomerForm({ customerSelect, onSubmit, sendOffer }: CheckoutNewCustomerFormProps) {
     const emailInputId = useId()
-    const { content, guestEmail, isLoading, setStripeBillingAddress, setStripeEmail, stripeBillingAddressComplete, stripeEmail, stripeEmailComplete } = useCheckoutFormState()
+    const { content, guestEmail, isLoading, setStripeBillingAddress, setStripeEmail, stripeBillingAddress, stripeBillingAddressComplete, stripeEmail, stripeEmailComplete } = useCheckoutFormState()
     const [isAddressReady, setIsAddressReady] = useState(false)
+    // Read once on mount, after the draft has been restored: the Address Element only applies default values when it
+    // mounts, so the address a visitor already entered (or restored from the draft) is shown again instead of an empty form.
+    const [defaultBillingAddress] = useState<DefaultBillingAddress | undefined>(() => (stripeBillingAddress ? { name: stripeBillingAddress.name, address: stripeBillingAddress.address } : undefined))
 
     return (
         <form

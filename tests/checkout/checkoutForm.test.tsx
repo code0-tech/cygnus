@@ -62,6 +62,7 @@ let billingAddressOnReady: (() => void) | null = null
 let contactDetailsOnChange: ((event: { complete: boolean; value: { email: string } }) => void) | null = null
 let contactDetailsOnReady: (() => void) | null = null
 let billingAddressOptions: unknown = null
+let standaloneAddressOptions: { defaultValues?: unknown } | null = null
 let paymentElementOptions: unknown = null
 let paymentElementOnReady: (() => void) | null = null
 let paymentElementOnChange: ((event: { complete: boolean }) => void) | null = null
@@ -203,8 +204,9 @@ mock.module("@stripe/stripe-js/pure", {
 mock.module("@stripe/react-stripe-js", {
     namedExports: {
         Elements: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-        AddressElement: ({ onChange }: { onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void }) => {
+        AddressElement: ({ onChange, options }: { onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void; options?: { defaultValues?: unknown } }) => {
             billingAddressOnChange = onChange
+            standaloneAddressOptions = options ?? null
             return <div data-testid="standalone-address">Billing address</div>
         },
     },
@@ -322,6 +324,7 @@ afterEach(() => {
     billingAddressOnChange = null
     contactDetailsOnChange = null
     billingAddressOptions = null
+    standaloneAddressOptions = null
     paymentElementOptions = null
     paymentElementOnReady = null
     paymentElementOnChange = null
@@ -1315,4 +1318,88 @@ test("keeps the new customer form in place while the customer and its session ar
 
     await act(async () => releaseCreation())
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_layout"))
+})
+
+test("keeps the previous customer's form on screen until the new customer's session is ready", async () => {
+    let releaseSecondSession = () => {}
+    const secondSessionGate = new Promise<void>((resolve) => (releaseSecondSession = resolve))
+    let sessionCount = 0
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        if (url === "/api/crater/customer" && init?.method !== "POST") {
+            return Response.json({
+                customers: [
+                    { customerType: "personal", email: null, id: "gid://crater/Customer/1", name: "Ada" },
+                    { customerType: "personal", email: null, id: "gid://crater/Customer/2", name: "Grace" },
+                ],
+            })
+        }
+        sessionCount += 1
+        if (sessionCount === 2) await secondSessionGate
+        return Response.json({ clientSecret: `cs_swap_${sessionCount}`, expiresAt: 1_800_000_000, id: `cs_swap_${sessionCount}` })
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_swap_1"))
+    act(() => {
+        contactDetailsOnReady?.()
+        billingAddressOnReady?.()
+    })
+
+    act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
+    // While Crater creates the new session the previous form stays, dimmed and inert, instead of a skeleton.
+    assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
+    assert.equal(screen.getAllByTestId("stripe-billing-address").length, 1)
+    assert.equal(screen.getByTestId("stripe-billing-address").closest("[aria-busy='true']")?.hasAttribute("inert"), true)
+
+    await act(async () => releaseSecondSession())
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_swap_2"))
+    // The new session loads invisibly next to the outgoing one, which is hidden from assistive technology.
+    const addresses = screen.getAllByTestId("stripe-billing-address")
+    assert.equal(addresses.length, 2)
+    assert.equal(addresses[0].closest("[aria-hidden='true']") !== null, true)
+
+    act(() => {
+        contactDetailsOnReady?.()
+        billingAddressOnReady?.()
+    })
+    await waitFor(() => assert.equal(screen.getAllByTestId("stripe-billing-address").length, 1))
+    assert.equal(screen.getByTestId("stripe-billing-address").closest("[aria-busy='true']"), null)
+})
+
+test("keeps the form on screen while a session about to expire is refreshed", async () => {
+    let releaseRefresh = () => {}
+    const refreshGate = new Promise<void>((resolve) => (releaseRefresh = resolve))
+    let sessionCount = 0
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        if (url === "/api/crater/customer" && init?.method !== "POST") {
+            return Response.json({ customers: [{ customerType: "personal", email: null, id: "gid://crater/Customer/1", name: "Ada" }] })
+        }
+        sessionCount += 1
+        if (sessionCount === 2) await refreshGate
+        // The first session is already inside the refresh lead time, so it is replaced right away.
+        const expiresAt = sessionCount === 1 ? Math.floor(Date.now() / 1_000) + 30 : 1_800_000_000
+        return Response.json({ clientSecret: `cs_refresh_${sessionCount}`, expiresAt, id: `cs_refresh_${sessionCount}` })
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await waitFor(() => assert.equal(sessionCount, 2))
+    assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
+    assert.ok(screen.getByTestId("stripe-billing-address"))
+
+    await act(async () => releaseRefresh())
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_refresh_2"))
+    assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
+})
+
+test("prefills the new customer address restored from the draft", async () => {
+    saveCheckoutContactDraft({ billingAddress: stripeBillingAddress, customerId: null, email: "ada@example.com", searchParams: checkoutSearchParams, stage: "billingAddress" })
+    globalThis.fetch = (async () => Response.json({ customers: [] })) as typeof fetch
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+
+    await screen.findByTestId("standalone-address")
+    assert.deepEqual(standaloneAddressOptions?.defaultValues, { name: stripeBillingAddress.name, address: stripeBillingAddress.address })
+    assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, "ada@example.com")
 })

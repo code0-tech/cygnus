@@ -148,9 +148,6 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             const customerId = selectedCustomerIdRef.current
             if (!customerId) return Promise.resolve(false)
             const requestId = ++sessionRefreshRequestRef.current
-            setCheckoutSession(null)
-            setTaxQuote(null)
-            setStripePricing(null)
             setIsRefreshingSession(true)
             setErrorMessage(null)
             setStripeSessionError(null)
@@ -438,7 +435,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             const requestId = ++sessionRefreshRequestRef.current
             const checkoutSearchParams = new URLSearchParams(searchParamsString)
             formDraftReadyRef.current = false
-            setCheckoutSession(null)
+            // The previous customer's form stays (dimmed) until the new session is ready; its tax does not apply anymore.
             setTaxQuote(null)
             setStripePricing(null)
             setStripeBillingAddress(null, false)
@@ -469,6 +466,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                 formDraftReadyRef.current = true
 
                 if (!customer) {
+                    setCheckoutSession(null)
                     setStage("billingAddress")
                     return
                 }
