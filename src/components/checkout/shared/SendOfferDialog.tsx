@@ -89,7 +89,7 @@ export function SendOfferDialog({ blockedReason = null, content, emailLocked = f
                                 type="submit"
                                 variant="normal"
                                 disabled={!validEmail || isSending || Boolean(blockedReason)}
-                                className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
+                                className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                             >
                                 {isSending ? <ButtonLoader label={content.processingLabel} /> : content.sendOfferLabel}
                             </Button>

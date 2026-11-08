@@ -11,6 +11,7 @@ import { BillingAddressElement, ContactDetailsElement, PaymentElement, TaxIdElem
 import { useParams } from "next/navigation"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
 import { CheckoutBillingSummary } from "./CheckoutBillingSummary"
+import { CheckoutFieldLabel } from "./CheckoutFieldLabel"
 import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
 
 export function CheckoutErrorState({ message, onRetry, retryLabel }: { message: string; onRetry?: () => void; retryLabel?: string }) {
@@ -94,6 +95,7 @@ export function CheckoutPaymentFields({
     const locale = params?.locale === "de" ? "de" : "en"
 
     const paymentFormId = useId()
+    const emailInputId = useId()
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
@@ -305,7 +307,8 @@ export function CheckoutPaymentFields({
                         {customerSelect ? (isContactElementReady && isAddressElementReady && isTaxIdElementReady ? customerSelect : customerSelectSkeleton) : null}
                         {customerEmail ? (
                             <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]! [&_.input-wrapper:hover]:bg-[#17151e]!">
-                                <EmailInput title={content.emailLabel} value={customerEmail} disabled className="text-tertiary/50!" />
+                                <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>
+                                <EmailInput id={emailInputId} value={customerEmail} disabled className="text-secondary! opacity-100!" />
                             </div>
                         ) : (
                             <ContactDetailsElement
@@ -341,7 +344,7 @@ export function CheckoutPaymentFields({
                             variant="normal"
                             disabled={!billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || isUpdatingBilling}
                             onClick={() => void showPayment()}
-                            className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
+                            className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                         >
                             {isUpdatingBilling ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                         </Button>
@@ -384,7 +387,7 @@ export function CheckoutPaymentFields({
                             form={paymentFormId}
                             variant="normal"
                             disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady || !isPaymentDetailsComplete || !acceptedTerms}
-                            className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
+                            className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                         >
                             {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}
                         </Button>

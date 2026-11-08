@@ -143,7 +143,7 @@ function CheckoutPreviewPricingOverview({
             <div className="-mx-4 mt-4 flex items-start justify-between gap-4 border-t border-white/5 px-4 pt-4 text-sm">
                 <div className="min-w-0">
                     <p className="font-medium text-white">{lineItemLabel}</p>
-                    <p className="text-xs text-tertiary">
+                    <p className="mt-0.5 text-xs text-tertiary">
                         {dateFormatter.format(periodStart)} — {dateFormatter.format(periodEnd)}
                     </p>
                 </div>
@@ -202,13 +202,13 @@ function CheckoutPreviewPricingOverview({
                 </div>
             </div>
 
-            <div className="-mx-4 mt-4 -mb-2 flex items-center justify-between gap-4 border-t border-white/5 px-4 pt-2 text-sm">
+            <div className="-mx-4 mt-4 flex items-baseline justify-between gap-4 border-t border-white/5 px-4 pt-4 text-sm">
                 <span className="font-medium text-white">{content.pricing.totalDueTodayLabel}</span>
 
                 <div className="flex items-baseline gap-2">
                     <NumberFlow
                         value={totalPrice}
-                        className="text-lg text-brand"
+                        className="text-lg font-semibold tabular-nums text-brand"
                         locales={locale === "de" ? "de-DE" : "en-US"}
                         format={{ style: "currency", currency: currency.toUpperCase(), minimumFractionDigits: 2, maximumFractionDigits: 2 }}
                     />
@@ -246,7 +246,7 @@ function CheckoutConfirmedPricingOverview({ confirmedPricing, content, locale, s
                 )}
             </span>
 
-            <div className="space-y-2 pt-4">
+            <div className="mt-4 space-y-2">
                 {isCustomPlan && (
                     <>
                         <SummaryRow label={content.pricing.baseLabel} value={formatCompactNumber(aiTokens)} />
@@ -261,13 +261,13 @@ function CheckoutConfirmedPricingOverview({ confirmedPricing, content, locale, s
                 <SummaryRow label={content.pricing.taxLabel} value={formatCurrency(taxAmount, currency, locale)} />
             </div>
 
-            <div className="-mx-4 mt-2 -mb-2 flex items-center justify-between gap-4 border-t border-white/5 px-4 pt-2 text-sm">
-                <span className="text-secondary">{content.pricing.totalLabel}</span>
+            <div className="-mx-4 mt-4 flex items-baseline justify-between gap-4 border-t border-white/5 px-4 pt-4 text-sm">
+                <span className="font-medium text-white">{content.pricing.totalLabel}</span>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-baseline gap-2">
                     <NumberFlow
                         value={totalPrice}
-                        className="text-lg text-brand"
+                        className="text-lg font-semibold tabular-nums text-brand"
                         locales={locale === "de" ? "de-DE" : "en-US"}
                         format={{ style: "currency", currency: currency.toUpperCase(), minimumFractionDigits: 2, maximumFractionDigits: 2 }}
                     />

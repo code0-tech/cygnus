@@ -1,7 +1,7 @@
 import type { Appearance } from "@stripe/stripe-js"
 
 // Bump when the appearance changes: Stripe's checkout elements only read it on mount, so the version is part of their key.
-export const STRIPE_APPEARANCE_VERSION = "pictor-10"
+export const STRIPE_APPEARANCE_VERSION = "pictor-12"
 
 const SURFACE = "#191825"
 const SURFACE_RAISED = "#201e2c"
@@ -44,8 +44,8 @@ export const stripeAppearance = {
         inputBoxShadow: INSET_HIGHLIGHT,
         inputFocusBoxShadow: "none",
         inputFocusColorBorder: "transparent",
-        labelColorText: "rgba(255, 255, 255, 0.5)",
-        labelFontSize: "11px",
+        labelColorText: "rgba(255, 255, 255, 0.6)",
+        labelFontSize: "12px",
         labelFontWeight: "400",
         labelSpacing: "7px",
     },
@@ -59,7 +59,7 @@ export const stripeAppearance = {
         ".DropdownItem.DropdownItem--highlight": { backgroundColor: SURFACE_RAISED, color: "#ffffff", borderLeftWidth: "0px", borderLeftColor: "transparent", paddingLeft: "12px" },
         ".DropdownItem:active": { backgroundColor: SURFACE_SELECTED, color: "#ffffff" },
         ".DropdownItem:focus": { backgroundColor: SURFACE_RAISED, color: "#ffffff", outline: "none" },
-        ".Label": { color: "rgba(255, 255, 255, 0.5)", fontSize: "11px", fontWeight: "400", letterSpacing: "-0.5px", textTransform: "uppercase" },
+        ".Label": { color: "rgba(255, 255, 255, 0.6)", fontSize: "12px", fontWeight: "400", letterSpacing: "0px", textTransform: "none" },
         ".Block": pickerItem,
         ".PickerItem": pickerItem,
         ".PickerItem--selected": pickerItem,

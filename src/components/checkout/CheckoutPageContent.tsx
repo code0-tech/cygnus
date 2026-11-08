@@ -95,12 +95,12 @@ export function CheckoutPageContent({ checkoutPackages, currentYear, errors, foo
                                 aria-label={form.continueLabel}
                                 className={cn(
                                     "pointer-events-auto relative flex max-h-[92dvh] w-full min-h-0 flex-col overflow-hidden rounded-t-2xl border-t border-white/10 bg-primary text-white shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-                                    "lg:max-h-none lg:flex-1 lg:translate-y-0 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none",
+                                    "lg:sticky lg:top-4 lg:max-h-none lg:flex-1 lg:self-start lg:translate-y-0 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none",
                                     mobileCheckoutOpen ? "translate-y-0" : "translate-y-full"
                                 )}
                             >
                                 <div aria-hidden="true" className="mx-auto my-3 h-1.5 w-12 shrink-0 rounded-full bg-white/20 lg:hidden" />
-                                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-1 pb-0 sm:px-6 lg:overflow-visible lg:p-0">
+                                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-1 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:overflow-visible lg:p-0 lg:pt-7">
                                     <CheckoutForm />
                                 </div>
                             </div>

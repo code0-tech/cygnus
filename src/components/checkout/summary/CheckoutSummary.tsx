@@ -102,9 +102,9 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
         <div className="flex-[1.34]">
             <>
                 <div className="mb-6">
-                    <p className="tracking-wide text-brand">{content.eyebrow}</p>
-                    <h2 className="mt-4 text-4xl text-white font-semibold">{content.heading.replaceAll("{plan}", planTitle)}</h2>
-                    <p className="mt-2 text-sm leading-6 text-secondary">{content.description}</p>
+                    <p className="text-sm font-medium tracking-wide text-brand">{content.eyebrow}</p>
+                    <h2 className="mt-2 text-3xl leading-tight font-semibold text-white sm:text-4xl">{content.heading.replaceAll("{plan}", planTitle)}</h2>
+                    <p className="mt-3 text-sm leading-6 text-secondary">{content.description}</p>
                 </div>
 
                 {stage !== "payment" && (
@@ -112,7 +112,7 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                         type="single"
                         color="secondary"
                         aria-label={subscriptionConfig.paymentPeriod.label}
-                        className="mt-4 mb-2 grid! w-full grid-cols-3! [&>span]:min-w-0"
+                        className="mb-4 grid! w-full grid-cols-3! [&>span]:min-w-0"
                         value={paymentPeriod}
                         onValueChange={(value) => {
                             const period = periodOptions.find((period) => period === value)
@@ -184,8 +184,8 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
                 workflowExecutions={includedQuantities.workflowExecutions}
             />
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
-                <p className="text-secondary">{content.nextChargeText.replaceAll("{date}", periodDateFormatter.format(periodEnd))}</p>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
+                <p className="text-tertiary">{content.nextChargeText.replaceAll("{date}", periodDateFormatter.format(periodEnd))}</p>
                 {errors && (
                     <CheckoutDiscount
                         key={checkoutFormState?.checkoutSession?.clientSecret ?? "checkout-discount"}
@@ -206,11 +206,11 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
             </div>
 
             {nextSteps && (
-                <div className="mt-8">
-                    <p className="font-semibold text-lg text-white">{nextSteps.heading}</p>
-                    <ul className="mt-3 space-y-2">
+                <div className="mt-8 border-t border-white/5 pt-6">
+                    <h3 className="text-lg font-semibold text-white">{nextSteps.heading}</h3>
+                    <ul className="mt-4 space-y-3">
                         {nextStepsList.map((step) => (
-                            <li key={step.title} className="flex items-start gap-3 text-sm">
+                            <li key={step.title} className="flex items-start gap-3 text-sm leading-5">
                                 <IconCircleCheck aria-hidden="true" size={20} className="shrink-0 text-brand" />
                                 <span className="text-secondary">
                                     <span className="font-medium text-white">{step.title}</span> {step.description}
@@ -439,8 +439,8 @@ export function CheckoutDiscount({
     }
 
     const discountForm = (
-        <form onSubmit={handleSubmit} className="w-full space-y-2">
-            <div className="flex flex-col items-stretch gap-4">
+        <form onSubmit={handleSubmit} className="w-full space-y-3">
+            <div className="flex flex-col items-stretch gap-3">
                 <div className="min-w-0 w-full">
                     <TextInput
                         aria-label={inputPlaceholder}
@@ -458,7 +458,7 @@ export function CheckoutDiscount({
                     type="submit"
                     variant="normal"
                     disabled={!sessionReady || isApplying || code.trim() === (appliedCode ?? "")}
-                    className="h-10! w-full! shrink-0 px-5! whitespace-nowrap bg-white/80! hover:bg-white! ring-1! ring-white/20! text-sm! text-primary!"
+                    className="h-10! w-full! shrink-0 px-5! whitespace-nowrap bg-white! hover:bg-white/90! ring-1! ring-white/20! text-sm! text-primary!"
                 >
                     {isApplying ? <ButtonLoader label={buttonLabel} /> : buttonLabel}
                 </Button>

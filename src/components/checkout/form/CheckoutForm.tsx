@@ -11,7 +11,8 @@ import { stripeAppearance } from "@/lib/stripeAppearance"
 import { useStripePromise } from "@/components/providers/StripeProvider"
 import { AddressElement, Elements } from "@stripe/react-stripe-js"
 import { Button, EmailInput, emailValidation } from "@code0-tech/pictor"
-import { useRef } from "react"
+import { useId, useRef } from "react"
+import { CheckoutFieldLabel } from "./CheckoutFieldLabel"
 
 function CheckoutCustomerSelectSkeleton() {
     return (
@@ -60,6 +61,7 @@ function CheckoutFormContent() {
         stripeEmailComplete,
         stripeEmailSynced,
     } = useCheckoutFormState()
+    const emailInputId = useId()
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
     const customerSelect =
         stage === "billingAddress" && hasExistingCustomers && customers.length > 0 ? (
@@ -119,17 +121,20 @@ function CheckoutFormContent() {
                 >
                     <h3 className="text-lg font-semibold text-white">{content.contactHeading}</h3>
                     {customerSelect}
-                    <EmailInput
-                        disabled={Boolean(guestEmail)}
-                        title={content.emailLabel}
-                        name="email"
-                        autoComplete="email"
-                        maxLength={254}
-                        placeholder={content.emailPlaceholder}
-                        value={stripeEmail ?? ""}
-                        onChange={(event) => setStripeEmail(event.currentTarget.value, emailValidation(event.currentTarget.value))}
-                        className="w-full!"
-                    />
+                    <div>
+                        <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>
+                        <EmailInput
+                            id={emailInputId}
+                            disabled={Boolean(guestEmail)}
+                            name="email"
+                            autoComplete="email"
+                            maxLength={254}
+                            placeholder={content.emailPlaceholder}
+                            value={stripeEmail ?? ""}
+                            onChange={(event) => setStripeEmail(event.currentTarget.value, emailValidation(event.currentTarget.value))}
+                            className="w-full!"
+                        />
+                    </div>
                     <h3 className="mb-4 text-lg font-semibold text-white">{content.billingHeading}</h3>
                     <AddressElement
                         options={{ mode: "billing", display: { name: "full" }, defaultValues: defaultBillingAddressValues.current }}
@@ -139,7 +144,7 @@ function CheckoutFormContent() {
                         type="submit"
                         variant="normal"
                         disabled={isLoading || !stripeBillingAddressComplete || !stripeEmailComplete}
-                        className="h-10! w-full! whitespace-nowrap bg-white/80! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white!"
+                        className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                     >
                         {isLoading ? content.processingLabel : content.continueLabel}
                     </Button>
