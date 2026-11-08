@@ -12,11 +12,15 @@ const sessionHeaders = {
 
 const previousServerUrl = process.env.SERVER_URL
 const previousSculptorLoginUrl = process.env.SCULPTOR_LOGIN_URL
+const previousSculptorUrl = process.env.SCULPTOR_URL
 test.before(() => {
     process.env.SERVER_URL = "https://code0.example"
     process.env.SCULPTOR_LOGIN_URL = "https://app.example/login"
+    process.env.SCULPTOR_URL = "https://app.example"
 })
 test.after(() => {
+    if (previousSculptorUrl === undefined) delete process.env.SCULPTOR_URL
+    else process.env.SCULPTOR_URL = previousSculptorUrl
     if (previousServerUrl === undefined) delete process.env.SERVER_URL
     else process.env.SERVER_URL = previousServerUrl
     if (previousSculptorLoginUrl === undefined) delete process.env.SCULPTOR_LOGIN_URL
@@ -165,6 +169,84 @@ test("an expired session starts a fresh login without exchanging the link token"
         assert.ok(response.headers.getSetCookie().every((value) => /Max-Age=0/i.test(value)))
         assert.equal(server.requests.length, 1)
         assert.equal(server.requests[0].authorization, "Session expired-session")
+    })
+})
+
+const sculptorLogin = (token: string) => ({ data: { usersLogin: { errors: [], userSession: { id: "gid://crater/UserSession/5", token } } } })
+const subscriptionCustomer = {
+    data: {
+        currentUser: {
+            customers: {
+                nodes: [{ id: "gid://crater/Customer/3", subscriptions: { nodes: [{ id: "gid://crater/Subscription/666" }], pageInfo: { hasNextPage: false } } }],
+                pageInfo: { hasNextPage: false },
+            },
+        },
+    },
+}
+// Sculptor opens the dashboard in a new tab; without a referrer policy the browser sends its origin as the referrer.
+const sculptorNavigation = { referer: "https://app.example/", "sec-fetch-site": "same-site" }
+
+test("a link Sculptor opened signs in with its token instead of asking for consent again", async () => {
+    await withGraphQLServer([sculptorLogin("crater-link-session"), subscriptionCustomer], async (server) => {
+        const response = await accessLicenseDashboard(
+            new Request("https://code0.example/api/crater/licenses/access?locale=en&subscriptionId=666&action=upgrade&token=sculptor-token", { headers: sculptorNavigation })
+        )
+
+        assert.equal(response.status, 307)
+        const location = new URL(response.headers.get("location")!)
+        assert.equal(location.origin, "https://code0.example")
+        assert.match(location.pathname, /^\/en\/licenses\//)
+        assert.doesNotMatch(location.toString(), /sculptor-token|crater-link-session/)
+        const cookies = response.headers.getSetCookie()
+        assert.ok(cookies.some((cookie) => /^crater_session=crater-link-session;/.test(cookie) && /HttpOnly/i.test(cookie)))
+        assert.ok(cookies.some((cookie) => cookie.startsWith("crater_user_login=")))
+        assert.equal(server.requests[0].body.operationName, "UsersLogin")
+        assert.deepEqual(server.requests[0].body.variables, { input: { sagittariusToken: "sculptor-token" } })
+        assert.equal(server.requests[1].authorization, "Session crater-link-session")
+    })
+})
+
+test("a link token is ignored unless Sculptor opened the navigation", async () => {
+    const forged: Array<Record<string, string>> = [
+        { referer: "https://attacker.example/" },
+        { referer: "https://app.example.attacker.example/" },
+        { referer: "https://app.example/", "sec-fetch-site": "none" },
+        { referer: "not a url" },
+    ]
+    await withGraphQLServer([], async (server) => {
+        for (const headers of forged) {
+            const response = await accessLicenseDashboard(new Request("https://code0.example/api/crater/licenses/access?locale=en&subscriptionId=666&token=attacker-token", { headers }))
+            const location = new URL(response.headers.get("location")!)
+            assert.equal(location.pathname, "/api/crater/auth/start")
+            assert.doesNotMatch(location.toString(), /attacker-token/)
+            assert.ok(response.headers.getSetCookie().every((value) => /Max-Age=0/i.test(value)), "Must not set an authenticated session")
+        }
+        assert.equal(server.requests.length, 0)
+    })
+})
+
+test("a Sculptor link replaces a session that cannot open its subscription and revokes it", async () => {
+    const noCustomers = { data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: false } } } } }
+    const loggedOut = { data: { usersLogout: { errors: [] } } }
+    await withGraphQLServer([noCustomers, sculptorLogin("crater-link-session"), subscriptionCustomer, loggedOut], async (server) => {
+        const response = await accessLicenseDashboard(
+            new Request("https://code0.example/api/crater/licenses/access?locale=en&subscriptionId=666&token=sculptor-token", {
+                headers: { ...sculptorNavigation, cookie: "crater_session=other-user-session" },
+            })
+        )
+
+        assert.equal(response.status, 307)
+        assert.match(new URL(response.headers.get("location")!).pathname, /^\/en\/licenses\//)
+        assert.ok(response.headers.getSetCookie().some((cookie) => /^crater_session=crater-link-session;/.test(cookie)))
+        assert.deepEqual(
+            server.requests.map((request) => [request.body.operationName, request.authorization]),
+            [
+                ["LicenseSubscriptionCustomer", "Session other-user-session"],
+                ["UsersLogin", undefined],
+                ["LicenseSubscriptionCustomer", "Session crater-link-session"],
+                ["CraterSessionLogout", "Session other-user-session"],
+            ]
+        )
     })
 })
 
