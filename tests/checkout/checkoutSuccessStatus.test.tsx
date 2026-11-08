@@ -84,6 +84,9 @@ const pricingContent = {
         baseLabel: "AI Tokens",
         workflowExecutionsLabel: "Workflow Executions",
         discountInputPlaceholder: "Discount code",
+        subtotalLabel: "Subtotal",
+        totalExcludingTaxLabel: "Total excluding tax",
+        totalIncludingTaxSuffix: "incl. VAT",
         taxLabel: "Tax",
         totalLabel: "Total",
     },
@@ -96,6 +99,8 @@ const subscriptionConfig = {
         custom: { title: "Custom", icon: "custom", color: "yellow" },
     },
     paymentPeriod: { monthlyPeriodSuffix: "/ month", quarterlyPeriodSuffix: "/ quarter", yearlyPeriodSuffix: "/ year" },
+    deployment: { cloud: { title: "Cloud" }, selfHosted: { title: "Self-hosted" } },
+    customerType: { b2b: { title: "Business" }, b2c: { title: "Personal" } },
 } as never
 // The status route normalizes Crater's enums, so the component only ever sees the lowercase values.
 const completedConfiguration = {
@@ -131,10 +136,9 @@ test("keeps the confirmed overview mounted when polling reports the license is r
         pricing: completedPricing,
     }
     respondWith(pendingCompletion)
-    const { container } = render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
     const heading = await screen.findByRole("heading", { name: content.heading })
-    const pricingOverview = container.querySelector("#checkout-applied-discount")
-    assert.ok(pricingOverview)
+    const pricingOverview = screen.getByText("Pro (Self-hosted, Business)")
     assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
     assert.equal(screen.queryByRole("button", { name: content.licenseDownloadLabel }), null)
 
@@ -142,7 +146,7 @@ test("keeps the confirmed overview mounted when polling reports the license is r
     await screen.findByRole("link", { name: content.licenseDashboardLabel }, { timeout: 3000 })
 
     assert.equal(screen.getByRole("heading", { name: content.heading }), heading)
-    assert.equal(container.querySelector("#checkout-applied-discount"), pricingOverview)
+    assert.equal(screen.getByText("Pro (Self-hosted, Business)"), pricingOverview)
     assert.ok(screen.getByRole("link", { name: content.licenseDashboardLabel }))
     assert.ok(screen.getByRole("button", { name: content.licenseDownloadLabel }))
     assert.equal(screen.queryByRole("button", { name: content.licensePendingLabel }), null)
@@ -259,9 +263,10 @@ test("shows Crater's confirmed Stripe pricing once payment is confirmed", async 
     render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
 
     assert.ok(await screen.findByText(content.heading))
-    // The plan appears as a badge; its subtotal is no longer a price line of its own.
     assert.ok(screen.getByText("Pro"))
-    assert.equal(screen.queryByText("€100.00"), null)
+    assert.ok(screen.getByText("Pro (Self-hosted, Business)"))
+    assert.equal(screen.getAllByText("€100.00").length, 2)
+    assert.ok(screen.getByText("€90.00"))
     assert.ok(screen.getByText("-€10.00"))
     assert.ok(screen.getByText("€17.10"))
     assert.ok(screen.getByText("107.1"))

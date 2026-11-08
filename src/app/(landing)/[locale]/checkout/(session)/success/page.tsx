@@ -3,6 +3,7 @@ import { CheckoutSuccessStatus } from "@/components/checkout/success/CheckoutSuc
 import { parseCheckoutSessionId } from "@/lib/crater/values"
 import { getFooter, getGlobal } from "@/lib/cms"
 import { getClientConfig } from "@/lib/clientConfig.server"
+import { getCraterCheckoutPackages } from "@/lib/subscription/checkoutPackages.server"
 import { isSupportedLocale } from "@/lib/i18n"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -29,9 +30,10 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
     const checkoutSessionId = parseCheckoutSessionId(query.session_id)
     if (!checkoutSessionId) notFound()
 
-    const [checkoutContent, subscriptionConfig, footer, errors] = await Promise.all([
+    const [checkoutContent, subscriptionConfig, checkoutPackages, footer, errors] = await Promise.all([
         getGlobal("checkout", locale),
         getGlobal("subscriptionConfig", locale),
+        getCraterCheckoutPackages().catch(() => null),
         getFooter(locale),
         getGlobal("errors", locale),
     ])
@@ -49,6 +51,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Chec
                                 content={checkoutContent.success}
                                 errorMessage={errors.checkoutLicenseStatus}
                                 locale={locale}
+                                planQuantities={checkoutPackages?.planQuantities}
                                 pricingContent={checkoutContent.summary}
                                 sessionId={checkoutSessionId}
                                 sculptorUrl={getClientConfig().sculptorUrl}

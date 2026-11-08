@@ -57,10 +57,12 @@ const content = {
 
 const subscriptionConfig = {
     plan: {
-        pro: { title: "Pro", color: "yellow" },
+        pro: { title: "Pro", color: "yellow", description: "The plan for growing teams." },
         max: { title: "Max", color: "aqua" },
         custom: { title: "Custom", color: "magenta" },
     },
+    deployment: { cloud: { title: "Cloud" }, selfHosted: { title: "Self-hosted" } },
+    customerType: { b2b: { title: "Business" }, b2c: { title: "Personal" } },
 } as SubscriptionConfigData
 
 afterEach(cleanup)
@@ -133,19 +135,54 @@ test("renders plan, usage tiles, the line item with its period and the totals", 
     assert.ok(container.querySelector("#checkout-applied-discount"))
 })
 
-test("shows the purchased plan as a badge instead of a price line after checkout", () => {
-    const { container, getByText } = render(
+test("renders the confirmed purchase with the same layout as the checkout overview", () => {
+    const { container } = render(
+        <CheckoutPricingOverview
+            confirmedPricing={{
+                aiTokens: 1_000_000,
+                currency: "eur",
+                customerType: "b2b",
+                deployment: "cloud",
+                discountAmount: 10,
+                paymentPeriod: "monthly",
+                plan: "pro",
+                subtotalPrice: 109,
+                taxAmount: 18.81,
+                totalPrice: 117.81,
+                workflowExecutions: 5_000,
+            }}
+            content={content}
+            locale="en"
+            subscriptionConfig={subscriptionConfig}
+        />
+    )
+    const text = container.textContent ?? ""
+
+    assert.match(text, /^ProThe plan for growing teams\./)
+    assert.match(text, /AI tokens1M/)
+    assert.match(text, /Workflow executions5K/)
+    assert.match(text, /Pro \(Cloud, Business\)\d{1,2} \w{3} \d{4} — \d{1,2} \w{3} \d{4}€109\.00/)
+    assert.match(text, /Subtotal€109\.00/)
+    assert.match(text, /Code-€10\.00/)
+    assert.match(text, /Total excluding tax€99\.00/)
+    assert.match(text, /Tax€18\.81/)
+    assert.match(text, /Total117\.81incl\. VAT$/)
+})
+
+test("omits usage tiles and the billing period when the confirmed purchase has none", () => {
+    const { container } = render(
         <CheckoutPricingOverview
             confirmedPricing={{
                 aiTokens: null,
                 currency: "eur",
-                customerType: "b2b",
-                deployment: "cloud",
+                customerType: null,
+                deployment: null,
                 discountAmount: 0,
-                periodSuffix: "/ month",
-                plan: "pro",
-                taxAmount: 18.81,
-                totalPrice: 117.81,
+                paymentPeriod: null,
+                plan: "max",
+                subtotalPrice: 100,
+                taxAmount: 0,
+                totalPrice: 100,
                 workflowExecutions: null,
             }}
             content={content}
@@ -153,11 +190,8 @@ test("shows the purchased plan as a badge instead of a price line after checkout
             subscriptionConfig={subscriptionConfig}
         />
     )
+    const text = container.textContent ?? ""
 
-    const badges = container.querySelector("span.flex-wrap")
-    assert.equal(badges?.firstElementChild?.textContent, "Pro")
-    assert.ok(badges?.firstElementChild?.className.includes("text-yellow!"))
-    assert.ok(getByText("Pro"))
-    assert.doesNotMatch(container.textContent ?? "", /Plan€/)
-    assert.match(container.textContent ?? "", /Tax€18\.81/)
+    assert.match(text, /^MaxMax€100\.00Subtotal/)
+    assert.doesNotMatch(text, /AI tokens|Workflow executions|Code|incl\. VAT/)
 })

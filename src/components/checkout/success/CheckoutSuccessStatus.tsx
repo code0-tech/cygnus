@@ -10,8 +10,8 @@ import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import type { CheckoutData, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { downloadLicenseFile } from "@/lib/licenses/client"
-import { getPaymentPeriodSuffix } from "@/lib/subscription/calculator"
 import type { SubscriptionPlan } from "@/lib/subscription/types"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { Alert, Button } from "@code0-tech/pictor"
 import { IconCheck, IconCloud, IconDownload, IconX } from "@tabler/icons-react"
 import { AnimatePresence, m as motion, useReducedMotion, type Variants } from "motion/react"
@@ -26,6 +26,7 @@ interface CheckoutSuccessStatusProps {
     content: SuccessContent
     errorMessage: string
     locale: AppLocale
+    planQuantities?: CheckoutPackages["planQuantities"] | null
     pricingContent: CheckoutData["summary"]
     sculptorUrl?: string | null
     sessionId: string
@@ -45,7 +46,7 @@ interface CheckoutSuccessStatusViewProps extends Omit<CheckoutSuccessStatusProps
 const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
 const LINK_BUTTON_CLASS_NAME = "button button--secondary button--xs after:hidden"
 
-export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, pricingContent, sculptorUrl, sessionId, subscriptionConfig }: CheckoutSuccessStatusProps) {
+export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, planQuantities, pricingContent, sculptorUrl, sessionId, subscriptionConfig }: CheckoutSuccessStatusProps) {
     const isGuestCheckout = new URLSearchParams(checkoutSearchParams).has("guestCheckout")
     const router = useRouter()
     const [status, setStatus] = useState<CheckoutStatus>("LOADING")
@@ -145,6 +146,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
                 setStatus("LOADING")
                 setAttempt((current) => current + 1)
             }}
+            planQuantities={planQuantities}
             pricingContent={pricingContent}
             sculptorUrl={sculptorUrl}
             status={status}
@@ -163,6 +165,7 @@ function CheckoutSuccessStatusView({
     locale,
     onDownloadLicense,
     onRetry,
+    planQuantities,
     pricingContent,
     sculptorUrl,
     status,
@@ -197,9 +200,9 @@ function CheckoutSuccessStatusView({
         status === "READY" && completion?.licenseId ? `/api/crater/licenses/access?${new URLSearchParams({ locale, customerId: completion.customerId, licenseId: completion.licenseId })}` : null
     const confirmedConfiguration = fulfillmentConfirmed ? completion?.configuration : null
     const confirmedPricing = fulfillmentConfirmed ? completion?.pricing : null
-    const paymentPeriod = confirmedConfiguration?.paymentPeriod ?? undefined
     const planKey = confirmedConfiguration?.plan
     const plan: SubscriptionPlan = planKey === "pro" || planKey === "max" ? planKey : "custom"
+    const includedQuantities = plan === "custom" ? null : planQuantities?.[plan]
     const currencyDivisor = confirmedPricing
         ? 10 ** (new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { style: "currency", currency: confirmedPricing.currency.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2)
         : 100
@@ -255,17 +258,18 @@ function CheckoutSuccessStatusView({
                         <motion.div variants={reveal} className="my-2 w-full text-left">
                             <CheckoutPricingOverview
                                 confirmedPricing={{
-                                    aiTokens: confirmedConfiguration.aiTokens,
+                                    aiTokens: confirmedConfiguration.aiTokens ?? includedQuantities?.aiTokens ?? null,
                                     currency: confirmedPricing.currency,
                                     customerType:
                                         confirmedConfiguration.customerType === "business" ? "b2b" : confirmedConfiguration.customerType === "personal" ? "b2c" : confirmedConfiguration.customerType,
                                     deployment: confirmedConfiguration.deploymentType,
                                     discountAmount: confirmedPricing.discount / currencyDivisor,
-                                    periodSuffix: paymentPeriod ? getPaymentPeriodSuffix(paymentPeriod, subscriptionConfig.paymentPeriod) : "",
+                                    paymentPeriod: confirmedConfiguration.paymentPeriod,
                                     plan,
+                                    subtotalPrice: confirmedPricing.subtotal / currencyDivisor,
                                     taxAmount: confirmedPricing.tax / currencyDivisor,
                                     totalPrice: confirmedPricing.total / currencyDivisor,
-                                    workflowExecutions: confirmedConfiguration.workflowExecutions,
+                                    workflowExecutions: confirmedConfiguration.workflowExecutions ?? includedQuantities?.workflowExecutions ?? null,
                                 }}
                                 content={pricingContent}
                                 locale={locale}
