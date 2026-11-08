@@ -13,6 +13,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react"
 import { CheckoutBillingSummary } from "./CheckoutBillingSummary"
 import { CheckoutFieldLabel } from "./CheckoutFieldLabel"
 import { CheckoutFormSkeleton, StripeElementSlot } from "./CheckoutFormSkeleton"
+import { CheckoutStageTransition } from "./CheckoutStageTransition"
 import { WithdrawalConsentCheckbox } from "./WithdrawalConsentCheckbox"
 import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
 
@@ -279,7 +280,7 @@ export function CheckoutPaymentFields({
     }
 
     return (
-        <div className="w-full space-y-6">
+        <CheckoutStageTransition stage={activeStep}>
             {activeStep === "billingAddress" ? (
                 <>
                     <section className="w-full space-y-4">
@@ -317,7 +318,9 @@ export function CheckoutPaymentFields({
                                     onLoaderStart={markAddressElementLoading}
                                     onReady={markAddressElementReady}
                                 />
-                                {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} onLoaderStart={markTaxIdElementLoading} onReady={markTaxIdElementReady} />}
+                                {collectTaxId && (
+                                    <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} onLoaderStart={markTaxIdElementLoading} onReady={markTaxIdElementReady} />
+                                )}
                             </div>
                         </StripeElementSlot>
                     </section>
@@ -387,6 +390,6 @@ export function CheckoutPaymentFields({
                     </div>
                 </>
             )}
-        </div>
+        </CheckoutStageTransition>
     )
 }
