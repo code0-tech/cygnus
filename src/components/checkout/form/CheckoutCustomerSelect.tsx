@@ -12,17 +12,18 @@ const NEW_CUSTOMER_VALUE = "new"
 interface CheckoutCustomerSelectProps {
     content: CheckoutData["form"]
     customers: CheckoutCustomerData[]
+    disabled?: boolean
     onValueChange: (customerId: string | null) => void
     selectedCustomer: CheckoutCustomerData | undefined
 }
 
-export function CheckoutCustomerSelect({ content, customers, onValueChange, selectedCustomer }: CheckoutCustomerSelectProps) {
+export function CheckoutCustomerSelect({ content, customers, disabled = false, onValueChange, selectedCustomer }: CheckoutCustomerSelectProps) {
     const labelId = useId()
 
     return (
         <div>
             <CheckoutFieldLabel id={labelId}>{content.customerSelectLabel}</CheckoutFieldLabel>
-            <SelectInput value={selectedCustomer?.id ?? NEW_CUSTOMER_VALUE} onValueChange={(value) => onValueChange(value === NEW_CUSTOMER_VALUE ? null : value)}>
+            <SelectInput disabled={disabled} value={selectedCustomer?.id ?? NEW_CUSTOMER_VALUE} onValueChange={(value) => onValueChange(value === NEW_CUSTOMER_VALUE ? null : value)}>
                 <SelectTrigger aria-labelledby={labelId} className="flex w-full! items-center gap-2 py-[0.563rem]! text-left! text-xs! leading-normal! outline-none! ring-0! focus:outline-none! focus:ring-0! focus-visible:outline-none! focus-visible:ring-0!">
                     <SelectValue>{selectedCustomer?.name || selectedCustomer?.email || content.newCustomerLabel}</SelectValue>
                     <IconChevronDown aria-hidden="true" className="ml-auto mr-2 shrink-0" size={16} />

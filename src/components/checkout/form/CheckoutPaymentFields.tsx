@@ -12,21 +12,9 @@ import { useParams } from "next/navigation"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
 import { CheckoutBillingSummary } from "./CheckoutBillingSummary"
 import { CheckoutFieldLabel } from "./CheckoutFieldLabel"
+import { CheckoutFormSkeleton, StripeElementSlot } from "./CheckoutFormSkeleton"
 import { WithdrawalConsentCheckbox } from "./WithdrawalConsentCheckbox"
 import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
-
-export function CheckoutErrorState({ message, onRetry, retryLabel }: { message: string; onRetry?: () => void; retryLabel?: string }) {
-    return (
-        <Alert color="error" className="w-full">
-            <p className="min-w-0 flex-1">{message}</p>
-            {onRetry && retryLabel ? (
-                <Button type="button" variant="normal" onClick={onRetry} className="shrink-0 text-sm!">
-                    {retryLabel}
-                </Button>
-            ) : null}
-        </Alert>
-    )
-}
 
 function isInactiveCheckoutSessionError(message: string) {
     const normalizedMessage = message.toLowerCase()
@@ -34,31 +22,6 @@ function isInactiveCheckoutSessionError(message: string) {
         (normalizedMessage.includes("checkout session") && (normalizedMessage.includes("expired") || normalizedMessage.includes("no longer active") || normalizedMessage.includes("not active"))) ||
         normalizedMessage.includes("checkout-sitzung ist nicht mehr aktiv") ||
         normalizedMessage.includes("checkout-sitzung ist abgelaufen")
-    )
-}
-
-export function CheckoutPaymentFormSkeleton({ label }: { label: string }) {
-    const fieldWidths = ["w-16", "w-24", "w-20", "w-14", "w-20"]
-
-    return (
-        <div role="status" aria-label={label} data-testid="checkout-form-skeleton" className="w-full animate-pulse space-y-4 motion-reduce:animate-none">
-            <span className="sr-only">{label}</span>
-            {fieldWidths.slice(0, 3).map((labelWidth, index) => (
-                <div key={index}>
-                    <div className={`mb-2 h-2.5 rounded-full bg-white/10 ${labelWidth}`} />
-                    <div className="h-10 w-full rounded-2xl bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" />
-                </div>
-            ))}
-            <div className="grid grid-cols-2 gap-4">
-                {fieldWidths.slice(3).map((labelWidth, index) => (
-                    <div key={index}>
-                        <div className={`mb-2 h-2.5 rounded-full bg-white/10 ${labelWidth}`} />
-                        <div className="h-10 w-full rounded-2xl bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" />
-                    </div>
-                ))}
-            </div>
-            <div className="h-10 w-full rounded-2xl bg-white/10" />
-        </div>
     )
 }
 
@@ -298,12 +261,19 @@ export function CheckoutPaymentFields({
         }
     }
 
-    if (checkoutState.type === "loading") {
-        return <CheckoutPaymentFormSkeleton label={content.processingLabel} />
-    }
-
-    if (checkoutState.type === "error") {
-        return <CheckoutPaymentFormSkeleton label={content.processingLabel} />
+    // A load error keeps the placeholder too: the session is recovered or replaced by an error message above.
+    if (checkoutState.type !== "success") {
+        return (
+            <CheckoutFormSkeleton
+                billingAddress={billingAddress}
+                collectTaxId={collectTaxId}
+                content={content}
+                customerEmail={customerEmail}
+                customerSelect={customerSelectSkeleton}
+                isBusinessCustomer={isBusinessCustomer}
+                stage={activeStep}
+            />
+        )
     }
 
     return (
@@ -312,36 +282,42 @@ export function CheckoutPaymentFields({
                 <>
                     <section className="w-full space-y-4">
                         <h3 className="text-lg text-white">{content.contactHeading}</h3>
-                        {customerSelect ? (isContactElementReady && isAddressElementReady && isTaxIdElementReady ? customerSelect : customerSelectSkeleton) : null}
+                        {customerSelect}
                         {customerEmail ? (
                             <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]! [&_.input-wrapper:hover]:bg-[#17151e]!">
                                 <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>
                                 <EmailInput id={emailInputId} value={customerEmail} disabled className="text-secondary! opacity-100!" />
                             </div>
                         ) : (
-                            <ContactDetailsElement
-                                onChange={(event) => {
-                                    setIsContactDetailsComplete(event.complete)
-                                    onEmailChange(event.value.email || null, event.complete)
-                                }}
-                                onLoaderStart={markContactElementLoading}
-                                onReady={markContactElementReady}
-                            />
+                            <StripeElementSlot heightKey="contactDetails" ready={isContactElementReady}>
+                                <ContactDetailsElement
+                                    onChange={(event) => {
+                                        setIsContactDetailsComplete(event.complete)
+                                        onEmailChange(event.value.email || null, event.complete)
+                                    }}
+                                    onLoaderStart={markContactElementLoading}
+                                    onReady={markContactElementReady}
+                                />
+                            </StripeElementSlot>
                         )}
                     </section>
 
                     <section className="w-full space-y-4">
                         <h3 className="text-lg text-white">{content.billingHeading}</h3>
-                        <BillingAddressElement
-                            options={{ display: { name: "full" } }}
-                            onChange={(event) => {
-                                setIsBillingAddressComplete(event.complete)
-                                onAddressChange({ name: event.value.name, address: event.value.address }, event.complete)
-                            }}
-                            onLoaderStart={markAddressElementLoading}
-                            onReady={markAddressElementReady}
-                        />
-                        {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} onLoaderStart={markTaxIdElementLoading} onReady={markTaxIdElementReady} />}
+                        <StripeElementSlot heightKey={collectTaxId ? "billingAddressWithTaxId" : "billingAddress"} ready={isAddressElementReady && isTaxIdElementReady}>
+                            <div className="space-y-4">
+                                <BillingAddressElement
+                                    options={{ display: { name: "full" } }}
+                                    onChange={(event) => {
+                                        setIsBillingAddressComplete(event.complete)
+                                        onAddressChange({ name: event.value.name, address: event.value.address }, event.complete)
+                                    }}
+                                    onLoaderStart={markAddressElementLoading}
+                                    onReady={markAddressElementReady}
+                                />
+                                {collectTaxId && <TaxIdElement options={{ fields: { businessName: "never" }, visibility: "auto" }} onLoaderStart={markTaxIdElementLoading} onReady={markTaxIdElementReady} />}
+                            </div>
+                        </StripeElementSlot>
                     </section>
 
                     {errorMessage && <Alert color="error">{errorMessage}</Alert>}
@@ -375,15 +351,17 @@ export function CheckoutPaymentFields({
                     {billingAddress && <CheckoutBillingSummary billingAddress={billingAddress} changeLabel={content.billingChangeLabel} disabled={isConfirming} onChange={showBillingAddress} />}
 
                     <form id={paymentFormId} onSubmit={handleSubmit} className="w-full space-y-4">
-                        <PaymentElement
-                            options={{ layout: "tabs", fields: { billingDetails: { name: "never", address: "never" } } }}
-                            onLoaderStart={() => {
-                                setIsPaymentElementReady(false)
-                                setIsPaymentDetailsComplete(false)
-                            }}
-                            onReady={() => setIsPaymentElementReady(true)}
-                            onChange={(event) => setIsPaymentDetailsComplete(event.complete)}
-                        />
+                        <StripeElementSlot heightKey="payment" ready={isPaymentElementReady}>
+                            <PaymentElement
+                                options={{ layout: "tabs", fields: { billingDetails: { name: "never", address: "never" } } }}
+                                onLoaderStart={() => {
+                                    setIsPaymentElementReady(false)
+                                    setIsPaymentDetailsComplete(false)
+                                }}
+                                onReady={() => setIsPaymentElementReady(true)}
+                                onChange={(event) => setIsPaymentDetailsComplete(event.complete)}
+                            />
+                        </StripeElementSlot>
                     </form>
 
                     {errorMessage && <Alert color="error">{errorMessage}</Alert>}

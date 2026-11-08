@@ -52,6 +52,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     assertCheckoutParameters(new URLSearchParams(searchParams.toString()))
     const { stage, setStage, setHasError } = useCheckoutStage()
     const [isLoading, setIsLoading] = useState(false)
+    const [isCreatingCustomer, setIsCreatingCustomer] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [fatalError, setFatalError] = useState<Error | null>(null)
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
@@ -345,6 +346,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
         customerCreationPendingRef.current = true
         const requestId = ++sessionRefreshRequestRef.current
         setIsLoading(true)
+        setIsCreatingCustomer(true)
         setErrorMessage(null)
         try {
             let customerId = selectedCustomerIdRef.current
@@ -377,6 +379,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             if (requestId === sessionRefreshRequestRef.current) handlePreparationError(error)
         } finally {
             customerCreationPendingRef.current = false
+            setIsCreatingCustomer(false)
             if (requestId === sessionRefreshRequestRef.current) setIsLoading(false)
         }
     }, [
@@ -516,6 +519,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
         fatalError,
         hasExistingCustomers,
         guestEmail,
+        isCreatingCustomer,
         isLoading,
         isConfirmingPayment,
         isRefreshingSession,

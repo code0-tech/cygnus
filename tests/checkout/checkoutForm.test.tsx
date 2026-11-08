@@ -645,7 +645,9 @@ test("recreates the checkout session for a selected or newly created customer", 
     }) as typeof fetch
 
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
-    assert.ok(screen.getByTestId("checkout-customer-select-skeleton"))
+    // Until Crater has answered it is unknown whether there are customers, so the placeholder reserves no select yet.
+    assert.ok(screen.getByTestId("checkout-form-skeleton"))
+    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_1"))
     act(() => {
         contactDetailsOnReady?.()
@@ -1222,4 +1224,95 @@ test("prefills and locks the guest email, ignoring a conflicting draft after rel
     const restoredInput = screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement
     assert.equal(restoredInput.value, "guest@example.com")
     assert.equal(restoredInput.disabled, true)
+})
+
+function respondWithCustomers(customers: Array<{ customerType: string; email: string | null; id: string; name: string | null }>, sessionGate?: Promise<void>) {
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        if (url === "/api/crater/customer" && init?.method !== "POST") {
+            return new Response(JSON.stringify({ customers }), { status: 200, headers: { "content-type": "application/json" } })
+        }
+        if (url === "/api/crater/customer") {
+            await sessionGate
+            return new Response(JSON.stringify({ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/9", name: "Ada" }), {
+                status: 201,
+                headers: { "content-type": "application/json" },
+            })
+        }
+        await sessionGate
+        return new Response(JSON.stringify({ clientSecret: "cs_layout", expiresAt: 1_800_000_000, id: "cs_layout" }), { status: 200, headers: { "content-type": "application/json" } })
+    }) as typeof fetch
+}
+
+test("reserves the real customer select in the placeholder once existing customers are known", async () => {
+    let releaseSession = () => {}
+    respondWithCustomers([{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }], new Promise((resolve) => (releaseSession = resolve)))
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+
+    const selectPlaceholder = await screen.findByTestId("checkout-customer-select-skeleton")
+    assert.ok(screen.getByTestId("checkout-form-skeleton").contains(selectPlaceholder))
+    assert.ok(selectPlaceholder.textContent?.includes(content.customerSelectLabel))
+
+    await act(async () => releaseSession())
+    await waitFor(() => assert.equal(screen.queryByTestId("checkout-form-skeleton"), null))
+    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
+    assert.ok(screen.getByText(content.customerSelectLabel))
+})
+
+test("keeps Stripe elements hidden behind their placeholder until they report ready", async () => {
+    respondWithCustomers([{ customerType: "personal", email: null, id: "gid://crater/Customer/1", name: "Ada" }])
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+
+    const contactDetails = await screen.findByTestId("stripe-contact-details")
+    const billingAddress = screen.getByTestId("stripe-billing-address")
+    const slotOf = (element: HTMLElement) => element.closest("[inert]")
+    assert.ok(slotOf(contactDetails)?.className.includes("invisible"))
+    assert.ok(slotOf(billingAddress)?.className.includes("invisible"))
+
+    act(() => contactDetailsOnReady?.())
+    assert.equal(slotOf(contactDetails), null)
+    assert.ok(slotOf(billingAddress))
+
+    act(() => billingAddressOnReady?.())
+    assert.equal(slotOf(billingAddress), null)
+})
+
+test("sizes the Stripe placeholders from the heights measured on an earlier visit", async () => {
+    const measured = { contactDetails: 71, billingAddress: 412 }
+    window.localStorage.setItem(
+        "code0.checkout.elementHeights",
+        JSON.stringify(Object.fromEntries(["desktop", "mobile"].flatMap((layout) => Object.entries(measured).map(([key, height]) => [`${layout}:${key}`, height]))))
+    )
+    respondWithCustomers([{ customerType: "personal", email: null, id: "gid://crater/Customer/1", name: "Ada" }])
+
+    try {
+        render(<CheckoutForm content={content} errors={errors} locale="en" />)
+        await screen.findByTestId("stripe-contact-details")
+        const placeholderHeights = Array.from(document.querySelectorAll<HTMLElement>("[aria-hidden='true'][style]")).map((element) => element.style.height)
+        assert.deepEqual(placeholderHeights, ["71px", "412px"])
+    } finally {
+        window.localStorage.removeItem("code0.checkout.elementHeights")
+    }
+})
+
+test("keeps the new customer form in place while the customer and its session are created", async () => {
+    let releaseCreation = () => {}
+    respondWithCustomers([], new Promise((resolve) => (releaseCreation = resolve)))
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+
+    await screen.findByTestId("standalone-address")
+    const user = userEvent.setup()
+    await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    await user.click(screen.getByRole("button", { name: content.continueLabel }))
+
+    assert.ok(screen.getByTestId("standalone-address"))
+    assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
+    assert.ok(screen.getByRole("button", { name: content.processingLabel }))
+
+    await act(async () => releaseCreation())
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_layout"))
 })

@@ -2,26 +2,18 @@
 
 import { CheckoutCustomerSelect } from "./CheckoutCustomerSelect"
 import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/form/CheckoutFormProvider"
-import { CheckoutErrorState, CheckoutPaymentForm, CheckoutPaymentFormSkeleton } from "@/components/checkout/form/CheckoutPaymentForm"
+import { CheckoutErrorState } from "@/components/checkout/form/CheckoutErrorState"
+import { CheckoutPaymentForm } from "@/components/checkout/form/CheckoutPaymentForm"
 import { SendOfferDialog } from "@/components/checkout/shared/SendOfferDialog"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { stripeAppearance } from "@/lib/stripeAppearance"
 import { useStripePromise } from "@/components/providers/StripeProvider"
-import { AddressElement, Elements } from "@stripe/react-stripe-js"
-import { Button, EmailInput, emailValidation } from "@code0-tech/pictor"
-import { useId, useRef } from "react"
-import { CheckoutFieldLabel } from "./CheckoutFieldLabel"
-
-function CheckoutCustomerSelectSkeleton() {
-    return (
-        <div aria-hidden="true" data-testid="checkout-customer-select-skeleton" className="w-full animate-pulse motion-reduce:animate-none">
-            <div className="mb-2 h-2.5 w-24 rounded-full bg-white/10" />
-            <div className="h-10 w-full rounded-2xl bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]" />
-        </div>
-    )
-}
+import { Elements } from "@stripe/react-stripe-js"
+import { useRef } from "react"
+import { CheckoutFormSkeleton } from "./CheckoutFormSkeleton"
+import { CheckoutNewCustomerForm } from "./CheckoutNewCustomerForm"
 
 function CheckoutFormContent() {
     const stripePromise = useStripePromise("checkout")
@@ -36,6 +28,7 @@ function CheckoutFormContent() {
         errors,
         hasExistingCustomers,
         guestEmail,
+        isCreatingCustomer,
         isLoading,
         isRefreshingSession,
         isSessionLoading,
@@ -61,12 +54,18 @@ function CheckoutFormContent() {
         stripeEmailComplete,
         stripeEmailSynced,
     } = useCheckoutFormState()
-    const emailInputId = useId()
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
-    const customerSelect =
-        stage === "billingAddress" && hasExistingCustomers && customers.length > 0 ? (
-            <CheckoutCustomerSelect content={content} customers={customers} selectedCustomer={selectedCustomer} onValueChange={(value) => void selectCheckoutCustomer(value)} />
-        ) : null
+    const showCustomerSelect = stage === "billingAddress" && Boolean(hasExistingCustomers) && customers.length > 0
+    const customerSelect = showCustomerSelect ? (
+        <CheckoutCustomerSelect content={content} customers={customers} selectedCustomer={selectedCustomer} onValueChange={(value) => void selectCheckoutCustomer(value)} />
+    ) : null
+    // The real select, disabled, keeps the placeholder at the exact height. It only appears once customers are known.
+    const customerSelectSkeleton = showCustomerSelect ? (
+        <div data-testid="checkout-customer-select-skeleton" className="animate-pulse motion-reduce:animate-none">
+            <CheckoutCustomerSelect content={content} customers={customers} disabled selectedCustomer={selectedCustomer} onValueChange={() => {}} />
+        </div>
+    ) : null
+    const customerEmail = guestEmail ?? selectedCustomer?.email ?? null
     const defaultBillingAddressValues = useRef(
         stripeBillingAddress
             ? {
@@ -86,8 +85,8 @@ function CheckoutFormContent() {
             content={content}
             errors={errors}
             customerSelect={customerSelect}
-            customerSelectSkeleton={customerSelect ? <CheckoutCustomerSelectSkeleton /> : null}
-            customerEmail={guestEmail ?? selectedCustomer?.email ?? null}
+            customerSelectSkeleton={customerSelectSkeleton}
+            customerEmail={customerEmail}
             email={stripeEmail}
             emailComplete={stripeEmailComplete}
             emailSyncedToStripe={stripeEmailSynced}
@@ -107,70 +106,42 @@ function CheckoutFormContent() {
             onSessionReady={markCheckoutSessionReady}
             session={checkoutSession}
         />
-    ) : !isLoading && !isRefreshingSession && !isSessionLoading ? (
+    ) : (!isLoading || isCreatingCustomer) && !isRefreshingSession && !isSessionLoading ? (
         !stripePromise ? (
             <CheckoutErrorState message="Stripe is not configured." />
         ) : (
             <Elements stripe={stripePromise} options={{ appearance: stripeAppearance }}>
-                <form
-                    className="w-full space-y-4"
-                    onSubmit={(event) => {
-                        event.preventDefault()
-                        void continueNewCustomer()
-                    }}
-                >
-                    <h3 className="text-lg font-semibold text-white">{content.contactHeading}</h3>
-                    {customerSelect}
-                    <div>
-                        <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>
-                        <EmailInput
-                            id={emailInputId}
-                            disabled={Boolean(guestEmail)}
-                            name="email"
-                            autoComplete="email"
-                            maxLength={254}
-                            placeholder={content.emailPlaceholder}
-                            value={stripeEmail ?? ""}
-                            onChange={(event) => setStripeEmail(event.currentTarget.value, emailValidation(event.currentTarget.value))}
-                            className="w-full!"
-                        />
-                    </div>
-                    <h3 className="mb-4 text-lg font-semibold text-white">{content.billingHeading}</h3>
-                    <AddressElement
-                        options={{ mode: "billing", display: { name: "full" }, defaultValues: defaultBillingAddressValues.current }}
-                        onChange={(event) => setStripeBillingAddress({ name: event.value.name, address: event.value.address }, event.complete)}
-                    />
-                    <Button
-                        type="submit"
-                        variant="normal"
-                        disabled={isLoading || !stripeBillingAddressComplete || !stripeEmailComplete}
-                        className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
-                    >
-                        {isLoading ? content.processingLabel : content.continueLabel}
-                    </Button>
-                    <p className="text-center text-sm text-tertiary">{content.notChargedYetText}</p>
-                    {customerType === "business" && (
-                        <SendOfferDialog
-                            content={content}
-                            blockedReason={canSendOffer ? null : content.sendOfferBillingRequired}
-                            emailLocked={Boolean(guestEmail)}
-                            initialEmail={guestEmail ?? stripeEmail}
-                            onSend={sendOffer}
-                        />
-                    )}
-                </form>
+                <CheckoutNewCustomerForm
+                    customerSelect={customerSelect}
+                    defaultBillingAddress={defaultBillingAddressValues.current}
+                    onSubmit={() => void continueNewCustomer()}
+                    sendOffer={
+                        customerType === "business" ? (
+                            <SendOfferDialog
+                                content={content}
+                                blockedReason={canSendOffer ? null : content.sendOfferBillingRequired}
+                                emailLocked={Boolean(guestEmail)}
+                                initialEmail={guestEmail ?? stripeEmail}
+                                onSend={sendOffer}
+                            />
+                        ) : null
+                    }
+                />
             </Elements>
         )
     ) : (
-        <CheckoutPaymentFormSkeleton label={content.processingLabel} />
+        <CheckoutFormSkeleton
+            billingAddress={stripeBillingAddress}
+            collectTaxId={customerType === "business" && hasExistingCustomers === true}
+            content={content}
+            customerEmail={customerEmail}
+            customerSelect={customerSelectSkeleton}
+            isBusinessCustomer={customerType === "business"}
+            stage={stage}
+        />
     )
 
-    return (
-        <div className="w-full space-y-4">
-            {!checkoutSession && stage === "billingAddress" && (isLoading || isRefreshingSession || isSessionLoading) && hasExistingCustomers !== false ? <CheckoutCustomerSelectSkeleton /> : null}
-            {checkoutContent}
-        </div>
-    )
+    return <div className="w-full">{checkoutContent}</div>
 }
 
 interface CheckoutFormProps {

@@ -3,12 +3,11 @@
 import { CheckoutElementsProvider } from "@stripe/react-stripe-js/checkout"
 import type { StripeCheckoutElementsSdkOptions } from "@stripe/stripe-js"
 import { useMemo, useRef } from "react"
-import { CheckoutErrorState, CheckoutPaymentFields, CheckoutPaymentFormSkeleton } from "./CheckoutPaymentFields"
+import { CheckoutErrorState } from "./CheckoutErrorState"
+import { CheckoutPaymentFields } from "./CheckoutPaymentFields"
 import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
 import { stripeAppearance, STRIPE_APPEARANCE_VERSION } from "@/lib/stripeAppearance"
 import { useStripePromise } from "@/components/providers/StripeProvider"
-
-export { CheckoutErrorState, CheckoutPaymentFormSkeleton }
 
 export function CheckoutPaymentForm({ billingAddress, customerEmail, email, emailSyncedToStripe, session, ...props }: CheckoutPaymentFormProps) {
     const stripePromise = useStripePromise("checkout")
