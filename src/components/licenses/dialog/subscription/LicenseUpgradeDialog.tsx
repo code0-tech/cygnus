@@ -7,6 +7,7 @@ import { useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { useStripePromise } from "@/components/providers/StripeProvider"
 import { LicenseTabHeader, LicenseTabRow, LicenseTabSection } from "@/components/licenses/dialog/shared/LicenseTabLayout"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
+import { WithdrawalConsentCheckbox } from "@/components/checkout/form/WithdrawalConsentCheckbox"
 import { PackageSlider } from "@/components/ui/PackageSlider"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { useSubscriptionUpdatePreview } from "@/hooks/useSubscriptionUpdatePreview"
@@ -107,6 +108,9 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
 
     const [isSaving, setIsSaving] = useState(false)
     const [acceptedTerms, setAcceptedTerms] = useState(false)
+    const [acceptedWithdrawalConsent, setAcceptedWithdrawalConsent] = useState(false)
+    const requiresWithdrawalConsent = customerType === "b2c"
+    const hasRequiredConsents = acceptedTerms && (!requiresWithdrawalConsent || acceptedWithdrawalConsent)
 
     const changeFields = {
         plan,
@@ -115,7 +119,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
     const { isLoadingPreview, preview, previewError } = useSubscriptionUpdatePreview(license?.subscriptionId, changeFields, errors.subscriptionPreview, 400)
 
     const save = async () => {
-        if (!license?.subscriptionId || !hasChange || isSaving) return
+        if (!license?.subscriptionId || !hasChange || isSaving || !hasRequiredConsents) return
         setIsSaving(true)
 
         try {
@@ -352,6 +356,12 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                 />
                 <LicenseTabRow>
                     <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
+                    {requiresWithdrawalConsent ? (
+                        <>
+                            <Spacing spacing="xs" />
+                            <WithdrawalConsentCheckbox text={content.upgrade.withdrawalConsentText} formValidation={{ setValue: setAcceptedWithdrawalConsent, valid: true }} />
+                        </>
+                    ) : null}
                     <Spacing spacing="md" />
                     <Button
                         type="button"
@@ -360,7 +370,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
                         paddingSize="xxs"
                         w="100%"
                         justify="center"
-                        disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !acceptedTerms}
+                        disabled={!hasChange || isSaving || isLoadingPreview || !preview || Boolean(previewError) || !hasRequiredConsents}
                         onClick={() => void save()}
                     >
                         {isSaving ? <ButtonLoader label={content.upgrade.submitLabel} /> : content.upgrade.submitLabel}

@@ -206,6 +206,7 @@ import * as migration_20261107_190000_checkout_discount_dialog_description from 
 import * as migration_20261107_200000_checkout_billing_change_label from './20261107_200000_checkout_billing_change_label';
 import * as migration_20261108_120000_checkout_withdrawal_consent from './20261108_120000_checkout_withdrawal_consent';
 import * as migration_20261108_130000_remove_unused_global_fields from './20261108_130000_remove_unused_global_fields';
+import * as migration_20261108_140000_license_upgrade_withdrawal_consent from './20261108_140000_license_upgrade_withdrawal_consent';
 
 export const migrations = [
   {
@@ -1242,5 +1243,10 @@ export const migrations = [
     up: migration_20261108_130000_remove_unused_global_fields.up,
     down: migration_20261108_130000_remove_unused_global_fields.down,
     name: '20261108_130000_remove_unused_global_fields',
+  },
+  {
+    up: migration_20261108_140000_license_upgrade_withdrawal_consent.up,
+    down: migration_20261108_140000_license_upgrade_withdrawal_consent.down,
+    name: '20261108_140000_license_upgrade_withdrawal_consent',
   },
 ];

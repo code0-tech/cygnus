@@ -194,6 +194,15 @@ export const LicenseDialogs: GlobalConfig = {
                                 localizedText("planHeading", "Plan", "Plan"),
                                 localizedText("previewHeading", "Preview", "Vorschau"),
                                 localizedText("submitLabel", "Upgrade now", "Jetzt upgraden"),
+                                localizedText(
+                                    "withdrawalConsentText",
+                                    "I expressly request that Code0 begins providing the service before the withdrawal period ends. I acknowledge that if I withdraw, I must pay a pro-rata amount for the service provided up to that point.",
+                                    "Ich verlange ausdrücklich, dass Code0 vor Ablauf der Widerrufsfrist mit der Leistung beginnt. Mir ist bekannt, dass ich bei einem Widerruf für die bis dahin erbrachte Leistung einen anteiligen Betrag zahlen muss.",
+                                    {
+                                        type: "textarea",
+                                        description: "Legal consent checkbox above the upgrade button, shown for personal (B2C) licenses only. Required before upgrading; never pre-checked.",
+                                    }
+                                ),
                             ],
                         },
                     ],

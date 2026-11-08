@@ -3389,6 +3389,10 @@ export interface LicenseDialog {
     planHeading: string;
     previewHeading: string;
     submitLabel: string;
+    /**
+     * Legal consent checkbox above the upgrade button, shown for personal (B2C) licenses only. Required before upgrading; never pre-checked.
+     */
+    withdrawalConsentText: string;
   };
   subscriptionPreview: {
     totalLabel: string;
@@ -4182,6 +4186,7 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         planHeading?: T;
         previewHeading?: T;
         submitLabel?: T;
+        withdrawalConsentText?: T;
       };
   subscriptionPreview?:
     | T
