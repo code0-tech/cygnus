@@ -75,6 +75,7 @@ let stripeConfirmErrorMessage: string | null = null
 let stripeCheckoutLoadErrorMessage: string | null = null
 let stripeConfirmOptions: unknown[] = []
 let stripeBillingAddressUpdates: unknown[] = []
+let stripeBillingAddressUpdateGate: Promise<void> | null = null
 let stripeEmailUpdates: unknown[] = []
 let stripePromotionCodesApplied: string[] = []
 let stripePromotionCodesRemoved = 0
@@ -264,6 +265,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
                           },
                           updateBillingAddress: async (address: unknown) => {
                               stripeBillingAddressUpdates.push(address)
+                              await stripeBillingAddressUpdateGate
                               return { type: "success", session: {} }
                           },
                           updateEmail: async (email: unknown) => {
@@ -332,6 +334,7 @@ afterEach(() => {
     window.sessionStorage.removeItem("code0.checkout.sessionLoadRecovery")
     stripeConfirmOptions = []
     stripeBillingAddressUpdates = []
+    stripeBillingAddressUpdateGate = null
     stripeEmailUpdates = []
     stripePromotionCodesApplied = []
     stripePromotionCodesRemoved = 0
@@ -362,6 +365,7 @@ const content = {
     continueLabel: "Continue to payment",
     backToBillingLabel: "Back",
     payNowLabel: "Pay now",
+    withdrawalConsentText: "I expressly request that Code0 begins providing the service before the withdrawal period ends.",
     sendOfferPrompt: "Need an invoice or a quote first?",
     sendOfferLabel: "Send offer",
     sendOfferTitle: "Send offer",
@@ -581,7 +585,13 @@ test("creates a customer with contact details only when continuing to payment", 
     act(() => paymentElementOnReady?.())
     act(() => paymentElementOnChange?.({ complete: true }))
     assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, true)
-    await user.click(screen.getByRole("checkbox"))
+    const withdrawalConsent = screen.getByRole("checkbox", { name: content.withdrawalConsentText })
+    assert.equal(withdrawalConsent.getAttribute("aria-checked"), "false")
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, true)
+    await user.click(withdrawalConsent)
+    assert.equal(withdrawalConsent.getAttribute("aria-checked"), "true")
+    assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, false)
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
     act(() => billingAddressOnReady?.())
     await screen.findByText(content.customerSelectLabel)
@@ -989,6 +999,11 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     assert.equal(screen.queryByTestId("stripe-tax-id"), null)
     assert.deepEqual(stripeEmailUpdates, [])
     assert.equal(screen.queryByRole("button", { name: content.sendOfferLabel }), null)
+    assert.equal(screen.queryByRole("checkbox", { name: content.withdrawalConsentText }), null)
+    act(() => paymentElementOnReady?.())
+    act(() => paymentElementOnChange?.({ complete: true }))
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, false)
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.ok(screen.getByTestId("stripe-tax-id"))
@@ -1024,13 +1039,25 @@ test("does not write a draft customer email again after restoring the payment st
             headers: { "content-type": "application/json" },
         })
     }) as typeof fetch
+    let releaseBillingAddressUpdate = () => {}
+    stripeBillingAddressUpdateGate = new Promise((resolve) => (releaseBillingAddressUpdate = resolve))
 
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
+    // Stripe can report the Payment Element ready before the restored billing address has been written back.
+    await screen.findByTestId("stripe-payment")
     await waitFor(() => assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress]))
+    act(() => paymentElementOnReady?.())
+    act(() => paymentElementOnChange?.({ complete: true }))
+    await act(async () => releaseBillingAddressUpdate())
     assert.deepEqual(stripeEmailUpdates, [])
     assert.deepEqual(checkoutProviderOptions?.defaultValues, { billingAddress: stripeBillingAddress })
     assert.ok(screen.getByTestId("stripe-payment"))
+
+    const user = userEvent.setup()
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    await user.click(screen.getByRole("checkbox", { name: content.withdrawalConsentText }))
+    assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, false)
 })
 
 test("shows only the configured error when loading customers fails", async () => {

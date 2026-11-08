@@ -145,6 +145,15 @@ export const Checkout: GlobalConfig = {
                 localizedText("securePaymentText", "Processed securely by Stripe. You can cancel anytime.", "Sicher verarbeitet über Stripe. Du kannst jederzeit kündigen.", {
                     description: "Shown with a lock icon below the pay button.",
                 }),
+                localizedText(
+                    "withdrawalConsentText",
+                    "I expressly request that Code0 begins providing the service before the withdrawal period ends. I acknowledge that if I withdraw, I must pay a pro-rata amount for the service provided up to that point.",
+                    "Ich verlange ausdrücklich, dass Code0 vor Ablauf der Widerrufsfrist mit der Leistung beginnt. Mir ist bekannt, dass ich bei einem Widerruf für die bis dahin erbrachte Leistung einen anteiligen Betrag zahlen muss.",
+                    {
+                        type: "textarea",
+                        description: "Legal consent checkbox in the payment step, shown for personal (B2C) customers only. Required before paying; never pre-checked.",
+                    }
+                ),
                 localizedText("sendOfferPrompt", "Need an invoice or a quote first?", "Benötigst du zuerst eine Rechnung oder ein Angebot?"),
                 {
                     name: "sendOfferLabel",

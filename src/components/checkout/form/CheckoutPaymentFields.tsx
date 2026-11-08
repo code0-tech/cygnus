@@ -12,6 +12,7 @@ import { useParams } from "next/navigation"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
 import { CheckoutBillingSummary } from "./CheckoutBillingSummary"
 import { CheckoutFieldLabel } from "./CheckoutFieldLabel"
+import { WithdrawalConsentCheckbox } from "./WithdrawalConsentCheckbox"
 import type { CheckoutPaymentFormProps } from "./checkoutPayment.types"
 
 export function CheckoutErrorState({ message, onRetry, retryLabel }: { message: string; onRetry?: () => void; retryLabel?: string }) {
@@ -100,6 +101,9 @@ export function CheckoutPaymentFields({
     const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
     const [acceptedTerms, setAcceptedTerms] = useState(false)
+    const [acceptedWithdrawalConsent, setAcceptedWithdrawalConsent] = useState(false)
+    const requiresWithdrawalConsent = !isBusinessCustomer
+    const hasRequiredConsents = acceptedTerms && (!requiresWithdrawalConsent || acceptedWithdrawalConsent)
     const [isPaymentElementReady, setIsPaymentElementReady] = useState(false)
     const [isPaymentDetailsComplete, setIsPaymentDetailsComplete] = useState(false)
     const [isContactDetailsComplete, setIsContactDetailsComplete] = useState(Boolean(customerEmail) || emailComplete)
@@ -215,8 +219,12 @@ export function CheckoutPaymentFields({
                 onTaxQuoteChange(getTaxQuoteFromSession(updatedSession))
                 onPricingChange(getStripePricingFromSession(updatedSession))
                 restoredBillingRef.current = true
-                setIsPaymentElementReady(false)
-                if (moveToPayment) setStage("payment")
+                // Only a Payment Element that is about to mount can still report ready; a restored payment step's element
+                // may already have done so, and resetting it then would keep the pay button disabled for good.
+                if (moveToPayment) {
+                    setIsPaymentElementReady(false)
+                    setStage("payment")
+                }
             } catch (error) {
                 console.error("Failed to update Stripe checkout billing details:", error)
                 setErrorMessage(errors.paymentFallback)
@@ -254,7 +262,7 @@ export function CheckoutPaymentFields({
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
-        if (checkoutState.type !== "success" || isConfirming || !isPaymentElementReady) return
+        if (checkoutState.type !== "success" || isConfirming || !isPaymentElementReady || !hasRequiredConsents) return
 
         setIsConfirming(true)
         onPaymentConfirmationChange(true)
@@ -382,11 +390,12 @@ export function CheckoutPaymentFields({
 
                     <div className="space-y-3">
                         <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
+                        {requiresWithdrawalConsent && <WithdrawalConsentCheckbox text={content.withdrawalConsentText} formValidation={{ setValue: setAcceptedWithdrawalConsent, valid: true }} />}
                         <Button
                             type="submit"
                             form={paymentFormId}
                             variant="normal"
-                            disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady || !isPaymentDetailsComplete || !acceptedTerms}
+                            disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady || !isPaymentDetailsComplete || !hasRequiredConsents}
                             className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                         >
                             {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}

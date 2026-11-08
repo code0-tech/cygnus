@@ -3145,6 +3145,10 @@ export interface Checkout {
      * Shown with a lock icon below the pay button.
      */
     securePaymentText: string;
+    /**
+     * Legal consent checkbox in the payment step, shown for personal (B2C) customers only. Required before paying; never pre-checked.
+     */
+    withdrawalConsentText: string;
     sendOfferPrompt: string;
     /**
      * Shown below the primary billing button for business customers only.
@@ -3971,6 +3975,7 @@ export interface CheckoutSelect<T extends boolean = true> {
         billingChangeLabel?: T;
         payNowLabel?: T;
         securePaymentText?: T;
+        withdrawalConsentText?: T;
         sendOfferPrompt?: T;
         sendOfferLabel?: T;
         sendOfferTitle?: T;
