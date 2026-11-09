@@ -2721,6 +2721,7 @@ export const license_dialogs_locales = pgTable('license_dialogs_locales', {
   upgrade_planHeading: varchar('upgrade_plan_heading').notNull(),
   upgrade_previewHeading: varchar('upgrade_preview_heading').notNull(),
   upgrade_submitLabel: varchar('upgrade_submit_label').notNull(),
+  upgrade_withdrawalConsentText: varchar('upgrade_withdrawal_consent_text').notNull(),
   subscriptionPreview_totalLabel: varchar('subscription_preview_total_label').notNull(),
   subscriptionPreview_totalDescription: varchar('subscription_preview_total_description').notNull(),
   subscriptionPreview_prorationLabel: varchar('subscription_preview_proration_label').notNull(),
