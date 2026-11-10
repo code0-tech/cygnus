@@ -30,6 +30,7 @@ jobs:
       - run: docker compose logs
         if: always()
       - run: npm run migrate
+      - run: npm test
       - run: npm run build
       - run: >-
           docker build
