@@ -161,9 +161,10 @@ function createLookupClient(sessionToken: string) {
     return { query }
 }
 
-type ApolloClient = ReturnType<typeof createLookupClient>
+type ApolloClient = Pick<ReturnType<typeof createLookupClient>, "query">
 
-async function locateCustomer(client: ApolloClient, customerId: string) {
+/** Pages through the user's customer ids only and returns the cursor that selects `customerId` with `first: 1`. */
+export async function locateCustomer(client: ApolloClient, customerId: string) {
     const customerCursors = new Set<string>()
     let customerAfter: string | undefined
     while (true) {
