@@ -9,6 +9,8 @@ export const dynamic = "force-dynamic"
 
 const MAX_INVOICE_PDF_BYTES = 25 * 1024 * 1024
 const MAX_INVOICE_PDF_REDIRECTS = 3
+// One deadline for the redirects and the body together, so a slow Stripe cannot hold the route open.
+const INVOICE_PDF_TIMEOUT_MS = 20_000
 
 function parseStripeInvoicePdfUrl(value: string | null | undefined) {
     if (!value) return null
@@ -27,10 +29,10 @@ function isStripeHost(url: URL) {
     return url.protocol === "https:" && (url.hostname === "stripe.com" || url.hostname.endsWith(".stripe.com"))
 }
 
-async function fetchStripePdf(invoiceUrl: URL) {
+async function fetchStripePdf(invoiceUrl: URL, signal: AbortSignal) {
     let url = invoiceUrl
     for (let redirects = 0; ; redirects += 1) {
-        const response = await fetch(url, { cache: "no-store", redirect: "manual" })
+        const response = await fetch(url, { cache: "no-store", redirect: "manual", signal })
         if (response.status < 300 || response.status >= 400) return response
 
         await response.body?.cancel()
@@ -100,7 +102,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const response = await fetchStripePdf(invoiceUrl)
+        const response = await fetchStripePdf(invoiceUrl, AbortSignal.timeout(INVOICE_PDF_TIMEOUT_MS))
         if (!response?.ok || !response.body) {
             await response?.body?.cancel()
             return craterJson({ error: "Could not load the invoice PDF." }, 502)

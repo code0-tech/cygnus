@@ -146,7 +146,22 @@ function nextCursor(pageInfo: { endCursor?: string | null; hasNextPage?: boolean
     return pageInfo.endCursor
 }
 
-type ApolloClient = ReturnType<typeof createApolloClient>
+// Every cursor is checked for repeats, but a Crater that keeps returning fresh ones would still page forever. Lookups
+// step through customers and subscriptions one at a time, so the budget leaves room for large accounts.
+const MAX_LOOKUP_QUERIES = 250
+
+function createLookupClient(sessionToken: string) {
+    const client = createApolloClient(sessionToken)
+    let remaining = MAX_LOOKUP_QUERIES
+    const query = ((options: Parameters<typeof client.query>[0]) => {
+        if (remaining <= 0) return Promise.reject(new Error("Crater snapshot lookup exceeded its query budget."))
+        remaining -= 1
+        return client.query(options)
+    }) as typeof client.query
+    return { query }
+}
+
+type ApolloClient = ReturnType<typeof createLookupClient>
 
 async function locateCustomer(client: ApolloClient, customerId: string) {
     const customerCursors = new Set<string>()
@@ -168,7 +183,7 @@ async function locateCustomer(client: ApolloClient, customerId: string) {
 }
 
 export async function findSubscriptionForLicenseSnapshot(sessionToken: string, customerId: string, licenseId: string) {
-    const client = createApolloClient(sessionToken)
+    const client = createLookupClient(sessionToken)
     const located = await locateCustomer(client, customerId)
     if (located.status !== "found") return located
     const { customerAfter } = located
@@ -206,7 +221,7 @@ export async function findSubscriptionForLicenseSnapshot(sessionToken: string, c
 // Crater has no root subscription lookup, so the customer owning a subscription is found by walking the
 // customers of the current user one at a time and paging through each customer's subscriptions.
 export async function findCustomerForSubscription(sessionToken: string, subscriptionId: string) {
-    const client = createApolloClient(sessionToken)
+    const client = createLookupClient(sessionToken)
     const customerCursors = new Set<string>()
     const subscriptionCursors = new Set<string>()
     let customerAfter: string | undefined
@@ -239,7 +254,7 @@ export async function findCustomerForSubscription(sessionToken: string, subscrip
 }
 
 export async function findInvoicePdfUrl(sessionToken: string, customerId: string, subscriptionId: string, invoiceId: string) {
-    const client = createApolloClient(sessionToken)
+    const client = createLookupClient(sessionToken)
     const located = await locateCustomer(client, customerId)
     if (located.status !== "found") return located
     const { customerAfter } = located
