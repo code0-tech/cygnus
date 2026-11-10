@@ -24,6 +24,7 @@ import { SubscriptionCollection } from "./globals/subscriptionConfig"
 import { TeamMembers } from "./collections/teamMembers"
 import { Users } from "./collections/users"
 import { GraphLexicalBlock, PlaygroundLexicalBlock, TriggerLexicalBlock } from "./lib/richText/customLexicalBlocks"
+import { DEFAULT_SITE_URL, resolveSiteUrl } from "./lib/siteConfig"
 import { payloadAiPlugin } from "@mvriu5/payload-ai"
 import { payloadColorPlugin } from "@mvriu5/payload-color-picker"
 import { payloadIconPlugin } from "@mvriu5/payload-icon-picker"
@@ -38,8 +39,8 @@ const dirname = path.dirname(filename)
 const smtpHost = process.env.SMTP_HOST
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build"
 const isDevelopment = process.env.NODE_ENV === "development"
-const payloadServerURL = (process.env.SERVER_URL?.trim() || (isDevelopment ? "http://localhost:3000" : "https://codezero.build")).replace(/\/$/, "")
-const allowedOrigins = Array.from(new Set([payloadServerURL, "http://localhost:3000", "https://localhost:3000", "https://codezero.build"]))
+const payloadServerURL = resolveSiteUrl().origin
+const allowedOrigins = Array.from(new Set([payloadServerURL, "http://localhost:3000", "https://localhost:3000", DEFAULT_SITE_URL]))
 const shouldSkipEmailVerify = isDevelopment || isBuildPhase || process.env.PAYLOAD_SKIP_EMAIL_VERIFY === "true" || !smtpHost
 const smtpTransport = nodemailer.createTransport({
     host: smtpHost,

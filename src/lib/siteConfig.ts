@@ -1,10 +1,11 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 const TITLE_TEMPLATE = "%s | CodeZero"
 const TITLE_DEFAULT = "CodeZero"
 const DESCRIPTION = "Revolutionize the backend development"
 const DEFAULT_OG_IMAGE = "/og/home/image.webp"
-const DEFAULT_BASE_URL = "https://code0.tech"
+// Payload's server URL, CORS and CSRF origins derive from this too, so every fallback points at the same site.
+export const DEFAULT_SITE_URL = "https://codezero.build"
 const DEFAULT_KEYWORDS = ["Code0", "NoCode", "Backend", "CodeZero", "SEO"]
 
 export function resolveSiteUrl() {
@@ -18,7 +19,7 @@ export function resolveSiteUrl() {
         }
     }
 
-    return process.env.NODE_ENV === "development" ? new URL("http://localhost:3000") : new URL(DEFAULT_BASE_URL)
+    return process.env.NODE_ENV === "development" ? new URL("http://localhost:3000") : new URL(DEFAULT_SITE_URL)
 }
 
 export function createMetadata(override: Metadata = {}): Metadata {
