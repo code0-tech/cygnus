@@ -1,11 +1,10 @@
 import { parseCheckoutCompletionStatus } from "@/lib/checkout/completionStatus"
 import { completeGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { createApolloClient } from "@/lib/apolloClient"
-import { craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
+import { craterExecutionErrorCode, craterJson, craterTransportErrorResponse, requireCraterSession } from "@/lib/crater/api.server"
 import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan, parseCheckoutSessionId, normalizeCraterCustomerType } from "@/lib/crater/values"
 import type { Query, QueryCheckoutCompletionStatusArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
-import { CombinedGraphQLErrors } from "@apollo/client/errors"
 
 export const runtime = "nodejs"
 
@@ -35,13 +34,6 @@ const CHECKOUT_COMPLETION_STATUS: TypedDocumentNode<CheckoutCompletionStatusData
         }
     }
 `
-
-function graphQLErrorCode(error: unknown) {
-    if (!CombinedGraphQLErrors.is(error)) return undefined
-
-    const errorCode = error.errors.find((graphQLError) => typeof graphQLError.extensions?.errorCode === "string")?.extensions?.errorCode
-    return typeof errorCode === "string" ? errorCode : undefined
-}
 
 export async function GET(request: Request) {
     const session = requireCraterSession(request)
@@ -92,7 +84,7 @@ export async function GET(request: Request) {
         const transportResponse = craterTransportErrorResponse(error, request)
         if (transportResponse) return transportResponse
 
-        const errorCode = graphQLErrorCode(error)
+        const errorCode = craterExecutionErrorCode(error)
         if (errorCode === "INVALID_CHECKOUT_STATUS_SESSION") {
             return craterJson({ error: "The checkout session could not be verified.", errorCode }, 404)
         }

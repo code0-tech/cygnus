@@ -5,7 +5,7 @@ import { enforceSessionRateLimit } from "@/lib/security/rateLimiter"
 import type { RateLimitPolicyName } from "@/lib/security/rateLimitPolicies"
 import type { Error } from "@code0-tech/crater-graphql-types"
 import { gql, type OperationVariables, type TypedDocumentNode } from "@apollo/client"
-import { ServerError } from "@apollo/client/errors"
+import { CombinedGraphQLErrors, ServerError } from "@apollo/client/errors"
 import { NextResponse } from "next/server"
 
 export const CRATER_ERROR_FIELDS = gql`
@@ -80,10 +80,21 @@ export function withCraterSession(options: CraterRouteOptions, handler: (request
             const transportResponse = craterTransportErrorResponse(error, request)
             if (transportResponse) return transportResponse
 
-            console.error(`${options.log}:`, error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error")
-            return craterJson({ error: options.error }, 502)
+            const errorCode = craterExecutionErrorCode(error)
+            console.error(`${options.log}:`, errorCode ?? (error instanceof Error ? `${error.name}: ${error.message}` : "Unknown error"))
+            if (!errorCode) return craterJson({ error: options.error }, 502)
+            // *_UNAVAILABLE means Stripe or Sagittarius was unreachable, which the client may retry.
+            return craterJson({ error: options.error, errorCode }, errorCode.endsWith("_UNAVAILABLE") ? 503 : 502)
         }
     }
+}
+
+/** The documented Crater error code of a GraphQL execution error, carried in `extensions.errorCode`. */
+export function craterExecutionErrorCode(error: unknown) {
+    if (!CombinedGraphQLErrors.is(error)) return undefined
+
+    const errorCode = error.errors.find((graphQLError) => typeof graphQLError.extensions?.errorCode === "string")?.extensions?.errorCode
+    return typeof errorCode === "string" ? errorCode : undefined
 }
 
 type CraterMutationPayload = { errors?: Error[] | null }

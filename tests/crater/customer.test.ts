@@ -584,7 +584,7 @@ test("removing the last attached method sends an intentional empty keep list", a
 
 test("failed or incomplete fresh reads never reach the destructive mutation", async () => {
     const scenarios: Array<{ responses: unknown[]; status: number }> = [
-        { responses: [locatedCustomer, { errors: [{ message: "Payment methods unavailable", extensions: { errorCode: "PAYMENT_METHOD_UNAVAILABLE" } }] }], status: 502 },
+        { responses: [locatedCustomer, { errors: [{ message: "Payment methods unavailable", extensions: { errorCode: "PAYMENT_METHOD_UNAVAILABLE" } }] }], status: 503 },
         { responses: [locatedCustomer, paymentMethodsPage(null)], status: 502 },
         { responses: [locatedCustomer, paymentMethodsPage(["pm_remove", null])], status: 502 },
         { responses: [locatedCustomer, paymentMethodsPage(["pm_remove"], "gid://crater/Customer/2")], status: 502 },
@@ -621,4 +621,20 @@ test("ordinary contact updates do not read or reconcile payment methods", async 
         assert.equal(server.requests.length, 1)
         assert.deepEqual(server.requests[0].body.variables, { input: { id: "gid://crater/Customer/1", name: "Changed" } })
     })
+})
+
+test("keeps Crater's execution error code and marks unavailable upstreams as retryable", async () => {
+    const executionError = (errorCode: string) => ({ errors: [{ message: "Crater execution error", extensions: { errorCode } }] })
+    for (const { errorCode, status } of [
+        { errorCode: "PAYMENT_METHOD_UNAVAILABLE", status: 503 },
+        { errorCode: "INVALID_CUSTOMER", status: 502 },
+    ]) {
+        await withGraphQLServer([locatedCustomer, executionError(errorCode)], async () => {
+            const response = await getCustomerPaymentMethods(
+                new Request("https://example.com/api/crater/customer/payment-methods?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1", { headers: sessionHeaders })
+            )
+            assert.equal(response.status, status)
+            assert.deepEqual(await response.json(), { error: "Could not load the customer's payment methods.", errorCode })
+        })
+    }
 })
