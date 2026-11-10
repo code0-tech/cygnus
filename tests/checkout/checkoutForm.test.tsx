@@ -59,7 +59,7 @@ const stripeBillingAddress = {
 }
 let billingAddressOnChange: ((event: { complete: boolean; value: typeof stripeBillingAddress }) => void) | null = null
 let billingAddressOnReady: (() => void) | null = null
-let contactDetailsOnChange: ((event: { complete: boolean; value: { email: string } }) => void) | null = null
+const billingAddressFocus = mock.fn()
 let contactDetailsOnReady: (() => void) | null = null
 let billingAddressOptions: unknown = null
 let standaloneAddressOptions: { defaultValues?: unknown } | null = null
@@ -148,7 +148,11 @@ mock.module("@/components/checkout/shared/SendOfferDialog", {
 mock.module("@/components/checkout/summary/CheckoutPricingOverview", { namedExports: { CheckoutPricingOverview: () => null } })
 mock.module("@code0-tech/pictor", {
     namedExports: {
-        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
+        Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => (
+            <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>
+                {children}
+            </div>
+        ),
         AutoScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
         ScrollArea: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -216,9 +220,17 @@ mock.module("@stripe/react-stripe-js", {
 })
 mock.module("@stripe/react-stripe-js/checkout", {
     namedExports: {
-        BillingAddressElement: ({ onChange, onReady, options }: { onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void; onReady?: () => void; options?: unknown }) => {
+        BillingAddressElement: ({
+            onChange,
+            onReady,
+            options,
+        }: {
+            onChange: (event: { complete: boolean; value: typeof stripeBillingAddress }) => void
+            onReady?: (element: { focus: () => void }) => void
+            options?: unknown
+        }) => {
             billingAddressOnChange = onChange
-            billingAddressOnReady = onReady ?? null
+            billingAddressOnReady = () => onReady?.({ focus: billingAddressFocus })
             billingAddressOptions = options
             return <div data-testid="stripe-billing-address">Billing address</div>
         },
@@ -236,8 +248,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
             checkoutProviderOptions = options
             return <>{children}</>
         },
-        ContactDetailsElement: ({ onChange, onReady }: { onChange: (event: { complete: boolean; value: { email: string } }) => void; onReady?: () => void }) => {
-            contactDetailsOnChange = onChange
+        ContactDetailsElement: ({ onReady }: { onReady?: () => void }) => {
             contactDetailsOnReady = onReady ?? null
             return <div data-testid="stripe-contact-details">Contact details</div>
         },
@@ -330,7 +341,6 @@ afterEach(() => {
     checkoutSearchParams.delete("promotionCode")
     checkoutProviderOptions = null
     billingAddressOnChange = null
-    contactDetailsOnChange = null
     billingAddressOptions = null
     standaloneAddressOptions = null
     paymentElementOptions = null
@@ -467,7 +477,11 @@ test("maps missing Stripe tax details to empty tax lines and no billing country"
 })
 
 test("keeps included and additional tax separate without adding included tax to the total", () => {
-    for (const [inclusive, exclusive, total] of [[1_900, 0, 11_900], [1_900, 1_000, 12_900], [0, 0, 10_000]]) {
+    for (const [inclusive, exclusive, total] of [
+        [1_900, 0, 11_900],
+        [1_900, 1_000, 12_900],
+        [0, 0, 10_000],
+    ]) {
         const pricing = getStripePricingFromSession({
             currency: "eur",
             minorUnitsAmountDivisor: 100,
@@ -741,10 +755,10 @@ test("renews an expired checkout after the returning tab has revalidated its Cra
     let now = originalNow()
     Date.now = () => now
     let sessionRequests = 0
-    globalThis.fetch = (async (input) => String(input) === "/api/crater/customer"
-        ? Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
-        : Response.json({ clientSecret: `cs_resume_${++sessionRequests}`, expiresAt: Math.floor(now / 1_000) + 120, id: `cs_resume_${sessionRequests}` })
-    ) as typeof fetch
+    globalThis.fetch = (async (input) =>
+        String(input) === "/api/crater/customer"
+            ? Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
+            : Response.json({ clientSecret: `cs_resume_${++sessionRequests}`, expiresAt: Math.floor(now / 1_000) + 120, id: `cs_resume_${sessionRequests}` })) as typeof fetch
     try {
         const view = render(<CheckoutForm content={content} errors={errors} locale="en" />)
         await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_resume_1"))
@@ -860,11 +874,13 @@ for (const [errorCode, expectedMessage] of [
     ["INVALID_CHECKOUT_CUSTOMER", errors.checkoutCustomer],
 ]) {
     test(`maps ${errorCode} to CMS copy without displaying backend diagnostics`, async () => {
-        globalThis.fetch = (async (input) => Response.json(String(input) === "/api/crater/customer"
-            ? { customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }] }
-            : { error: "Internal backend message", errorCode, details: ["stripe_price_id: missing"] },
-            { status: String(input) === "/api/crater/customer" ? 200 : 422 }
-        )) as typeof fetch
+        globalThis.fetch = (async (input) =>
+            Response.json(
+                String(input) === "/api/crater/customer"
+                    ? { customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada Lovelace" }] }
+                    : { error: "Internal backend message", errorCode, details: ["stripe_price_id: missing"] },
+                { status: String(input) === "/api/crater/customer" ? 200 : 422 }
+            )) as typeof fetch
 
         render(<CheckoutForm content={content} errors={errors} locale="en" />)
         assert.ok(await screen.findByText(expectedMessage))
@@ -872,26 +888,43 @@ for (const [errorCode, expectedMessage] of [
     })
 }
 
-for (const [field, value] of [["plan", "invalid"], ["customerType", "invalid"], ["deploymentType", "invalid"], ["paymentPeriod", "weekly"]]) {
+for (const [field, value] of [
+    ["plan", "invalid"],
+    ["customerType", "invalid"],
+    ["deploymentType", "invalid"],
+    ["paymentPeriod", "weekly"],
+]) {
     test(`opens the error page for invalid URL ${field} before loading customers or creating a session`, async () => {
         checkoutSearchParams.set(field, value)
         const requests = mock.fn(async () => Response.json({ customers: [] }))
         globalThis.fetch = requests as typeof fetch
-        render(<CheckoutErrorBoundary><CheckoutForm content={content} errors={errors} locale="en" /></CheckoutErrorBoundary>)
+        render(
+            <CheckoutErrorBoundary>
+                <CheckoutForm content={content} errors={errors} locale="en" />
+            </CheckoutErrorBoundary>
+        )
         assert.ok(screen.getByTestId("checkout-error-page"))
         assert.equal(screen.queryByRole("alert"), null)
         assert.equal(requests.mock.callCount(), 0)
     })
 }
 
-for (const [status, errorCode] of [[400, null], [422, "INVALID_CHECKOUT_SELECTION"], [422, "CUSTOMER_TYPE_MISMATCH"]] as const) {
+for (const [status, errorCode] of [
+    [400, null],
+    [422, "INVALID_CHECKOUT_SELECTION"],
+    [422, "CUSTOMER_TYPE_MISMATCH"],
+] as const) {
     test(`opens the error page for invalid checkout parameters (${status}, ${errorCode})`, async () => {
-        globalThis.fetch = (async (input) => String(input) === "/api/crater/customer"
-            ? Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
-            : Response.json({ error: "Internal backend message", errorCode, details: ["stripe_price_id: missing"] }, { status })
-        ) as typeof fetch
+        globalThis.fetch = (async (input) =>
+            String(input) === "/api/crater/customer"
+                ? Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
+                : Response.json({ error: "Internal backend message", errorCode, details: ["stripe_price_id: missing"] }, { status })) as typeof fetch
 
-        render(<CheckoutErrorBoundary><CheckoutForm content={content} errors={errors} locale="en" /></CheckoutErrorBoundary>)
+        render(
+            <CheckoutErrorBoundary>
+                <CheckoutForm content={content} errors={errors} locale="en" />
+            </CheckoutErrorBoundary>
+        )
         await screen.findByTestId("checkout-error-page")
         assert.equal(screen.queryByRole("alert"), null)
         assert.equal(screen.queryByRole("button", { name: errors.retry }), null)
@@ -935,7 +968,10 @@ for (const trigger of ["new customer", "customer selection", "session refresh"] 
         } else {
             await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_initial_secret"))
             if (trigger === "customer selection") {
-                act(() => { contactDetailsOnReady?.(); billingAddressOnReady?.() })
+                act(() => {
+                    contactDetailsOnReady?.()
+                    billingAddressOnReady?.()
+                })
                 await waitFor(() => assert.ok(customerSelectOnValueChange))
                 act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
             } else {
@@ -1023,6 +1059,8 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     // The checkout SDK cannot prefill the Tax ID Element, so the billing step stays mounted and is only hidden.
     assert.ok(screen.getByTestId("stripe-tax-id") === taxIdElement, "the Tax ID Element was remounted")
     assert.ok(taxIdElement.closest("[hidden]"))
+    assert.ok(screen.getByText("Code0 GmbH"))
+    assert.ok(screen.getByText("DE123456789"))
     assert.deepEqual(stripeEmailUpdates, [])
     assert.equal(screen.queryByRole("button", { name: content.sendOfferLabel }), null)
     assert.equal(screen.queryByRole("checkbox", { name: content.withdrawalConsentText }), null)
@@ -1033,10 +1071,13 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     // Stripe rejects confirm() with the address element mounted after updateBillingAddress; only the Tax ID Element stays.
     assert.equal(screen.queryByTestId("stripe-billing-address"), null)
     assert.deepEqual(stripeTaxIdInfoUpdates, [])
-    await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
+    const focusCount = billingAddressFocus.mock.callCount()
+    await user.click(screen.getByText("DE123456789").parentElement!.parentElement!.querySelector("button")!)
     await waitFor(() => assert.ok(!taxIdElement.closest("[hidden]"), "the billing step is still hidden"))
     assert.ok(screen.getByTestId("stripe-tax-id") === taxIdElement, "the Tax ID Element was remounted")
     assert.ok(screen.getByTestId("stripe-billing-address"))
+    act(() => billingAddressOnReady?.())
+    assert.equal(billingAddressFocus.mock.callCount(), focusCount + 1)
     // A business name alone is sufficient: VAT registration is optional.
     act(() => taxIdElementOnChange?.({ complete: true, empty: false, value: { ...taxIdValue, taxId: "", taxIdType: "", externalTaxIdType: "" }, visible: true }))
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
@@ -1221,7 +1262,9 @@ test("retries a failed checkout session without creating a second customer", asy
 
 test("keeps a customer created while checkout parameters change without starting a stale session", async () => {
     let releaseCustomer!: () => void
-    const customerGate = new Promise<void>((resolve) => { releaseCustomer = resolve })
+    const customerGate = new Promise<void>((resolve) => {
+        releaseCustomer = resolve
+    })
     let creations = 0
     let customerReads = 0
     const sessionRequests: Array<Record<string, unknown>> = []
@@ -1250,7 +1293,10 @@ test("keeps a customer created while checkout parameters change without starting
     checkoutSearchParams.set("plan", "max")
     view.rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
     await waitFor(() => assert.equal(customerReads, 2))
-    await act(async () => { releaseCustomer(); await customerGate })
+    await act(async () => {
+        releaseCustomer()
+        await customerGate
+    })
     await waitFor(() => assert.equal(readCheckoutContactDraft(checkoutSearchParams)?.customerId, customer.id))
     assert.equal(sessionRequests.length, 0)
 

@@ -8,6 +8,7 @@ import { SendOfferDialog } from "@/components/checkout/shared/SendOfferDialog"
 import { Alert, Button, EmailInput } from "@code0-tech/pictor"
 import { IconArrowLeft, IconLock } from "@tabler/icons-react"
 import { BillingAddressElement, ContactDetailsElement, PaymentElement, TaxIdElement, useCheckoutElements } from "@stripe/react-stripe-js/checkout"
+import type { StripeAddressElement } from "@stripe/stripe-js"
 import { useParams } from "next/navigation"
 import { useCallback, useEffect, useId, useRef, useState } from "react"
 import { CheckoutBillingSummary } from "./CheckoutBillingSummary"
@@ -80,11 +81,18 @@ export function CheckoutPaymentFields({
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
     const liveStripePricing = checkoutState.type === "success" ? getStripePricingFromSession(checkoutState.checkout) : null
     const restoredBillingRef = useRef(false)
+    const editBillingAddressRef = useRef(false)
     const markContactElementLoading = useCallback(() => setIsContactElementReady(false), [])
     const markAddressElementLoading = useCallback(() => setIsAddressElementReady(false), [])
     const markTaxIdElementLoading = useCallback(() => setIsTaxIdElementReady(false), [])
     const markContactElementReady = useCallback(() => setIsContactElementReady(true), [])
-    const markAddressElementReady = useCallback(() => setIsAddressElementReady(true), [])
+    const markAddressElementReady = useCallback((element: StripeAddressElement) => {
+        setIsAddressElementReady(true)
+        if (editBillingAddressRef.current) {
+            editBillingAddressRef.current = false
+            element.focus()
+        }
+    }, [])
     const markTaxIdElementReady = useCallback(() => setIsTaxIdElementReady(true), [])
 
     useEffect(() => {
@@ -156,6 +164,11 @@ export function CheckoutPaymentFields({
     const showBillingAddress = () => {
         setStage("billingAddress")
         setErrorMessage(null)
+    }
+
+    const editBillingAddress = () => {
+        editBillingAddressRef.current = true
+        showBillingAddress()
     }
 
     const updateCheckoutBilling = useCallback(
@@ -368,7 +381,16 @@ export function CheckoutPaymentFields({
                         {content.backToBillingLabel}
                     </button>
 
-                    {billingAddress && <CheckoutBillingSummary billingAddress={billingAddress} changeLabel={content.billingChangeLabel} disabled={isConfirming} onChange={showBillingAddress} />}
+                    {billingAddress && (
+                        <CheckoutBillingSummary
+                            billingAddress={billingAddress}
+                            businessName={collectTaxId ? (taxIdDraft ? taxIdDraft.value.businessName : checkoutState.checkout.taxIdInfo?.businessName) : null}
+                            taxId={collectTaxId ? (taxIdDraft ? taxIdDraft.value.taxId : checkoutState.checkout.taxIdInfo?.taxId.value) : null}
+                            changeLabel={content.billingChangeLabel}
+                            disabled={isConfirming}
+                            onChange={editBillingAddress}
+                        />
+                    )}
 
                     <form id={paymentFormId} onSubmit={handleSubmit} className="w-full space-y-4">
                         <StripeElementSlot heightKey="payment" ready={isPaymentElementReady}>
