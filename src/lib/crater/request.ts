@@ -68,12 +68,6 @@ export function isSubscriptionId(value: string): value is Scalars["SubscriptionI
     return /^gid:\/\/crater\/Subscription\/\d+$/.test(value)
 }
 
-function parseOptionalPositiveInt(value: unknown): number | null | undefined {
-    if (value === undefined || value === null) return undefined
-    const parsed = Number(value)
-    return Number.isInteger(parsed) && parsed > 0 ? parsed : null
-}
-
 export type SubscriptionChangeFields = {
     plan?: CheckoutPlan
     paymentPeriod?: CheckoutPaymentPeriod
@@ -93,9 +87,9 @@ export function parseSubscriptionChangeFields(body: JsonObject | null, allowPaym
     const paymentPeriod = paymentPeriodParam ? (parseCraterPaymentPeriod(paymentPeriodParam) ?? undefined) : undefined
     if (paymentPeriodParam && !paymentPeriod) return { error: "paymentPeriod must be monthly, quarterly, or yearly." }
 
-    const aiTokens = parseOptionalPositiveInt(body?.aiTokens)
-    const workflowExecutions = parseOptionalPositiveInt(body?.workflowExecutions)
-    if (aiTokens === null || workflowExecutions === null) return { error: "aiTokens and workflowExecutions must be positive integers when provided." }
+    const aiTokens = parseCheckoutQuantity(body?.aiTokens)
+    const workflowExecutions = parseCheckoutQuantity(body?.workflowExecutions)
+    if (Number.isNaN(aiTokens) || Number.isNaN(workflowExecutions)) return { error: "aiTokens and workflowExecutions must be positive integers when provided." }
     if (!plan && !paymentPeriod && !aiTokens && !workflowExecutions && !paymentMethodId)
         return {
             error: allowPaymentMethod

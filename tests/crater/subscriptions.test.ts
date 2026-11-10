@@ -5,12 +5,42 @@ import { POST as previewSubscriptionUpdate } from "../../src/app/api/crater/subs
 import { POST as cancelSubscription } from "../../src/app/api/crater/subscriptions/cancel/route"
 import { POST as resumeSubscription } from "../../src/app/api/crater/subscriptions/resume/route"
 import { withGraphQLServer } from "../helpers/graphqlTestServer"
+import { parseSubscriptionChangeFields } from "../../src/lib/crater/request"
 
 const sessionHeaders = {
     authorization: "Session c_ust_example",
     "content-type": "application/json",
 }
 const subscriptionId = "gid://crater/Subscription/42"
+
+test("subscription quantity parsing accepts Int32 boundaries and optional quantities", () => {
+    for (const value of [1, "1", 2_147_483_647, "2147483647"]) {
+        assert.deepEqual(parseSubscriptionChangeFields({ aiTokens: value, workflowExecutions: value }), { aiTokens: Number(value), workflowExecutions: Number(value) })
+    }
+    for (const value of [undefined, null, ""]) {
+        assert.deepEqual(parseSubscriptionChangeFields({ plan: "custom", aiTokens: value, workflowExecutions: value }), { plan: "CUSTOM" })
+    }
+})
+
+test("subscription updates and previews reject invalid quantities with 400 before contacting Crater", async () => {
+    await withGraphQLServer([], async (server) => {
+        let index = 0
+        for (const [handler, method] of [[updateSubscription, "PATCH"], [previewSubscriptionUpdate, "POST"]] as const) {
+            for (const field of ["aiTokens", "workflowExecutions"]) {
+                for (const value of [2_147_483_648, 3_000_000_000, "3000000000", true, false, [], {}, 0, -1, 1.5, "1e3", " 1 "]) {
+                    const response = await handler(new Request("https://example.com/api/crater/subscriptions", {
+                        method,
+                        headers: { "content-type": "application/json", authorization: `Session invalid-quantity-${++index}`, "x-forwarded-for": `198.51.100.${index}` },
+                        body: JSON.stringify({ id: subscriptionId, plan: "custom", [field]: value }),
+                    }))
+                    assert.equal(response.status, 400, `${method} ${field}=${JSON.stringify(value)}`)
+                    assert.deepEqual(await response.json(), { error: "aiTokens and workflowExecutions must be positive integers when provided." })
+                }
+            }
+        }
+        assert.equal(server.requests.length, 0)
+    })
+})
 
 const subscriptionRoutes = [
     { handler: updateSubscription, method: "PATCH", mutation: "subscriptionsUpdate", resource: "subscription", fields: { plan: "max" } },
