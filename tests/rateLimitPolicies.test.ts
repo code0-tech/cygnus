@@ -5,6 +5,7 @@ import { getRateLimitPolicy } from "../src/lib/security/rateLimitPolicies"
 test("defines separate defaults for sensitive Crater routes", () => {
     assert.deepEqual(getRateLimitPolicy("login", {}), { max: 5, windowSeconds: 600 })
     assert.deepEqual(getRateLimitPolicy("checkout", {}), { max: 20, windowSeconds: 600 })
+    assert.deepEqual(getRateLimitPolicy("checkoutStatus", {}), { max: 120, windowSeconds: 60 })
     assert.deepEqual(getRateLimitPolicy("guest", {}), { max: 5, windowSeconds: 600 })
 })
 

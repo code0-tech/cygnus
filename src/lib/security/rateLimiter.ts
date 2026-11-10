@@ -110,7 +110,13 @@ export function enforceSessionRateLimit(name: RateLimitPolicyName, request: Requ
     return rejectWhenExhausted(name, limiter.consume(createRateLimitSubjectKey(name, sessionToken), getRateLimitPolicy(name)), "trusted")
 }
 
-function rejectWhenExhausted(name: RateLimitPolicyName, result: RateLimitResult, network: "trusted" | "untrusted") {
+// For authenticated polling: sessions behind the same proxy keep separate budgets.
+// Call only after requiring a session; unverified tokens never identify a network bucket.
+export function enforceSessionTokenRateLimit(name: RateLimitPolicyName, sessionToken: string) {
+    return rejectWhenExhausted(name, limiter.consume(createRateLimitSubjectKey(name, sessionToken), getRateLimitPolicy(name)))
+}
+
+function rejectWhenExhausted(name: RateLimitPolicyName, result: RateLimitResult, network?: "trusted" | "untrusted") {
     if (result.allowed) return null
 
     if (result.shouldLog) {

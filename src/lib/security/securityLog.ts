@@ -4,7 +4,7 @@ type SecurityEvent =
           policy: string
           limit: number
           retryAfterSeconds: number
-          network: "trusted" | "untrusted"
+          network?: "trusted" | "untrusted"
       }
     | {
           event: "rate_limit_untrusted_network"

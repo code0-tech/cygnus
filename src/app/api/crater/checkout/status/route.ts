@@ -5,6 +5,7 @@ import { craterExecutionErrorCode, craterJson, craterTransportErrorResponse, req
 import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan, parseCheckoutSessionId, normalizeCraterCustomerType } from "@/lib/crater/values"
 import type { Query, QueryCheckoutCompletionStatusArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
+import { enforceSessionTokenRateLimit } from "@/lib/security/rateLimiter"
 
 export const runtime = "nodejs"
 
@@ -42,6 +43,9 @@ export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
     const sessionId = parseCheckoutSessionId(requestUrl.searchParams.get("sessionId") ?? undefined)
     if (!sessionId) return craterJson({ error: "A valid checkout session is required." }, 400)
+
+    const rateLimited = enforceSessionTokenRateLimit("checkoutStatus", session.token)
+    if (rateLimited) return rateLimited
 
     try {
         const result = await createApolloClient(session.token).query({

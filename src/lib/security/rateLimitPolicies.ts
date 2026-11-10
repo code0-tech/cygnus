@@ -2,6 +2,7 @@ export type RateLimitPolicyName =
     | "login"
     | "guest"
     | "checkout"
+    | "checkoutStatus"
     | "customer"
     | "paymentMethodSetup"
     | "subscription"
@@ -45,6 +46,13 @@ const policyDefinitions = {
         defaultMax: 20,
         windowEnvKey: "CRATER_CHECKOUT_RATE_LIMIT_WINDOW_SECONDS",
         defaultWindowSeconds: 10 * 60,
+    },
+    // Polling starts at 2 seconds and backs off to 10 seconds over five minutes.
+    checkoutStatus: {
+        maxEnvKey: "CRATER_CHECKOUT_STATUS_RATE_LIMIT_MAX",
+        defaultMax: 120,
+        windowEnvKey: "CRATER_CHECKOUT_STATUS_RATE_LIMIT_WINDOW_SECONDS",
+        defaultWindowSeconds: 60,
     },
     customer: {
         maxEnvKey: "CRATER_CUSTOMER_RATE_LIMIT_MAX",
