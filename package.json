@@ -114,6 +114,7 @@
         "dompurify": "3.4.17",
         "undici": "8.12.3",
         "yaml": "2.9.1",
+        "happy-dom": "$happy-dom",
         "@esbuild-kit/core-utils": {
             "esbuild": "0.28.2"
         }

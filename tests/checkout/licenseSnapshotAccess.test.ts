@@ -1,7 +1,15 @@
 import assert from "node:assert/strict"
+import { registerHooks } from "node:module"
 import test from "node:test"
-import { GET } from "../../src/app/api/crater/licenses/access/route"
 import { withGraphQLServer } from "../helpers/graphqlTestServer"
+
+const serverOnlyHook = registerHooks({
+    resolve(specifier, context, nextResolve) {
+        return nextResolve(specifier === "server-only" ? "next/dist/compiled/server-only/empty.js" : specifier, context)
+    },
+})
+const { GET } = await import("../../src/app/api/crater/licenses/access/route")
+serverOnlyHook.deregister()
 
 const previousServerUrl = process.env.SERVER_URL
 test.before(() => {
