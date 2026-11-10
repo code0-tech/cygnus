@@ -127,7 +127,6 @@ export default buildConfig({
             suggestedColors: ["#030014", "#0f0c1f", "#b8b5ca", "#9695a0", "#7af69a", "#5e9a00", "#f2a700", "#d30046", "#72f896", "#f8f172", "#72c9f8", "#7472f8", "#f872e2"],
         }),
         payloadPortablePlugin({
-            access: () => true,
             importMode: "merge",
         }),
         seoPlugin({
