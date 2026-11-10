@@ -24,3 +24,10 @@ test("accepts positive integer overrides and rejects unsafe values", () => {
         { max: 20, windowSeconds: 600 }
     )
 })
+
+test("keeps the original env names of the form routes", () => {
+    assert.deepEqual(getRateLimitPolicy("contact", {}), { max: 5, windowSeconds: 600 })
+    assert.deepEqual(getRateLimitPolicy("jobApplication", {}), { max: 5, windowSeconds: 600 })
+    assert.deepEqual(getRateLimitPolicy("contact", { CONTACT_RATE_LIMIT_MAX: "2", CONTACT_RATE_LIMIT_WINDOW_SECONDS: "30" }), { max: 2, windowSeconds: 30 })
+    assert.deepEqual(getRateLimitPolicy("jobApplication", { JOBS_RATE_LIMIT_MAX: "3", JOBS_RATE_LIMIT_WINDOW_SECONDS: "45" }), { max: 3, windowSeconds: 45 })
+})

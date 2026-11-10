@@ -1,4 +1,16 @@
-export type RateLimitPolicyName = "login" | "guest" | "checkout" | "customer" | "paymentMethodSetup" | "subscription" | "subscriptionPreview" | "invoicePreview" | "invoicePayment" | "offer"
+export type RateLimitPolicyName =
+    | "login"
+    | "guest"
+    | "checkout"
+    | "customer"
+    | "paymentMethodSetup"
+    | "subscription"
+    | "subscriptionPreview"
+    | "invoicePreview"
+    | "invoicePayment"
+    | "offer"
+    | "contact"
+    | "jobApplication"
 
 interface RateLimitPolicyDefinition {
     maxEnvKey: string
@@ -74,6 +86,18 @@ const policyDefinitions = {
         maxEnvKey: "CRATER_OFFER_RATE_LIMIT_MAX",
         defaultMax: 5,
         windowEnvKey: "CRATER_OFFER_RATE_LIMIT_WINDOW_SECONDS",
+        defaultWindowSeconds: 10 * 60,
+    },
+    contact: {
+        maxEnvKey: "CONTACT_RATE_LIMIT_MAX",
+        defaultMax: 5,
+        windowEnvKey: "CONTACT_RATE_LIMIT_WINDOW_SECONDS",
+        defaultWindowSeconds: 10 * 60,
+    },
+    jobApplication: {
+        maxEnvKey: "JOBS_RATE_LIMIT_MAX",
+        defaultMax: 5,
+        windowEnvKey: "JOBS_RATE_LIMIT_WINDOW_SECONDS",
         defaultWindowSeconds: 10 * 60,
     },
 } satisfies Record<RateLimitPolicyName, RateLimitPolicyDefinition>

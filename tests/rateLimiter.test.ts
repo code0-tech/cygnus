@@ -152,3 +152,27 @@ test("reports a bucket as exhausted only while its window is open and full", () 
     now += 60_000
     assert.equal(limiter.isExhausted("key", policy), false)
 })
+
+test("does not let a client spoof a fresh identity through X-Forwarded-For", () => {
+    const previousMax = process.env.CONTACT_RATE_LIMIT_MAX
+    const previousProxyHops = process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS
+    const originalWarn = console.warn
+    console.warn = () => {}
+    process.env.CONTACT_RATE_LIMIT_MAX = "2"
+    process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = "1"
+
+    // The proxy appends the real peer address; everything left of it is whatever the client sent.
+    const request = (spoofed: string) => new Request("https://code0.example/api/contact", { method: "POST", headers: { "x-forwarded-for": `${spoofed}, 203.0.113.50` } })
+
+    try {
+        assert.equal(enforceRateLimit("contact", request("198.51.100.1")), null)
+        assert.equal(enforceRateLimit("contact", request("198.51.100.2")), null)
+        assert.equal(enforceRateLimit("contact", request("198.51.100.3"))?.status, 429)
+    } finally {
+        console.warn = originalWarn
+        if (previousMax === undefined) delete process.env.CONTACT_RATE_LIMIT_MAX
+        else process.env.CONTACT_RATE_LIMIT_MAX = previousMax
+        if (previousProxyHops === undefined) delete process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS
+        else process.env.CRATER_RATE_LIMIT_TRUSTED_PROXY_HOPS = previousProxyHops
+    }
+})

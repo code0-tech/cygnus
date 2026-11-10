@@ -1,34 +1,14 @@
-import {
-    createRateLimitChecker,
-    escapeHtml,
-    getClientIdentifier,
-    getRateLimitConfig,
-} from "@/lib/smtp"
+import { escapeHtml } from "@/lib/smtp"
 import { validateContactSubmission } from "@/lib/formSubmissions"
 import { getPayloadClient } from "@/lib/payloadClient"
+import { enforceRateLimit } from "@/lib/security/rateLimiter"
 import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-const checkContactRateLimit = createRateLimitChecker(
-    getRateLimitConfig(process.env.CONTACT_RATE_LIMIT_MAX, process.env.CONTACT_RATE_LIMIT_WINDOW_SECONDS)
-)
-
 export async function POST(req: Request) {
-    const clientId = getClientIdentifier(req)
-    const rateLimit = checkContactRateLimit(clientId)
-
-    if (!rateLimit.allowed) {
-        return NextResponse.json(
-            { error: "Too many requests. Please try again later." },
-            {
-                status: 429,
-                headers: {
-                    "Retry-After": String(rateLimit.retryAfterSeconds),
-                },
-            }
-        )
-    }
+    const rateLimited = enforceRateLimit("contact", req)
+    if (rateLimited) return rateLimited
 
     const validation = await validateContactSubmission(req)
     if (!validation.success) return new Response(validation.error, { status: 400 })

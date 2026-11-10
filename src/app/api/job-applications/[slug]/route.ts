@@ -1,16 +1,8 @@
 import { getPayloadClient } from "@/lib/payloadClient"
 import { validateJobApplicationSubmission } from "@/lib/formSubmissions"
-import {
-    createRateLimitChecker,
-    escapeHtml,
-    getClientIdentifier,
-    getRateLimitConfig,
-} from "@/lib/smtp"
+import { enforceRateLimit } from "@/lib/security/rateLimiter"
+import { escapeHtml } from "@/lib/smtp"
 import { NextResponse } from "next/server"
-
-const checkRateLimit = createRateLimitChecker(
-    getRateLimitConfig(process.env.JOBS_RATE_LIMIT_MAX, process.env.JOBS_RATE_LIMIT_WINDOW_SECONDS)
-)
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
@@ -19,19 +11,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
         return new Response("Invalid job slug.", { status: 400 })
     }
 
-    const clientId = getClientIdentifier(req)
-    const rateLimit = checkRateLimit(clientId)
-    if (!rateLimit.allowed) {
-        return NextResponse.json(
-            { error: "Too many requests. Please try again later." },
-            {
-                status: 429,
-                headers: {
-                    "Retry-After": String(rateLimit.retryAfterSeconds),
-                },
-            }
-        )
-    }
+    const rateLimited = enforceRateLimit("jobApplication", req)
+    if (rateLimited) return rateLimited
 
     const validation = await validateJobApplicationSubmission(req)
     if (!validation.success) return new Response(validation.error, { status: 400 })
