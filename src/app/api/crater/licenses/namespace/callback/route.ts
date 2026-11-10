@@ -3,7 +3,9 @@ import { CRATER_ERROR_FIELDS, noStoreRedirect as craterNoStoreRedirect } from "@
 import { describeCraterError, isNamespaceInUse } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/crater/login.server"
 import { clearCraterLoginStateCookie, verifyCraterLoginState } from "@/lib/crater/loginState.server"
-import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
+import { replaceCraterLoginSession } from "@/lib/crater/loginSession.server"
+import { enforceRateLimit } from "@/lib/security/rateLimiter"
+import { NextResponse } from "next/server"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { resolveLicenseNamespaceReturn } from "@/lib/licenses/routes"
 import type { Mutation, MutationSubscriptionsLinkNamespaceArgs } from "@code0-tech/crater-graphql-types"
@@ -52,6 +54,9 @@ export async function GET(request: Request) {
     if (!sagittariusToken || !verifyCraterLoginState(request, requestUrl)) return errorRedirect(request, resolvedReturn.returnUrl, "session")
     if (!namespaceId || Buffer.byteLength(namespaceId, "utf8") > 500) return errorRedirect(request, resolvedReturn.returnUrl, "selection")
 
+    const rateLimited = enforceRateLimit("login", request)
+    if (rateLimited) return clearCraterLoginStateCookie(new NextResponse(rateLimited.body, rateLimited), request)
+
     try {
         const loginPayload = await createCraterUserSession(sagittariusToken)
         if (loginPayload.errors?.length || !loginPayload.userSession?.token) {
@@ -70,12 +75,12 @@ export async function GET(request: Request) {
         if (!payload?.subscription || (payload.errors?.length ?? 0) > 0) {
             const failure = describeCraterError(payload?.errors)
             console.error("Crater rejected the selected subscription namespace:", failure?.errorCode ?? "Crater returned no linked subscription.")
-            return setCraterUserLoginCookie(setCraterSessionCookie(errorRedirect(request, resolvedReturn.returnUrl, isNamespaceInUse(payload?.errors) ? "occupied" : "update"), sessionToken))
+            return await replaceCraterLoginSession(request, errorRedirect(request, resolvedReturn.returnUrl, isNamespaceInUse(payload?.errors) ? "occupied" : "update"), sessionToken)
         }
 
         // This callback is the second Sagittarius login in the product, so it marks the browser too.
         resolvedReturn.returnUrl.searchParams.set("namespaceLinked", "true")
-        return setCraterUserLoginCookie(setCraterSessionCookie(clearCraterLoginStateCookie(noStoreRedirect(resolvedReturn.returnUrl), request), sessionToken))
+        return await replaceCraterLoginSession(request, clearCraterLoginStateCookie(noStoreRedirect(resolvedReturn.returnUrl), request), sessionToken)
     } catch (error) {
         console.error("Crater license namespace callback error:", error instanceof Error ? error.name : "Unknown error")
         return errorRedirect(request, resolvedReturn.returnUrl, "update")

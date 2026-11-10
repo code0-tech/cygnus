@@ -4,7 +4,9 @@ import { resolveLicenseDashboardReturnUrl } from "@/lib/licenses/routes"
 import { describeCraterError } from "@/lib/crater/errors"
 import { createCraterUserSession } from "@/lib/crater/login.server"
 import { clearCraterLoginStateCookie, verifyCraterLoginState } from "@/lib/crater/loginState.server"
-import { setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
+import { replaceCraterLoginSession } from "@/lib/crater/loginSession.server"
+import { enforceRateLimit } from "@/lib/security/rateLimiter"
+import { NextResponse } from "next/server"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 
 export const runtime = "nodejs"
@@ -35,6 +37,9 @@ export async function GET(request: Request) {
         return redirect(returnUrl)
     }
 
+    const rateLimited = enforceRateLimit("login", request)
+    if (rateLimited) return clearCraterLoginStateCookie(new NextResponse(rateLimited.body, rateLimited), request)
+
     try {
         const payload = await createCraterUserSession(sagittariusToken)
         if (payload.errors?.length || !payload.userSession?.token) {
@@ -44,7 +49,7 @@ export async function GET(request: Request) {
             return redirect(returnUrl)
         }
 
-        return setCraterUserLoginCookie(setCraterSessionCookie(redirect(returnUrl), payload.userSession.token))
+        return await replaceCraterLoginSession(request, redirect(returnUrl), payload.userSession.token)
     } catch (error) {
         console.error("Crater server-side login callback error:", error instanceof Error ? error.name : "Unknown error")
         returnUrl.searchParams.set("authError", "session")
