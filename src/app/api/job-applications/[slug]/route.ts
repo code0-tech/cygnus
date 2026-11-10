@@ -38,7 +38,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
 
 
         await cms.sendEmail({
-            to: process.env.CONTACT_FROM_EMAIL,
+            to: process.env.CONTACT_TO_EMAIL,
             subject: `New application for ${job.title} (${jobSlug})`,
             replyTo: payload.email,
             text: [

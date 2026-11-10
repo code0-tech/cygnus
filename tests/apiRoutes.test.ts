@@ -18,7 +18,7 @@ function setEnv(t: TestContext, key: string, value: string) {
         else process.env[key] = previous
     })
 }
-const sendEmail = mock.fn(async () => {})
+const sendEmail = mock.fn(async (_message: { to?: string; replyTo?: string }) => {})
 const find = mock.fn(async () => ({ docs: [{ id: 1, title: "Engineer" }] }))
 const create = mock.fn(async () => ({ id: 2 }))
 const update = mock.fn(async () => ({ id: 1 }))
@@ -71,6 +71,18 @@ for (const [index, route] of forms.entries()) {
         assert.equal(getPayloadClient.mock.callCount(), before)
     })
 }
+
+test("applications are sent to the contact inbox with the applicant as reply-to", async (t) => {
+    setEnv(t, "CONTACT_FROM_EMAIL", "no-reply@example.com")
+    setEnv(t, "CONTACT_TO_EMAIL", "contact@example.com")
+    const before = sendEmail.mock.callCount()
+    const response = await application(request(validForm, "203.0.113.80"), { params: Promise.resolve({ slug: "engineer" }) })
+    assert.equal(response.status, 200)
+    assert.equal(sendEmail.mock.callCount(), before + 1)
+    const message = sendEmail.mock.calls.at(-1)?.arguments[0]
+    assert.equal(message?.to, "contact@example.com")
+    assert.equal(message?.replyTo, validForm.email)
+})
 
 test("application rejects invalid slugs before accessing Payload", async () => {
     const before = getPayloadClient.mock.callCount()
