@@ -1203,6 +1203,52 @@ test("retries a failed checkout session without creating a second customer", asy
     assert.equal(sessions, 2)
 })
 
+test("keeps a customer created while checkout parameters change without starting a stale session", async () => {
+    let releaseCustomer!: () => void
+    const customerGate = new Promise<void>((resolve) => { releaseCustomer = resolve })
+    let creations = 0
+    let customerReads = 0
+    const sessionRequests: Array<Record<string, unknown>> = []
+    const customer = { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/9", name: "Ada" }
+    globalThis.fetch = (async (input, init) => {
+        if (String(input) === "/api/crater/customer") {
+            if (init?.method === "POST") {
+                creations += 1
+                await customerGate
+                return Response.json(customer, { status: 201 })
+            }
+            customerReads += 1
+            return Response.json({ customers: [] })
+        }
+        sessionRequests.push(JSON.parse(String(init?.body)))
+        return Response.json({ clientSecret: "cs_updated_secret", expiresAt: 1_800_000_000, id: "cs_updated" })
+    }) as typeof fetch
+    const user = userEvent.setup()
+    const view = render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByTestId("standalone-address")
+    await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    await user.click(screen.getByRole("button", { name: content.continueLabel }))
+    assert.equal(creations, 1)
+
+    checkoutSearchParams.set("plan", "max")
+    view.rerender(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await waitFor(() => assert.equal(customerReads, 2))
+    await act(async () => { releaseCustomer(); await customerGate })
+    await waitFor(() => assert.equal(readCheckoutContactDraft(checkoutSearchParams)?.customerId, customer.id))
+    assert.equal(sessionRequests.length, 0)
+
+    // Completing the current form again reuses the created ID with the new plan.
+    await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
+    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    await user.click(screen.getByRole("button", { name: content.continueLabel }))
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_updated_secret"))
+    assert.equal(creations, 1)
+    assert.equal(sessionRequests.length, 1)
+    assert.equal(sessionRequests[0].customerId, customer.id)
+    assert.equal(sessionRequests[0].plan, "max")
+})
+
 test("does not replace a missing saved customer with a different billing customer", async () => {
     saveCheckoutContactDraft({ billingAddress: stripeBillingAddress, customerId: "gid://crater/Customer/99", email: "ada@example.com", searchParams: checkoutSearchParams, stage: "payment" })
     const requests: string[] = []

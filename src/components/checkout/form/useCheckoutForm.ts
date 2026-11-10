@@ -350,7 +350,6 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             let customerId = selectedCustomerIdRef.current
             if (!customerId) {
                 const customer = await createCheckoutCustomer({ customerType, email: stripeEmail, billingAddress: stripeBillingAddress })
-                if (requestId !== sessionRefreshRequestRef.current) return
                 customerId = customer.id
                 setCustomers((current) => [...current.filter((candidate) => candidate.id !== customer.id), customer])
                 setHasExistingCustomers(true)
@@ -368,6 +367,9 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                 searchParams: new URLSearchParams(searchParamsString),
                 stage: "payment",
             })
+            // Customer creation already persisted on the server, even if the checkout
+            // parameters changed meanwhile. Keep its ID and discard only the stale session work.
+            if (requestId !== sessionRefreshRequestRef.current) return
             setStripeEmailSynced(true)
             const session = await createCheckoutSession({ customerId, locale, searchParams: new URLSearchParams(searchParamsString) })
             if (requestId !== sessionRefreshRequestRef.current) return
