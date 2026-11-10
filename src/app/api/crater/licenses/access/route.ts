@@ -6,7 +6,7 @@ import { isCustomerId, isLicenseId, isSubscriptionId } from "@/lib/crater/reques
 import { findCustomerForSubscription, findSubscriptionForLicenseSnapshot } from "@/lib/licenses/snapshotLookup.server"
 import { createLicenseActionPath, createLicenseDashboardLoginPath, createLicensePath, isLicenseDashboardAction, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import { clearCraterSessionCookie, readCraterSessionAuthorization, setCraterSessionCookie, setCraterUserLoginCookie } from "@/lib/crater/session.server"
-import { readSculptorLinkToken } from "@/lib/crater/sculptorLink.server"
+import { isSculptorNavigation, readSculptorLinkToken } from "@/lib/crater/sculptorLink.server"
 import { isSupportedLocale, type AppLocale } from "@/lib/i18n"
 import { enforceRateLimit } from "@/lib/security/rateLimiter"
 import { logSecurityEvent } from "@/lib/security/securityLog"
@@ -143,7 +143,9 @@ export async function GET(request: Request) {
         }
         if (isSculptorLink) {
             if (exchangedToken) return await withExchangedSession(noStoreRedirect(new URL(`/${locale}/licenses`, siteOrigin)))
-            if (requestUrl.searchParams.get(SESSION_SWITCH_PARAM) !== "1") {
+            // Only Sculptor may end the session to switch users: any page can link here, and revoking for every
+            // foreign link would let it log the browser out.
+            if (requestUrl.searchParams.get(SESSION_SWITCH_PARAM) !== "1" && isSculptorNavigation(request)) {
                 await revokeCraterSession(sessionToken)
                 return startLogin(true, true)
             }

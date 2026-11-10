@@ -1,7 +1,15 @@
 import assert from "node:assert/strict"
+import { registerHooks } from "node:module"
 import test from "node:test"
-import { GET } from "../../src/app/api/crater/licenses/access/route"
 import { withGraphQLServer } from "../helpers/graphqlTestServer"
+
+const serverOnlyHook = registerHooks({
+    resolve(specifier, context, nextResolve) {
+        return nextResolve(specifier === "server-only" ? "next/dist/compiled/server-only/empty.js" : specifier, context)
+    },
+})
+const { GET } = await import("../../src/app/api/crater/licenses/access/route")
+serverOnlyHook.deregister()
 
 const previousServerUrl = process.env.SERVER_URL
 const previousSculptorLoginUrl = process.env.SCULPTOR_LOGIN_URL
@@ -33,9 +41,12 @@ function customerPage(customerId: string, subscriptionIds: string[], customerCur
 }
 const ownedSubscription = customerPage("gid://crater/Customer/3", ["gid://crater/Subscription/5"])
 
-function entryRequest(params: Record<string, string>, cookie?: string) {
-    return new Request(`https://0.0.0.0:3000/api/crater/licenses/access?${new URLSearchParams({ locale: "en", ...params })}`, cookie ? { headers: { cookie } } : {})
+function entryRequest(params: Record<string, string>, cookie?: string, headers: Record<string, string> = {}) {
+    return new Request(`https://0.0.0.0:3000/api/crater/licenses/access?${new URLSearchParams({ locale: "en", ...params })}`, { headers: { ...headers, ...(cookie ? { cookie } : {}) } })
 }
+
+// Only a navigation Sculptor opened may end the session to switch users; the browser sends Sculptor's origin as referrer.
+const fromSculptor = { referer: "https://app.example/", "sec-fetch-site": "same-site" }
 
 // Links never log a browser in: every login goes through /auth/start and returns to the same access request.
 function assertStartsLogin(response: Response, accessParams: Record<string, string>) {
@@ -107,7 +118,7 @@ test("an expired Crater session starts a fresh login instead of using the link t
 // code0-tech/cygnus#552: a link for another customer's subscription must not leave the old session in place.
 test("a session that cannot see the linked subscription is signed out and replaced through the login", async () => {
     await withGraphQLServer([customerPage("gid://crater/Customer/1", ["gid://crater/Subscription/2"]), loggedOut], async (server) => {
-        const response = await GET(entryRequest({ token: "sagittarius-secret", subscriptionId: "5", action: "upgrade" }, "crater_session=previous-session"))
+        const response = await GET(entryRequest({ subscriptionId: "5", action: "upgrade" }, "crater_session=previous-session", fromSculptor))
 
         assertStartsLogin(response, { subscriptionId: "5", action: "upgrade", sessionSwitch: "1" })
         assert.match(response.headers.getSetCookie().join(";"), /crater_session=;/)
@@ -140,7 +151,7 @@ test("a subscription the switched session cannot see either opens the dashboard 
 test("a failed logout still drops the local session and starts the login", async () => {
     const rejectedLogout = { data: { usersLogout: { errors: [{ errorCode: "MISSING_PERMISSION", details: [] }] } } }
     await withGraphQLServer([customerPage("gid://crater/Customer/1", []), rejectedLogout], async () => {
-        const response = await GET(entryRequest({ subscriptionId: "9" }, "crater_session=previous-session"))
+        const response = await GET(entryRequest({ subscriptionId: "9" }, "crater_session=previous-session", fromSculptor))
 
         assertStartsLogin(response, { subscriptionId: "9", sessionSwitch: "1" })
         assert.match(response.headers.getSetCookie().join(";"), /crater_session=;/)

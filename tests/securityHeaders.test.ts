@@ -71,3 +71,11 @@ test("proxy redirects legacy GraphQL license paths to short ids", () => {
     assert.equal(response.headers.get("location"), "https://code0.example/en/licenses/customer/35/license/9/edit?tab=payment")
     assert.ok(response.headers.has("content-security-policy"))
 })
+
+test("the license entry redirect keeps the referrer the access route trusts Sculptor links by", () => {
+    const response = proxy(new NextRequest("https://code0.example/en/licenses?subscriptionId=5&token=sculptor-token"))
+
+    assert.equal(new URL(response.headers.get("location")!).pathname, "/api/crater/licenses/access")
+    assert.equal(response.headers.get("cache-control"), "no-store")
+    assert.equal(response.headers.get("referrer-policy"), null)
+})

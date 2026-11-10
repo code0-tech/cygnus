@@ -28,8 +28,9 @@ export function proxy(request: NextRequest) {
     const licenseEntryPath = createLicenseDashboardEntryPath(request.nextUrl)
     if (licenseEntryPath) {
         const response = NextResponse.redirect(new URL(licenseEntryPath, request.nextUrl))
+        // No referrer-policy override: a redirect keeps the referrer of the page that started the navigation, never
+        // this URL, and the access route needs Sculptor's origin in it to trust the link (see isSculptorNavigation).
         response.headers.set("cache-control", "no-store")
-        response.headers.set("referrer-policy", "no-referrer")
         return secureResponse(request, response)
     }
 

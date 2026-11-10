@@ -132,13 +132,28 @@ test("license access never exchanges tokens from links, even with a login-state 
     })
 })
 
+const sculptorLogin = (token: string) => ({ data: { usersLogin: { errors: [], userSession: { id: "gid://crater/UserSession/5", token } } } })
+const subscriptionCustomer = {
+    data: {
+        currentUser: {
+            customers: {
+                nodes: [{ id: "gid://crater/Customer/3", subscriptions: { nodes: [{ id: "gid://crater/Subscription/666" }], pageInfo: { hasNextPage: false } } }],
+                pageInfo: { hasNextPage: false },
+            },
+        },
+    },
+}
+// Sculptor opens the dashboard in a new tab; without a referrer policy the browser sends its origin as the referrer.
+const sculptorNavigation = { referer: "https://app.example/", "sec-fetch-site": "same-site" }
+
 test("a missing subscription never replaces the existing session with a token from a link", async () => {
     const noCustomers = { data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: false } } } } }
     const loggedOut = { data: { usersLogout: { errors: [] } } }
-    await withGraphQLServer([noCustomers, loggedOut], async (server) => {
+    const rejectedLogin = { data: { usersLogin: { errors: [], userSession: null } } }
+    await withGraphQLServer([noCustomers, rejectedLogin, loggedOut], async (server) => {
         const response = await accessLicenseDashboard(new Request(
             "https://code0.example/api/crater/licenses/access?locale=en&subscriptionId=666&token=attacker-token",
-            { headers: { cookie: "crater_session=victim-session" } }
+            { headers: { ...sculptorNavigation, cookie: "crater_session=victim-session" } }
         ))
         assert.equal(response.status, 307)
         // The session is only ever replaced through the state-protected login, never with the token from the link.
@@ -147,12 +162,32 @@ test("a missing subscription never replaces the existing session with a token fr
         assert.equal(location.searchParams.get("returnPath"), "/api/crater/licenses/access?locale=en&subscriptionId=666&sessionSwitch=1")
         assert.doesNotMatch(location.toString(), /attacker-token/)
         assert.ok(response.headers.getSetCookie().every((value) => /Max-Age=0/i.test(value)), "Must not set an authenticated session")
-        assert.equal(server.requests.length, 2)
-        assert.ok(server.requests.every((request) => request.authorization === "Session victim-session"))
-        assert.equal(server.requests[0].body.operationName, "LicenseSubscriptionCustomer")
-        assert.equal(server.requests[1].body.operationName, "CraterSessionLogout")
-        assert.ok(server.requests.every((request) => !JSON.stringify(request.body).includes("attacker-token")))
+        assert.deepEqual(
+            server.requests.map((request) => [request.body.operationName, request.authorization]),
+            [
+                ["LicenseSubscriptionCustomer", "Session victim-session"],
+                ["UsersLogin", undefined],
+                ["CraterSessionLogout", "Session victim-session"],
+            ]
+        )
+        assert.ok(server.requests.every((request) => request.body.operationName === "UsersLogin" || !JSON.stringify(request.body).includes("attacker-token")))
     })
+})
+
+test("a foreign link to a subscription of another user never ends the session", async () => {
+    const noCustomers = { data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: false } } } } }
+    for (const headers of [{}, { referer: "https://attacker.example/" }, { referer: "https://app.example/", "sec-fetch-site": "none" }] as Array<Record<string, string>>) {
+        await withGraphQLServer([noCustomers], async (server) => {
+            const response = await accessLicenseDashboard(new Request(
+                "https://code0.example/api/crater/licenses/access?locale=en&subscriptionId=666",
+                { headers: { ...headers, cookie: "crater_session=victim-session" } }
+            ))
+            assert.equal(response.status, 307)
+            assert.equal(response.headers.get("location"), "https://code0.example/en/licenses")
+            assert.deepEqual(response.headers.getSetCookie(), [])
+            assert.deepEqual(server.requests.map((request) => request.body.operationName), ["LicenseSubscriptionCustomer"])
+        })
+    }
 })
 
 test("an expired session starts a fresh login without exchanging the link token", async () => {
@@ -171,20 +206,6 @@ test("an expired session starts a fresh login without exchanging the link token"
         assert.equal(server.requests[0].authorization, "Session expired-session")
     })
 })
-
-const sculptorLogin = (token: string) => ({ data: { usersLogin: { errors: [], userSession: { id: "gid://crater/UserSession/5", token } } } })
-const subscriptionCustomer = {
-    data: {
-        currentUser: {
-            customers: {
-                nodes: [{ id: "gid://crater/Customer/3", subscriptions: { nodes: [{ id: "gid://crater/Subscription/666" }], pageInfo: { hasNextPage: false } } }],
-                pageInfo: { hasNextPage: false },
-            },
-        },
-    },
-}
-// Sculptor opens the dashboard in a new tab; without a referrer policy the browser sends its origin as the referrer.
-const sculptorNavigation = { referer: "https://app.example/", "sec-fetch-site": "same-site" }
 
 test("a link Sculptor opened signs in with its token instead of asking for consent again", async () => {
     await withGraphQLServer([sculptorLogin("crater-link-session"), subscriptionCustomer], async (server) => {
