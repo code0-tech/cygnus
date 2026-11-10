@@ -76,7 +76,7 @@ export function CheckoutPaymentFields({
     const [isAddressElementReady, setIsAddressElementReady] = useState(false)
     const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
     const [taxIdDraft, setTaxIdDraft] = useState<CheckoutTaxIdDraft | null>(null)
-    const isTaxIdIncomplete = collectTaxId && taxIdDraft !== null && taxIdDraft.visible && !taxIdDraft.empty && !taxIdDraft.complete
+    const isTaxIdIncomplete = collectTaxId && (!taxIdDraft?.value.businessName.trim() || !taxIdDraft.complete)
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
     const liveStripePricing = checkoutState.type === "success" ? getStripePricingFromSession(checkoutState.checkout) : null
     const restoredBillingRef = useRef(false)
@@ -231,7 +231,7 @@ export function CheckoutPaymentFields({
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
-        if (checkoutState.type !== "success" || isConfirming || !isPaymentElementReady || !hasRequiredConsents) return
+        if (checkoutState.type !== "success" || isConfirming || !isPaymentElementReady || !hasRequiredConsents || isTaxIdIncomplete) return
 
         setIsConfirming(true)
         onPaymentConfirmationChange(true)
@@ -329,7 +329,7 @@ export function CheckoutPaymentFields({
                                 )}
                                 {collectTaxId && (
                                     <TaxIdElement
-                                        options={{ fields: { businessName: "always" }, visibility: "auto" }}
+                                        options={{ fields: { businessName: "always" }, visibility: "always", validation: { businessName: { required: "always" }, taxId: { required: "never" } } }}
                                         onChange={(event) => setTaxIdDraft({ complete: event.complete, empty: event.empty, value: event.value, visible: event.visible })}
                                         onLoaderStart={markTaxIdElementLoading}
                                         onReady={markTaxIdElementReady}
@@ -393,7 +393,7 @@ export function CheckoutPaymentFields({
                             type="submit"
                             form={paymentFormId}
                             variant="normal"
-                            disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady || !isPaymentDetailsComplete || !hasRequiredConsents}
+                            disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady || !isPaymentDetailsComplete || !hasRequiredConsents || isTaxIdIncomplete}
                             className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                         >
                             {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}

@@ -18,6 +18,8 @@ For every scenario, verify that the browser returns to the localized `/checkout/
 | --- | --- |
 | B2C card | Use card `4242 4242 4242 4242`, any future expiry, any CVC, and a complete billing address. Confirmation succeeds and returns to the success page. |
 | B2B card | Enter company contact data and a sandbox-valid tax ID, then use card `4242 4242 4242 4242`. The Customer and resulting subscription retain the business customer type. |
+| B2B company name without tax ID | Use a fresh Checkout Session created by Crater with business name collection enabled (PR #124). Enter a company name different from the billing contact name and leave the tax ID blank. Go to Payment, return to Billing, and confirm that the company name remains. Complete the purchase and verify the company name on the Stripe Customer, the Crater Customer after webhook processing, and the resulting invoice PDF. Repeat with a tax ID. |
+| Missing business name | For B2B, leave the company name empty or whitespace-only. Continuing to Payment must be blocked. A company name alone must allow continuing without a tax ID. B2C must not require a company name. |
 | Incomplete address | Leave a required Stripe address field empty. The Payment Element and Payment step remain unavailable. |
 | Completed address | Complete all required address fields. The Payment Element appears and the stepper advances to Payment. |
 | 3D Secure | Use card `4000 0000 0000 3220`, complete the sandbox authentication challenge, and verify the return to the success page. Repeat once by failing the challenge and verify that no success or entitlement is produced. |
