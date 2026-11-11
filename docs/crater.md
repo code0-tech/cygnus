@@ -15,6 +15,8 @@ The current branch uses a consolidated migration baseline: twelve migrations fro
 
 The baseline omits `licenses.seats`, `licenses.runtime_minutes`, and `licenses.status`, and includes a separate `payment_methods` table for cached display details. The subscription keeps `cancel_at`, `stripe_schedule_id`, and the `pending_*` columns. Migration `20261008120000_add_stripe_created_at_to_subscriptions.rb` adds nullable `stripe_created_at`, projected from Stripe's subscription creation timestamp to anchor the immediate-cancellation deadline. Existing rows fall back to their local `created_at` until a Stripe projection supplies that timestamp. `custom_checkout_configurations` and the invoice Lexware columns still exist in the database; their presence does not make them public GraphQL fields.
 
+Migration `20261108120000_create_consents.rb` adds checkout consent records linked to customers and subscriptions. Migration `20261111120000_add_tax_id_to_customers.rb` adds nullable `stripe_tax_id_id`, `tax_id_type`, and `tax_id_value` columns for the customer's current tax ID; existing rows are not backfilled automatically.
+
 ## Domain model
 
 ### Core relationships
@@ -50,9 +52,23 @@ The GraphQL API additionally returns a global ID and creation and update timesta
 
 `taxIdType` and `taxIdValue` are optional, including for business customers, because Stripe Checkout can collect a tax ID through its `TaxIdElement`. When one of them is supplied, the other is required as well; a half-filled pair returns `INVALID_CUSTOMER`. A tax ID supplied up front is registered on the Stripe Customer immediately, and one collected during checkout is synced back from the completed session.
 
-`customersCreate` requires `customerType`, `name`, `email`, and `address`. Every field of `CustomerAddressCreateInput`, including `line2` and `state`, is required by the GraphQL schema. `phone` and the tax ID pair are optional. `customersUpdate` uses `CustomerAddressUpdateInput`, whose fields are all optional, so an update can change a single address field. Address changes persist through the autosaved customer association.
+`customersCreate` requires `customerType`, `name`, `email`, and `address`. Every field of `CustomerAddressCreateInput`, including `line2` and `state`, is required by the GraphQL schema. `phone` and the tax ID pair are optional. `customersUpdate` accepts optional `taxId: CustomerTaxIdInput` (explicit null removes the tax ID) and uses `CustomerAddressUpdateInput`, whose fields are all optional, so an update can change a single address field. Address changes persist through the autosaved customer association.
 
 The columns themselves stay nullable, and `email` and `name` are still nullable in the GraphQL `Customer` type. Stripe Checkout collects contact and billing details of its own through `ContactDetailsElement` and `BillingAddressElement`, and Crater syncs those back from the completed session -- a sync that fills fields in, never blanks them out.
+
+#### Current customer tax ID
+
+`Customer.taxId` is nullable and exposes `taxIdType` and `taxIdValue`. It reads the locally persisted pair without calling Stripe. An older customer has no current tax ID in this projection until a tax-ID write or checkout sync fills it in.
+
+`customersCreate` still accepts the flat optional `taxIdType` / `taxIdValue` pair and stores the created Stripe tax ID locally. `customersUpdate` accepts a nested `taxId: { taxIdType, taxIdValue }` instead:
+
+- Omit `taxId` to leave tax IDs unchanged.
+- Send an object to keep exactly that type/value pair, reusing a matching Stripe entry or creating one and deleting all others on that Stripe customer.
+- Send `taxId: null` to remove all of that customer's Stripe tax IDs and clear the local projection.
+
+Both fields of `CustomerTaxIdInput` are required. Invalid Stripe input returns `INVALID_CUSTOMER`; other Stripe failures during reconciliation return `TAX_ID_UNAVAILABLE`. Remote removals happen before creation and are not rolled back if a later step fails. Account-level invoice-issuer tax IDs are unaffected.
+
+The completed-checkout webhook resolves the first complete collected tax ID to its registered Stripe object, stores its ID/type/value locally, and removes superseded customer tax IDs. Missing collected IDs or failed lookups preserve the current projection. Lookup/removal failures are logged without blocking the subscription projection.
 
 ### Users and sessions
 
@@ -272,6 +288,24 @@ A discount is applied and validated through Stripe's frontend Checkout SDK. Ever
 That is why `checkoutCreateSession` has no `promotionCode` argument. A discount entered, removed, and entered again is the same session throughout -- the user does not lose the address, tax ID, or payment details already filled in, and Crater does not create a Stripe session per attempt. Crater consequently never sends `discounts` when creating a session; Stripe rejects `discounts` and `allow_promotion_codes` together, and the client-side flow is the one that survives a change of mind.
 
 Crater no longer exposes `checkoutValidateDiscount`, `CheckoutDiscount`, or `INVALID_DISCOUNT_CODE`. The frontend uses the result of applying the code to the actual Stripe session.
+
+#### Personal checkout consent
+
+For a personal customer, Cygnus must collect an explicit immediate-start withdrawal consent before calling `checkoutCreateSession` and send:
+
+```graphql
+withdrawalConsent: {
+  consentTextVersion: "v1"
+  termsVersion: "v1"
+  locale: "de"
+}
+```
+
+The input object is optional in the schema because business customers do not need it, but personal checkout without it returns `MISSING_WITHDRAWAL_CONSENT` before Stripe is called. All three fields are required when the object is supplied. Business checkout ignores this input. There is no acceptance boolean in the API: the frontend should submit the object only after the user explicitly agrees.
+
+Crater stamps the server acceptance time and supplied versions/locale into Stripe subscription metadata. On `checkout.session.completed`, it appends one immutable `Consent` per subscription and consent type, linked to the customer. Replayed completion events do not overwrite it. A failed consent save is logged without undoing the subscription projection.
+
+The paid-invoice email includes the stored acceptance details and available matching versions of the terms and withdrawal policy from `app/legal/<kind>/<locale>/<version>.txt`. Missing documents are skipped without failing delivery. The committed German `v1` documents are placeholders, as documented in `app/legal/README.md`; new legal versions should use new files so earlier consents retain their original reference.
 
 ### The checkout completion status
 
@@ -560,7 +594,7 @@ The mailer uses complete HTML documents generated by react-email, without a wrap
 
 Invoice emails attach `invoice-<number>.pdf` downloaded from the stored Stripe PDF URL, following a bounded number of redirects with request timeouts. Quote emails attach `offer-<number>.pdf`, streamed from Stripe's quote PDF endpoint. A missing PDF or download error does not prevent delivery; invoice emails retain their PDF link and quote emails show the offer details in their body. Billing messages direct users to `support@codezero.build`; quote messages use `sales@codezero.build`.
 
-Mail sources live in `tooling/mails`. Run `npm ci` and `npm run export:erb` there to regenerate the committed Rails templates. CI's `mails:verify-generated` job repeats the export and rejects differences in `app/views`. HTML templates also exist for period-end cancellation, immediate cancellation, withdrawal, cancellation review, resumption, and renewal reminders. These subscription templates currently have no `SubscriptionMailer` or delivery job wired up; their presence does not mean these notifications are sent automatically.
+Mail sources live in `tooling/mails`. Run `npm ci` and `npm run export:erb` there to regenerate the committed Rails templates. CI's `mails:verify-generated` job repeats the export and rejects differences in `app/views`. HTML templates also exist for period-end cancellation, immediate cancellation, withdrawal, cancellation review, resumption, and renewal reminders. `SubscriptionMailer` now delivers the extraordinary-termination receipt and review outcome messages. Ordinary self-service cancellations remain silent; resumption and renewal-reminder templates are not automatically scheduled by the current code.
 
 `License` describes the usage entitlement resulting from a subscription:
 
@@ -652,7 +686,7 @@ Nothing directly. Licenses stay append-only, and a plan change rewrites no exist
 
 **A change never writes a license, not even an immediate upgrade.** The entitlements of the new plan reach the user through the next `invoice.paid` snapshot, which is the only event that grants paid access. This keeps a single writer for the license chain: a plan the user was upgraded to but has not been invoiced for yet does not silently become an entitlement, and there is no snapshot that would have to be revoked if the proration invoice then fails.
 
-On cancellation, existing license dates stay unchanged and no canceled snapshot is created. `immediately: true` cancels the Stripe subscription immediately only while `Subscription#immediate_cancellation_available?` is true; outside that window it becomes a period-end cancellation. The deadline is fourteen days after `stripe_created_at`, falling back to the local `created_at` until Stripe's creation timestamp is available. The deadline itself is inclusive; terminal subscriptions (`canceled`, `incomplete_expired`) are never eligible. GraphQL exposes the same calculation through `immediateCancellationAvailable` and `immediateCancellationUntil`, so the frontend can show the option and deadline before submitting a cancellation. The code applies this check to both customer types and makes no separate refund call or consumer-waiver check.
+On cancellation, existing license dates stay unchanged and no canceled snapshot is created. `immediately: true` cancels the Stripe subscription immediately only while `Subscription#immediate_cancellation_available?` is true; outside that window it becomes a period-end cancellation. The deadline is fourteen days after `stripe_created_at`, falling back to the local `created_at` until Stripe's creation timestamp is available. The deadline itself is inclusive; terminal subscriptions (`canceled`, `incomplete_expired`) are never eligible. GraphQL exposes the same calculation through `immediateCancellationAvailable` and `immediateCancellationUntil`, so the frontend can show the option and deadline before submitting a cancellation. The cancellation mutation applies this timing check to both customer types and makes no separate refund call. Personal checkout now records immediate-start consent separately; that record does not alter this cancellation eligibility check.
 
 ### Webhook processing
 
@@ -1089,9 +1123,9 @@ Its behaviour:
 
 #### Checkout
 
-| Mutation                | Key arguments                                                                                                                 | Result                                                    |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `checkoutCreateSession` | `customerId!`, `deploymentType!`, `plan!`, `paymentPeriod!`, `returnUrl!`; optional quantities, `namespaceId`, and `referral` | Embedded `CheckoutSession` with a frontend `clientSecret` |
+| Mutation                | Key arguments                                                                                                                                                                        | Result                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| `checkoutCreateSession` | `customerId!`, `deploymentType!`, `plan!`, `paymentPeriod!`, `returnUrl!`; optional quantities, `namespaceId`, `referral`, and `withdrawalConsent` (required for personal customers) | Embedded `CheckoutSession` with a frontend `clientSecret` |
 
 For `checkoutCreateSession`:
 
@@ -1116,15 +1150,16 @@ For `checkoutCreateSession`:
 
 #### Subscriptions
 
-| Mutation                     | Key arguments                                                                             | Result                                                                                          |
-| ---------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `subscriptionsPreviewUpdate` | `id: SubscriptionID!`, optional `plan`, `paymentPeriod`, `aiTokens`, `workflowExecutions` | `SubscriptionUpdatePreview` with the proration, the resulting invoice, and the effective moment |
-| `subscriptionsUpdate`        | the same arguments plus optional `paymentMethodId`                                        | Updated `Subscription` and nullable `paymentClientSecret`                                       |
-| `subscriptionsCancel`        | `id: SubscriptionID!`, optional `immediately: Boolean` (default `false`)                  | Updated subscription with cancellation reflected in `cancelAt`/`status`                         |
-| `subscriptionsResume`        | `id: SubscriptionID!`                                                                     | `Subscription` with the cancellation taken back                                                 |
-| `subscriptionsLinkNamespace` | `id: SubscriptionID!`, `namespaceId: NamespaceID!`                                        | Cloud subscription with verified namespace link and remote license sync                         |
+| Mutation                                | Key arguments                                                                             | Result                                                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `subscriptionsPreviewUpdate`            | `id: SubscriptionID!`, optional `plan`, `paymentPeriod`, `aiTokens`, `workflowExecutions` | `SubscriptionUpdatePreview` with the proration, the resulting invoice, and the effective moment |
+| `subscriptionsUpdate`                   | the same arguments plus optional `paymentMethodId`                                        | Updated `Subscription` and nullable `paymentClientSecret`                                       |
+| `subscriptionsCancel`                   | `id: SubscriptionID!`, optional `immediately: Boolean` (default `false`)                  | Updated subscription with cancellation reflected in `cancelAt`/`status`                         |
+| `subscriptionsResume`                   | `id: SubscriptionID!`                                                                     | `Subscription` with the cancellation taken back                                                 |
+| `subscriptionsExtraordinaryTermination` | `id: SubscriptionID!`, `reason: String!`                                                  | Subscription with a review request recorded in Stripe; no immediate cancellation                |
+| `subscriptionsLinkNamespace`            | `id: SubscriptionID!`, `namespaceId: NamespaceID!`                                        | Cloud subscription with verified namespace link and remote license sync                         |
 
-All five require an active session; anonymous requests are refused with HTTP `403` before the mutation runs.
+All six require an active session; anonymous requests are refused with HTTP `403` before the mutation runs.
 
 For `subscriptionsUpdate` and `subscriptionsPreviewUpdate`:
 
@@ -1144,6 +1179,10 @@ For an existing open invoice, `invoicePaymentSession(invoiceId: InvoiceID!)` ret
 `subscriptionsPreviewUpdate` previews a change to an existing subscription: an upgrade is charged immediately with a proration, so the client has to be able to name the amount before the user clicks. It reads only -- it retrieves the subscription, asks Stripe to preview an invoice, and returns. `SubscriptionUpdatePreview` contains the resolved `plan`, `paymentPeriod`, `aiTokens`, and `workflowExecutions`, plus `effectiveAt`, `immediate`, `prorationAmount`, `total`, and `currency`. Amounts are integers in the smallest currency unit and the preview is non-binding. Because it runs the same planner as `subscriptionsUpdate`, the `effectiveAt` it reports is the moment the update then actually establishes.
 
 `subscriptionsCancel` defaults to `cancel_at_period_end`, reflected by `cancelAt`. An immediate cancellation request is honored only within fourteen days of Stripe's subscription creation timestamp (falling back to local `created_at` for older rows); later requests become period-end cancellations. Existing licenses remain unchanged. `subscriptionsResume` removes a pending cancellation; terminal subscriptions return `INVALID_SUBSCRIPTION`, and a resume with nothing to undo is a successful no-op.
+
+`subscriptionsExtraordinaryTermination` requests a human review after the fourteen-day withdrawal window. It requires permission to update the subscription, rejects terminal subscriptions and subscriptions still eligible for immediate cancellation, and rejects another request while `termination_status` is present in live Stripe metadata. It writes `termination_status: requested`, `termination_reason`, and `termination_received_at`, then queues a receipt promising review within three weekdays. It does not cancel the subscription or issue a refund; Stripe failures return `INVALID_SUBSCRIPTION`.
+
+The reviewer performs the decision in Stripe. With termination metadata present, `customer.subscription.updated` sends the period-end cancellation outcome when a cancellation first becomes scheduled. `customer.subscription.deleted` sends the immediate-cancellation outcome unless a period-end outcome was already recorded locally. A best-effort lookup of the latest invoice's charge selects the refund/withdrawal email when a refund exists; no refund or a failed lookup selects the plain immediate-cancellation email. This lookup reports a refund already made in Stripe and never creates one.
 
 #### Licenses
 
@@ -1168,6 +1207,8 @@ Documented error codes:
 | Code                                    | Meaning                                                                                                                                                              |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GUEST_USER_CREATION_FAILED`            | Sagittarius could not create the guest user                                                                                                                          |
+| `MISSING_WITHDRAWAL_CONSENT`            | Personal checkout omitted the immediate-start consent                                                                                                                |
+| `TAX_ID_UNAVAILABLE`                    | Stripe could not reconcile the customer tax IDs                                                                                                                      |
 | `INVALID_EMAIL`                         | The email passed to guest creation is blank                                                                                                                          |
 | `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                                                                                                    |
 | `INVALID_CHECKOUT_CUSTOMER`             | The selected customer does not exist or is not accessible to the current user                                                                                        |

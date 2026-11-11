@@ -30,6 +30,10 @@ export const CUSTOMER_FIELDS = gql`
         id
         name
         phone
+        taxId {
+            taxIdType
+            taxIdValue
+        }
         updatedAt
     }
 `

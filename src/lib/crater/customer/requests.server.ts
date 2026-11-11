@@ -2,7 +2,7 @@ import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { craterJson } from "@/lib/crater/api.server"
 import { isCustomerId, isValidEmail, optionalString, readJsonObject, readOptionalAddress } from "@/lib/crater/request"
 import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/crater/values"
-import type { CustomerAddressCreateInput, CustomerAddressUpdateInput, CustomersCreateInput, CustomersUpdateInput } from "@code0-tech/crater-graphql-types"
+import type { CustomerAddressCreateInput, CustomerAddressUpdateInput, CustomersCreateInput, CustomersUpdateInput, CustomerTaxIdInput } from "@code0-tech/crater-graphql-types"
 import type { NextResponse } from "next/server"
 
 type RequestResult<T> = { data: T; response?: never } | { data?: never; response: NextResponse }
@@ -46,6 +46,19 @@ function readUpdateAddress(value: unknown): CustomerAddressUpdateInput | undefin
     return address
 }
 
+// Omitted leaves the tax IDs unchanged, null removes them, and an object keeps exactly that pair.
+function readUpdateTaxId(value: unknown): CustomerTaxIdInput | null | undefined | typeof INVALID_UPDATE_VALUE {
+    if (value === undefined || value === null) return value
+    if (typeof value !== "object" || Array.isArray(value)) return INVALID_UPDATE_VALUE
+
+    const source = value as Record<string, unknown>
+    const taxIdType = optionalString(source.taxIdType)
+    const taxIdValue = optionalString(source.taxIdValue)
+    if (!taxIdType || !taxIdValue) return INVALID_UPDATE_VALUE
+
+    return { taxIdType, taxIdValue }
+}
+
 export async function readCustomerCreateRequest(request: Request): Promise<RequestResult<CustomersCreateInput>> {
     const body = await readJsonObject(request)
     const customerType = normalizeCraterCustomerType(optionalString(body?.customerType))
@@ -84,6 +97,7 @@ export async function readCustomerUpdateRequest(request: Request): Promise<Reque
     const name = nullableString(body?.name)
     const phone = nullableString(body?.phone)
     const address = readUpdateAddress(body?.address)
+    const taxId = readUpdateTaxId(body?.taxId)
     if (body && "paymentMethods" in body) {
         return { response: craterJson({ error: "Replacing paymentMethods is not supported. Provide removePaymentMethodId instead." }, 400) }
     }
@@ -96,7 +110,11 @@ export async function readCustomerUpdateRequest(request: Request): Promise<Reque
         return { response: craterJson({ error: "A valid Crater customer id is required and address must be valid when provided." }, 400) }
     }
 
-    if (email === undefined && name === undefined && phone === undefined && address === undefined && removePaymentMethodId === undefined) {
+    if (taxId === INVALID_UPDATE_VALUE) {
+        return { response: craterJson({ error: "taxId must be null or an object with taxIdType and taxIdValue." }, 400) }
+    }
+
+    if (email === undefined && name === undefined && phone === undefined && address === undefined && taxId === undefined && removePaymentMethodId === undefined) {
         return { response: craterJson({ error: "Provide at least one customer field to update." }, 400) }
     }
 
@@ -108,6 +126,7 @@ export async function readCustomerUpdateRequest(request: Request): Promise<Reque
                 ...(email !== undefined ? { email } : {}),
                 ...(name !== undefined ? { name } : {}),
                 ...(phone !== undefined ? { phone } : {}),
+                ...(taxId !== undefined ? { taxId } : {}),
             },
             ...(typeof removePaymentMethodId === "string" ? { removePaymentMethodId: removePaymentMethodId.trim() } : {}),
         },

@@ -638,3 +638,39 @@ test("keeps Crater's execution error code and marks unavailable upstreams as ret
         })
     }
 })
+
+test("tax ID updates forward a complete pair, an explicit removal, or nothing", async () => {
+    const scenarios: Array<{ body: Record<string, unknown>; input: Record<string, unknown> }> = [
+        { body: { taxId: { taxIdType: " eu_vat ", taxIdValue: " DE123456789 " } }, input: { taxId: { taxIdType: "eu_vat", taxIdValue: "DE123456789" } } },
+        { body: { taxId: null }, input: { taxId: null } },
+        { body: { name: "Changed" }, input: { name: "Changed" } },
+    ]
+    for (const { body, input } of scenarios) {
+        await withGraphQLServer([updatedCustomerResponse], async (server) => {
+            assert.equal((await updateCustomer(removalRequest({ removePaymentMethodId: undefined, ...body }))).status, 200)
+            assert.deepEqual(server.requests[0].body.variables, { input: { id: "gid://crater/Customer/1", ...input } })
+            assert.match(server.requests[0].body.query ?? "", /taxId\s*{\s*taxIdType\s+taxIdValue\b/)
+        })
+    }
+})
+
+test("half-filled or malformed tax IDs are rejected before reaching Crater", async () => {
+    await withGraphQLServer([], async (server) => {
+        for (const taxId of [{ taxIdType: "eu_vat" }, { taxIdValue: "DE123456789" }, { taxIdType: " ", taxIdValue: "DE123456789" }, "DE123456789", [], 12]) {
+            const response = await updateCustomer(removalRequest({ removePaymentMethodId: undefined, taxId }))
+            assert.equal(response.status, 400)
+            assert.deepEqual(await response.json(), { error: "taxId must be null or an object with taxIdType and taxIdValue." })
+        }
+        assert.equal(server.requests.length, 0)
+    })
+})
+
+test("tax ID reconciliation failures keep Crater's error code", async () => {
+    for (const errorCode of ["TAX_ID_UNAVAILABLE", "INVALID_CUSTOMER"]) {
+        await withGraphQLServer([{ data: { customersUpdate: { customer: null, errors: [{ errorCode }] } } }], async () => {
+            const response = await updateCustomer(removalRequest({ removePaymentMethodId: undefined, taxId: { taxIdType: "eu_vat", taxIdValue: "DE123456789" } }))
+            assert.equal(response.status, 422)
+            assert.equal((await response.json()).errorCode, errorCode)
+        })
+    }
+})
