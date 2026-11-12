@@ -61,7 +61,7 @@ test("keeps the payment method UI pending while Stripe reports processing", asyn
     let successCalls = 0
 
     render(
-        <StripeProvider publicKey="pk_test_example">
+        <StripeProvider locale="en" publicKey="pk_test_example">
             <PaymentMethodSetupPendingStatus
                 content={content}
                 errorMessage={errorMessage}
@@ -87,7 +87,7 @@ for (const status of ["succeeded", "canceled"] as const) {
         let successCalls = 0
         render(
             <React.StrictMode>
-                <StripeProvider publicKey="pk_test_example">
+                <StripeProvider locale="en" publicKey="pk_test_example">
                     <PaymentMethodSetupPendingStatus content={content} errorMessage={errorMessage}
                         onSuccess={() => { successCalls += 1 }} retryLabel="Try again" clientSecret="seti_example_secret_example" />
                 </StripeProvider>

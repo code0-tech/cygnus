@@ -305,7 +305,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
 const { act, cleanup, render: renderComponent, screen, waitFor } = await import("@testing-library/react")
 const { StripeProvider } = await import("../../src/components/providers/StripeProvider")
 function render(ui: React.ReactNode) {
-    return renderComponent(ui, { wrapper: ({ children }) => <StripeProvider publicKey="pk_test_example">{children}</StripeProvider> })
+    return renderComponent(ui, { wrapper: ({ children }) => <StripeProvider locale="en" publicKey="pk_test_example">{children}</StripeProvider> })
 }
 const userEvent = (await import("@testing-library/user-event")).default
 const { CheckoutDiscount } = await import("../../src/components/checkout/summary/CheckoutSummary")

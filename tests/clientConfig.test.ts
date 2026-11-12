@@ -86,26 +86,33 @@ test("initializes Stripe lazily with the server-provided key and reuses each SDK
         observed.push(useStripePromise(mode))
         return null
     }
-    const { rerender } = render(createElement(StripeProvider, { publicKey: "pk_test_runtime", children: null }))
+    const { rerender } = render(createElement(StripeProvider, { locale: "en", publicKey: "pk_test_runtime", children: null }))
     assert.equal(loads.length, 0)
     const children = [
         createElement(Consumer, { key: "billing", mode: "checkout" }),
         createElement(Consumer, { key: "payment", mode: "checkout" }),
         createElement(Consumer, { key: "setup", mode: "paymentMethod" }),
     ]
-    rerender(createElement(StripeProvider, { publicKey: "pk_test_runtime", children }))
+    rerender(createElement(StripeProvider, { locale: "en", publicKey: "pk_test_runtime", children }))
     assert.deepEqual(loads, [
         { key: "pk_test_runtime", options: { betas: ["custom_checkout_tax_id_1"], locale: "en" } },
-        { key: "pk_test_runtime", options: undefined },
+        { key: "pk_test_runtime", options: { locale: "en" } },
     ])
     assert.equal(observed[0], observed[1])
     assert.notEqual(observed[0], observed[2])
-    rerender(createElement(StripeProvider, { publicKey: "pk_test_runtime", children: [...children] }))
+    rerender(createElement(StripeProvider, { locale: "en", publicKey: "pk_test_runtime", children: [...children] }))
     assert.equal(loads.length, 2)
 
-    rerender(createElement(StripeProvider, { publicKey: "pk_live_runtime", children: [...children] }))
+    rerender(createElement(StripeProvider, { locale: "en", publicKey: "pk_live_runtime", children: [...children] }))
     assert.equal(loads.length, 4)
     assert.ok(loads.slice(2).every(({ key }) => key === "pk_live_runtime"))
+
+    // German pages load Stripe in German, for the checkout and for payment method setup.
+    rerender(createElement(StripeProvider, { locale: "de", publicKey: "pk_live_runtime", children: [...children] }))
+    assert.deepEqual(loads.slice(4), [
+        { key: "pk_live_runtime", options: { betas: ["custom_checkout_tax_id_1"], locale: "de" } },
+        { key: "pk_live_runtime", options: { locale: "de" } },
+    ])
 })
 
 test("keeps Stripe unavailable when the server provides no public key", () => {
@@ -114,7 +121,7 @@ test("keeps Stripe unavailable when the server provides no public key", () => {
         promise = useStripePromise("checkout")
         return null
     }
-    render(createElement(StripeProvider, { publicKey: null, children: createElement(Consumer) }))
+    render(createElement(StripeProvider, { locale: "en", publicKey: null, children: createElement(Consumer) }))
     assert.equal(promise, null)
     assert.equal(loads.length, 0)
 })
