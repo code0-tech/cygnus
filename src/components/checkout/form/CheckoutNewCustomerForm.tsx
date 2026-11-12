@@ -19,7 +19,7 @@ interface CheckoutNewCustomerFormProps {
 
 export function CheckoutNewCustomerForm({ customerSelect, onSubmit, sendOffer }: CheckoutNewCustomerFormProps) {
     const emailInputId = useId()
-    const { content, guestEmail, isLoading, setStripeBillingAddress, setStripeEmail, stripeBillingAddress, stripeBillingAddressComplete, stripeEmail, stripeEmailComplete } = useCheckoutFormState()
+    const { content, customerType, guestEmail, isLoading, setStripeBillingAddress, setStripeEmail, stripeBillingAddress, stripeBillingAddressComplete, stripeEmail, stripeEmailComplete } = useCheckoutFormState()
     const [isAddressReady, setIsAddressReady] = useState(false)
     // Read once on mount, after the draft has been restored: the Address Element only applies default values when it
     // mounts, so the address a visitor already entered (or restored from the draft) is shown again instead of an empty form.
@@ -56,7 +56,7 @@ export function CheckoutNewCustomerForm({ customerSelect, onSubmit, sendOffer }:
                 <h3 className="text-lg text-white">{content.billingHeading}</h3>
                 <StripeElementSlot heightKey="billingAddress" ready={isAddressReady}>
                     <AddressElement
-                        options={{ mode: "billing", display: { name: "full" }, defaultValues: defaultBillingAddress }}
+                        options={{ mode: "billing", display: { name: customerType === "business" ? "organization" : "full" }, defaultValues: defaultBillingAddress }}
                         onChange={(event) => setStripeBillingAddress({ name: event.value.name, address: event.value.address }, event.complete)}
                         onReady={() => setIsAddressReady(true)}
                     />

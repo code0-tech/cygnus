@@ -15,7 +15,7 @@ The current branch uses a consolidated migration baseline: twelve migrations fro
 
 The baseline omits `licenses.seats`, `licenses.runtime_minutes`, and `licenses.status`, and includes a separate `payment_methods` table for cached display details. The subscription keeps `cancel_at`, `stripe_schedule_id`, and the `pending_*` columns. Migration `20261008120000_add_stripe_created_at_to_subscriptions.rb` adds nullable `stripe_created_at`, projected from Stripe's subscription creation timestamp to anchor the immediate-cancellation deadline. Existing rows fall back to their local `created_at` until a Stripe projection supplies that timestamp. `custom_checkout_configurations` and the invoice Lexware columns still exist in the database; their presence does not make them public GraphQL fields.
 
-Migration `20261108120000_create_consents.rb` adds checkout consent records linked to customers and subscriptions. Migration `20261111120000_add_tax_id_to_customers.rb` adds nullable `stripe_tax_id_id`, `tax_id_type`, and `tax_id_value` columns for the customer's current tax ID; existing rows are not backfilled automatically.
+Migration `20261111120000_add_tax_id_to_customers.rb` adds nullable `stripe_tax_id_id`, `tax_id_type`, and `tax_id_value` columns for the customer's current tax ID; existing rows are not backfilled automatically.
 
 ## Domain model
 
@@ -289,23 +289,9 @@ That is why `checkoutCreateSession` has no `promotionCode` argument. A discount 
 
 Crater no longer exposes `checkoutValidateDiscount`, `CheckoutDiscount`, or `INVALID_DISCOUNT_CODE`. The frontend uses the result of applying the code to the actual Stripe session.
 
-#### Personal checkout consent
+#### Personal checkout
 
-For a personal customer, Cygnus must collect an explicit immediate-start withdrawal consent before calling `checkoutCreateSession` and send:
-
-```graphql
-withdrawalConsent: {
-  consentTextVersion: "v1"
-  termsVersion: "v1"
-  locale: "de"
-}
-```
-
-The input object is optional in the schema because business customers do not need it, but personal checkout without it returns `MISSING_WITHDRAWAL_CONSENT` before Stripe is called. All three fields are required when the object is supplied. Business checkout ignores this input. There is no acceptance boolean in the API: the frontend should submit the object only after the user explicitly agrees.
-
-Crater stamps the server acceptance time and supplied versions/locale into Stripe subscription metadata. On `checkout.session.completed`, it appends one immutable `Consent` per subscription and consent type, linked to the customer. Replayed completion events do not overwrite it. A failed consent save is logged without undoing the subscription projection.
-
-The paid-invoice email includes the stored acceptance details and available matching versions of the terms and withdrawal policy from `app/legal/<kind>/<locale>/<version>.txt`. Missing documents are skipped without failing delivery. The committed German `v1` documents are placeholders, as documented in `app/legal/README.md`; new legal versions should use new files so earlier consents retain their original reference.
+`checkoutCreateSession` no longer accepts `withdrawalConsent`; personal checkouts can be created without this input. Cygnus must remove the argument and its generated input type from checkout operations. `MISSING_WITHDRAWAL_CONSENT` is no longer part of the API. Crater does not persist checkout consent records or embed versioned terms and withdrawal-policy documents in paid-invoice emails. The consent model, migration, and `app/legal` document loader were removed by the revert.
 
 ### The checkout completion status
 
@@ -686,7 +672,7 @@ Nothing directly. Licenses stay append-only, and a plan change rewrites no exist
 
 **A change never writes a license, not even an immediate upgrade.** The entitlements of the new plan reach the user through the next `invoice.paid` snapshot, which is the only event that grants paid access. This keeps a single writer for the license chain: a plan the user was upgraded to but has not been invoiced for yet does not silently become an entitlement, and there is no snapshot that would have to be revoked if the proration invoice then fails.
 
-On cancellation, existing license dates stay unchanged and no canceled snapshot is created. `immediately: true` cancels the Stripe subscription immediately only while `Subscription#immediate_cancellation_available?` is true; outside that window it becomes a period-end cancellation. The deadline is fourteen days after `stripe_created_at`, falling back to the local `created_at` until Stripe's creation timestamp is available. The deadline itself is inclusive; terminal subscriptions (`canceled`, `incomplete_expired`) are never eligible. GraphQL exposes the same calculation through `immediateCancellationAvailable` and `immediateCancellationUntil`, so the frontend can show the option and deadline before submitting a cancellation. The cancellation mutation applies this timing check to both customer types and makes no separate refund call. Personal checkout now records immediate-start consent separately; that record does not alter this cancellation eligibility check.
+On cancellation, existing license dates stay unchanged and no canceled snapshot is created. `immediately: true` cancels the Stripe subscription immediately only while `Subscription#immediate_cancellation_available?` is true; outside that window it becomes a period-end cancellation. The deadline is fourteen days after `stripe_created_at`, falling back to the local `created_at` until Stripe's creation timestamp is available. The deadline itself is inclusive; terminal subscriptions (`canceled`, `incomplete_expired`) are never eligible. GraphQL exposes the same calculation through `immediateCancellationAvailable` and `immediateCancellationUntil`, so the frontend can show the option and deadline before submitting a cancellation. The cancellation mutation applies this timing check to both customer types and makes no separate refund call.
 
 ### Webhook processing
 
@@ -1123,9 +1109,9 @@ Its behaviour:
 
 #### Checkout
 
-| Mutation                | Key arguments                                                                                                                                                                        | Result                                                    |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| `checkoutCreateSession` | `customerId!`, `deploymentType!`, `plan!`, `paymentPeriod!`, `returnUrl!`; optional quantities, `namespaceId`, `referral`, and `withdrawalConsent` (required for personal customers) | Embedded `CheckoutSession` with a frontend `clientSecret` |
+| Mutation                | Key arguments                                                                                                                 | Result                                                    |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `checkoutCreateSession` | `customerId!`, `deploymentType!`, `plan!`, `paymentPeriod!`, `returnUrl!`; optional quantities, `namespaceId`, and `referral` | Embedded `CheckoutSession` with a frontend `clientSecret` |
 
 For `checkoutCreateSession`:
 
@@ -1207,7 +1193,6 @@ Documented error codes:
 | Code                                    | Meaning                                                                                                                                                              |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GUEST_USER_CREATION_FAILED`            | Sagittarius could not create the guest user                                                                                                                          |
-| `MISSING_WITHDRAWAL_CONSENT`            | Personal checkout omitted the immediate-start consent                                                                                                                |
 | `TAX_ID_UNAVAILABLE`                    | Stripe could not reconcile the customer tax IDs                                                                                                                      |
 | `INVALID_EMAIL`                         | The email passed to guest creation is blank                                                                                                                          |
 | `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                                                                                                    |

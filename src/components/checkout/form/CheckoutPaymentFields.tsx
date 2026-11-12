@@ -79,7 +79,8 @@ export function CheckoutPaymentFields({
     const [isAddressElementReady, setIsAddressElementReady] = useState(false)
     const [isTaxIdElementReady, setIsTaxIdElementReady] = useState(!collectTaxId)
     const [taxIdDraft, setTaxIdDraft] = useState<CheckoutTaxIdDraft | null>(null)
-    const isTaxIdIncomplete = collectTaxId && (!taxIdDraft?.value.businessName.trim() || !taxIdDraft.complete)
+    // The tax ID is optional; only a partially entered one holds the checkout back.
+    const isTaxIdIncomplete = collectTaxId && taxIdDraft !== null && taxIdDraft.visible && !taxIdDraft.empty && !taxIdDraft.complete
     const checkoutErrorMessage = checkoutState.type === "error" ? checkoutState.error.message : null
     const liveStripePricing = checkoutState.type === "success" ? getStripePricingFromSession(checkoutState.checkout) : null
     const restoredBillingRef = useRef(false)
@@ -335,7 +336,8 @@ export function CheckoutPaymentFields({
                                     Element stays mounted on the payment step. Stripe refills the others from the session. */}
                                 {activeStep === "billingAddress" && (
                                     <BillingAddressElement
-                                        options={{ display: { name: "full" } }}
+                                        // Business customers enter their company name here instead of a person's name.
+                                        options={{ display: { name: isBusinessCustomer ? "organization" : "full" } }}
                                         onChange={(event) => {
                                             setIsBillingAddressComplete(event.complete)
                                             onAddressChange({ name: event.value.name, address: event.value.address }, event.complete)
@@ -346,7 +348,7 @@ export function CheckoutPaymentFields({
                                 )}
                                 {collectTaxId && (
                                     <TaxIdElement
-                                        options={{ fields: { businessName: "always" }, visibility: "always", validation: { businessName: { required: "always" }, taxId: { required: "never" } } }}
+                                        options={{ fields: { businessName: "never" }, visibility: "always", validation: { taxId: { required: "never" } } }}
                                         onChange={(event) => setTaxIdDraft({ complete: event.complete, empty: event.empty, value: event.value, visible: event.visible })}
                                         onLoaderStart={markTaxIdElementLoading}
                                         onReady={markTaxIdElementReady}
@@ -388,7 +390,6 @@ export function CheckoutPaymentFields({
                     {billingAddress && (
                         <CheckoutBillingSummary
                             billingAddress={billingAddress}
-                            businessName={collectTaxId ? (taxIdDraft ? taxIdDraft.value.businessName : checkoutState.checkout.taxIdInfo?.businessName) : null}
                             taxId={collectTaxId ? (taxIdDraft ? taxIdDraft.value.taxId : checkoutState.checkout.taxIdInfo?.taxId.value) : null}
                             changeLabel={content.billingChangeLabel}
                             disabled={isConfirming}

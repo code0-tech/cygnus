@@ -39,10 +39,10 @@ test("disables change while a payment is being confirmed", () => {
     assert.equal((screen.getByRole("button", { name: "Change" }) as HTMLButtonElement).disabled, true)
 })
 
-test("includes the business name and tax ID without duplicating the contact name", () => {
-    const { container, rerender } = render(<CheckoutBillingSummary billingAddress={billingAddress} businessName="Code0 GmbH" taxId="DE123456789" changeLabel="Change" onChange={() => {}} />)
-    assert.deepEqual([...container.querySelectorAll("p")].map(line => line.textContent), ["Code0 GmbH", billingAddress.name, ...formatBillingAddressLines(billingAddress), "DE123456789"])
-    rerender(<CheckoutBillingSummary billingAddress={billingAddress} businessName={billingAddress.name} taxId="" changeLabel="Change" onChange={() => {}} />)
+test("adds the tax ID below the address and omits an empty one", () => {
+    const { container, rerender } = render(<CheckoutBillingSummary billingAddress={billingAddress} taxId="DE123456789" changeLabel="Change" onChange={() => {}} />)
+    assert.deepEqual([...container.querySelectorAll("p")].map(line => line.textContent), [billingAddress.name, ...formatBillingAddressLines(billingAddress), "DE123456789"])
+    rerender(<CheckoutBillingSummary billingAddress={billingAddress} taxId="" changeLabel="Change" onChange={() => {}} />)
     assert.equal(container.querySelectorAll("p").length, 3)
 })
 

@@ -5,7 +5,6 @@ import type { StripeCheckoutContact } from "@stripe/stripe-js"
 
 interface CheckoutBillingSummaryProps {
     billingAddress: StripeCheckoutContact
-    businessName?: string | null
     taxId?: string | null
     changeLabel: string
     disabled?: boolean
@@ -17,11 +16,10 @@ export function formatBillingAddressLines({ address }: StripeCheckoutContact) {
     return [address.line1, address.line2, locality].filter((line): line is string => Boolean(line))
 }
 
-export function CheckoutBillingSummary({ billingAddress, businessName, taxId, changeLabel, disabled = false, onChange }: CheckoutBillingSummaryProps) {
+export function CheckoutBillingSummary({ billingAddress, taxId, changeLabel, disabled = false, onChange }: CheckoutBillingSummaryProps) {
     return (
         <Card className="flex! items-center justify-between gap-4 bg-light! p-4!">
             <div className="min-w-0 space-y-0.5">
-                {businessName?.trim() && businessName.trim() !== billingAddress.name?.trim() && <p className="truncate text-[13px] text-white">{businessName.trim()}</p>}
                 {billingAddress.name && <p className="truncate text-[13px] text-white">{billingAddress.name}</p>}
                 {formatBillingAddressLines(billingAddress).map((line) => (
                     <p key={line} className="truncate text-xs text-tertiary">

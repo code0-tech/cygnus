@@ -590,6 +590,8 @@ test("creates a customer with contact details only when continuing to payment", 
     const user = userEvent.setup()
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
     await screen.findByTestId("standalone-address")
+    // Personal customers keep the full name field.
+    assert.deepEqual((standaloneAddressOptions as { display?: unknown } | null)?.display, { name: "full" })
     assert.equal(requests.length, 1)
     assert.equal(checkoutProviderOptions, null)
     assert.equal((screen.getByRole("button", { name: content.continueLabel }) as HTMLButtonElement).disabled, true)
@@ -1057,13 +1059,14 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     assert.ok(screen.getByTestId("stripe-billing-address"))
     assert.ok(screen.getByTestId("stripe-tax-id"))
     assert.ok(screen.getByRole("button", { name: content.sendOfferLabel }))
-    assert.deepEqual(taxIdElementOptions, { fields: { businessName: "always" }, visibility: "always", validation: { businessName: { required: "always" }, taxId: { required: "never" } } })
+    // The company name is the billing address name; the Tax ID Element only collects the optional tax ID.
+    assert.deepEqual(billingAddressOptions, { display: { name: "organization" } })
+    assert.deepEqual(taxIdElementOptions, { fields: { businessName: "never" }, visibility: "always", validation: { taxId: { required: "never" } } })
     assert.deepEqual(stripeLoadOptions, { betas: ["custom_checkout_tax_id_1"], locale: "en" })
-    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
-    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
-    const taxIdValue = { businessName: "Code0 GmbH", externalTaxIdType: "eu_vat", taxId: "DE123456789", taxIdType: "de_vat" }
-    act(() => taxIdElementOnChange?.({ complete: true, empty: true, value: { ...taxIdValue, businessName: "   ", taxId: "" }, visible: true }))
-    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
+    const companyBillingAddress = { ...stripeBillingAddress, name: "Code0 GmbH" }
+    act(() => billingAddressOnChange?.({ complete: true, value: companyBillingAddress }))
+    assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, false)
+    const taxIdValue = { businessName: "", externalTaxIdType: "eu_vat", taxId: "DE123456789", taxIdType: "de_vat" }
     act(() => taxIdElementOnChange?.({ complete: false, empty: false, value: { ...taxIdValue, taxId: "DE1" }, visible: true }))
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, true)
     act(() => taxIdElementOnChange?.({ complete: true, empty: false, value: taxIdValue, visible: true }))
@@ -1093,9 +1096,9 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     assert.ok(screen.getByTestId("stripe-billing-address"))
     act(() => billingAddressOnReady?.())
     assert.equal(billingAddressFocus.mock.callCount(), focusCount + 1)
-    // A business name alone is sufficient: VAT registration is optional.
-    act(() => taxIdElementOnChange?.({ complete: true, empty: false, value: { ...taxIdValue, taxId: "", taxIdType: "", externalTaxIdType: "" }, visible: true }))
-    act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
+    // VAT registration is optional: clearing the tax ID still allows continuing.
+    act(() => taxIdElementOnChange?.({ complete: true, empty: true, value: { ...taxIdValue, taxId: "", taxIdType: "", externalTaxIdType: "" }, visible: true }))
+    act(() => billingAddressOnChange?.({ complete: true, value: companyBillingAddress }))
     assert.equal((screen.getByRole("button", { name: "Continue to payment" }) as HTMLButtonElement).disabled, false)
     await user.click(screen.getByRole("button", { name: "Continue to payment" }))
     assert.ok(await screen.findByTestId("stripe-payment"))
@@ -1103,8 +1106,8 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
     act(() => paymentElementOnReady?.())
     act(() => paymentElementOnChange?.({ complete: true }))
     assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, false)
-    // Losing the name blocks confirmation even if the billing step is already hidden.
-    act(() => taxIdElementOnChange?.({ complete: false, empty: true, value: { ...taxIdValue, businessName: "", taxId: "" }, visible: true }))
+    // A partially entered tax ID blocks confirmation even if the billing step is already hidden.
+    act(() => taxIdElementOnChange?.({ complete: false, empty: false, value: { ...taxIdValue, taxId: "DE1" }, visible: true }))
     assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, true)
 })
 
