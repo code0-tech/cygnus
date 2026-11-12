@@ -1,4 +1,5 @@
 import type { SubscriptionUpdateResult } from "@/lib/subscription/types"
+import type { ExtraordinaryTerminationReason } from "@/lib/subscription/terminationReasons"
 import { resolveCustomerRouteId, resolveSubscriptionRouteId } from "@/lib/licenses/routes"
 import type { CustomerPaymentMethodSummary, LicenseDashboardData } from "@/lib/licenses/types"
 import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
@@ -117,6 +118,16 @@ export function cancelLicenseSubscription(id: string, errorMessage: string, imme
 
 export function resumeLicenseSubscription(id: string, errorMessage: string) {
     return updateLicenseSubscription("/api/crater/subscriptions/resume", id, errorMessage)
+}
+
+export async function requestExtraordinaryTermination(id: string, reason: ExtraordinaryTerminationReason, errorMessage: string) {
+    const response = await fetch("/api/crater/subscriptions/extraordinary-termination", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id, reason }),
+    })
+    if (!response.ok) throw new Error(errorMessage)
 }
 
 export async function createPaymentMethodSetup(customerId: string, errorMessage: string) {

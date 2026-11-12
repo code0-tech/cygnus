@@ -12,6 +12,8 @@ const updates: unknown[] = []
 const notifications: Array<{ title: string; color: string; children?: string }> = []
 const closes: string[] = []
 const passthrough = ({ children }: { children?: ReactNode }) => <div>{children}</div>
+// Selecting an option has to reach the select's onValueChange, so the items render as clickable options.
+const SelectContext = React.createContext<((value: string) => void) | undefined>(undefined)
 mock.module("@code0-tech/pictor", {
     namedExports: {
         Alert: ({ children, color, ...props }: React.HTMLAttributes<HTMLDivElement> & { color?: string }) => <div role={color === "error" ? "alert" : "status"} aria-live={color === "error" ? "assertive" : "polite"} {...props}>{children}</div>,
@@ -20,13 +22,16 @@ mock.module("@code0-tech/pictor", {
         Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,
         Flex: passthrough,
         Text: ({ children, role }: { children?: ReactNode; role?: string }) => <span role={role}>{children}</span>,
-        SelectInput: passthrough,
+        SelectInput: ({ children, onValueChange }: { children?: ReactNode; onValueChange?: (value: string) => void }) => <SelectContext.Provider value={onValueChange}><div>{children}</div></SelectContext.Provider>,
         SelectTrigger: passthrough,
         SelectValue: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
         SelectPortal: passthrough,
         SelectContent: passthrough,
         SelectViewport: passthrough,
-        SelectItem: passthrough,
+        SelectItem: function SelectItem({ children, value }: { children?: ReactNode; value: string }) {
+            const onValueChange = React.useContext(SelectContext)
+            return <div role="option" aria-selected={false} onClick={() => onValueChange?.(value)}>{children}</div>
+        },
         SelectItemText: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
     },
 })
@@ -88,9 +93,24 @@ const content = {
         pendingHeading: "Your subscription is set to cancel",
         pendingDescription: "The subscription ends on the date below.",
         cancelAtLabel: "Subscription ends",
+        extraordinaryLabel: "Terminate for cause",
+        extraordinaryDescription: "We review your request within three business days.",
+        extraordinaryReasonPlaceholder: "Select a reason",
+        extraordinarySubmitLabel: "Submit termination request",
+        extraordinaryRequestedDescription: "Your request is being reviewed.",
+        extraordinaryReasons: {
+            ProlongedOutage: "Prolonged outage",
+            UnresolvedMaterialDefect: "Unresolved defect",
+            CoreFeatureRemoved: "Core feature removed",
+            DataBreachByProvider: "Data breach",
+            BreachOfContractualCommitment: "Breach of contract",
+            DpaViolation: "DPA violation",
+            UnjustifiedSuspension: "Unjustified suspension",
+            Other: "Other good cause",
+        },
     },
 } as unknown as LicenseContent
-const errors = { subscriptionCancel: "Cancellation failed", subscriptionResume: "Resume failed" } as ErrorsContent
+const errors = { subscriptionCancel: "Cancellation failed", subscriptionResume: "Resume failed", extraordinaryTermination: "Termination request failed" } as ErrorsContent
 const subscriptionConfig = { paymentPeriod: { monthlyText: "Monthly", quarterlyText: "Quarterly", yearlyText: "Yearly" } } as unknown as SubscriptionConfigData
 
 afterEach(() => {
@@ -262,4 +282,56 @@ test("reports cancellation failures only through a toast without updating local 
     assert.equal(updates.length, 0)
     assert.equal(closes.length, 0)
     assert.deepEqual(notifications, [{ title: licenseToastContent.errorTitle, color: "error", children: "Cancellation failed" }])
+})
+
+test("extraordinary termination is only offered after the withdrawal window", () => {
+    show(true)
+    assert.equal(screen.queryByRole("button", { name: "Terminate for cause" }), null)
+    cleanup()
+    show(false, undefined, "CANCELED")
+    assert.equal(screen.queryByRole("button", { name: "Terminate for cause" }), null)
+    cleanup()
+    // A scheduled period-end cancellation can still be escalated to a reviewed termination.
+    show(false, "2026-11-01T00:00:00Z")
+    assert.ok(screen.getByRole("button", { name: "Terminate for cause" }))
+})
+
+test("an extraordinary termination needs a reason and sends its code without changing the subscription", async () => {
+    const requests: Array<{ url: string; body: unknown }> = []
+    globalThis.fetch = (async (input, options) => {
+        requests.push({ url: String(input), body: JSON.parse(String(options?.body)) })
+        return new Response(JSON.stringify({ status: "ACTIVE" }))
+    }) as typeof fetch
+    show(false)
+
+    fireEvent.click(screen.getByRole("button", { name: "Terminate for cause" }))
+    const submit = screen.getByRole("button", { name: "Submit termination request" })
+    assert.equal(submit.getAttribute("data-color"), "error")
+    assert.equal((submit as HTMLButtonElement).disabled, true)
+    fireEvent.click(submit)
+    assert.equal(requests.length, 0)
+
+    fireEvent.click(screen.getByRole("option", { name: "DPA violation" }))
+    fireEvent.click(screen.getByRole("button", { name: "Submit termination request" }))
+
+    await waitFor(() => assert.equal(notifications.length, 1))
+    assert.deepEqual(requests, [{ url: "/api/crater/subscriptions/extraordinary-termination", body: { id: license.subscriptionId, reason: "DpaViolation" } }])
+    assert.equal(notifications[0].title, "Termination request received")
+    assert.equal(updates.length, 0)
+    assert.ok(screen.getByText(content.cancel.extraordinaryRequestedDescription))
+    assert.equal(screen.queryByRole("button", { name: "Terminate for cause" }), null)
+})
+
+test("a refused extraordinary termination is reported and can be retried", async () => {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ errorCode: "INVALID_SUBSCRIPTION" }), { status: 422 })) as typeof fetch
+    show(false)
+
+    fireEvent.click(screen.getByRole("button", { name: "Terminate for cause" }))
+    fireEvent.click(screen.getByRole("option", { name: "Other good cause" }))
+    fireEvent.click(screen.getByRole("button", { name: "Submit termination request" }))
+
+    await waitFor(() => assert.equal(notifications.length, 1))
+    assert.deepEqual(notifications, [{ title: licenseToastContent.errorTitle, color: "error", children: "Termination request failed" }])
+    assert.equal(screen.queryByText(content.cancel.extraordinaryRequestedDescription), null)
+    assert.equal((screen.getByRole("button", { name: "Submit termination request" }) as HTMLButtonElement).disabled, false)
 })

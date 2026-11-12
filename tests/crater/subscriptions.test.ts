@@ -4,6 +4,7 @@ import { PATCH as updateSubscription } from "../../src/app/api/crater/subscripti
 import { POST as previewSubscriptionUpdate } from "../../src/app/api/crater/subscriptions/preview/route"
 import { POST as cancelSubscription } from "../../src/app/api/crater/subscriptions/cancel/route"
 import { POST as resumeSubscription } from "../../src/app/api/crater/subscriptions/resume/route"
+import { POST as requestExtraordinaryTermination } from "../../src/app/api/crater/subscriptions/extraordinary-termination/route"
 import { withGraphQLServer } from "../helpers/graphqlTestServer"
 import { parseSubscriptionChangeFields } from "../../src/lib/crater/request"
 
@@ -62,6 +63,7 @@ const subscriptionRoutes = [
     { handler: previewSubscriptionUpdate, method: "POST", mutation: "subscriptionsPreviewUpdate", resource: "preview", fields: { plan: "max" } },
     { handler: cancelSubscription, method: "POST", mutation: "subscriptionsCancel", resource: "subscription", fields: {} },
     { handler: resumeSubscription, method: "POST", mutation: "subscriptionsResume", resource: "subscription", fields: {} },
+    { handler: requestExtraordinaryTermination, method: "POST", mutation: "subscriptionsExtraordinaryTermination", resource: "subscription", fields: { reason: "ProlongedOutage" } },
 ]
 
 test("shared subscription request parsing rejects malformed bodies without contacting Crater", async () => {
@@ -101,6 +103,8 @@ test("resource mutations reject incomplete success payloads and preserve domain 
 })
 
 test("subscription routes reject invalid requests before calling Crater", async () => {
+    // Its own session, so these requests do not use up the rate limit budget the later tests share.
+    const terminationValidationHeaders = { ...sessionHeaders, authorization: "Session termination_validation" }
     const cases = [
         { name: "update without session", handler: updateSubscription, method: "PATCH", headers: { "content-type": "application/json" }, body: { id: subscriptionId, plan: "max" }, status: 403 },
         { name: "update without id", handler: updateSubscription, method: "PATCH", body: { plan: "max" }, status: 400, error: "A valid Crater subscription id is required." },
@@ -115,6 +119,15 @@ test("subscription routes reject invalid requests before calling Crater", async 
         { name: "update with unknown period", handler: updateSubscription, method: "PATCH", body: { id: subscriptionId, paymentPeriod: "biannual" }, status: 400, error: "paymentPeriod must be monthly, quarterly, or yearly." },
         { name: "preview with invalid id", handler: previewSubscriptionUpdate, method: "POST", body: { id: "not-a-subscription-id", plan: "max" }, status: 400 },
         { name: "resume without id", handler: resumeSubscription, method: "POST", body: {}, status: 400 },
+        { name: "extraordinary termination without reason", handler: requestExtraordinaryTermination, method: "POST", headers: terminationValidationHeaders, body: { id: subscriptionId }, status: 400 },
+        {
+            name: "extraordinary termination with free-text reason",
+            handler: requestExtraordinaryTermination,
+            method: "POST",
+            headers: terminationValidationHeaders,
+            body: { id: subscriptionId, reason: "I just want out" },
+            status: 400,
+        },
     ]
 
     for (const { name, handler, method, headers = sessionHeaders, body, status, error } of cases) {
@@ -380,6 +393,46 @@ test("resumes a cancelled subscription", async () => {
         const body = (await response.json()) as { cancelAt: null }
         assert.equal(body.cancelAt, null)
     })
+})
+
+test("requests an extraordinary termination with the selected reason code", async () => {
+    await withGraphQLServer(
+        [{ data: { subscriptionsExtraordinaryTermination: { errors: [], subscription: { cancelAt: null, canceledAt: null, id: subscriptionId, status: "ACTIVE" } } } }],
+        async (graphQLServer) => {
+            const response = await requestExtraordinaryTermination(
+                new Request("https://example.com/api/crater/subscriptions/extraordinary-termination", {
+                    method: "POST",
+                    headers: { ...sessionHeaders, authorization: "Session termination_request" },
+                    body: JSON.stringify({ id: subscriptionId, reason: "DpaViolation" }),
+                })
+            )
+
+            assert.equal(response.status, 200)
+            assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionsExtraordinaryTermination")
+            assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, reason: "DpaViolation" } })
+            assert.equal((await response.json()).status, "ACTIVE")
+        }
+    )
+})
+
+test("preserves the domain error when Crater refuses an extraordinary termination", async () => {
+    await withGraphQLServer(
+        [{ data: { subscriptionsExtraordinaryTermination: { errors: [{ errorCode: "INVALID_SUBSCRIPTION" }], subscription: null } } }],
+        async () => {
+            const response = await requestExtraordinaryTermination(
+                new Request("https://example.com/api/crater/subscriptions/extraordinary-termination", {
+                    method: "POST",
+                    headers: { ...sessionHeaders, authorization: "Session termination_refused" },
+                    body: JSON.stringify({ id: subscriptionId, reason: "Other" }),
+                })
+            )
+
+            assert.equal(response.status, 422)
+            const body = await response.json()
+            assert.equal(body.errorCode, "INVALID_SUBSCRIPTION")
+            assert.equal(body.error, "Crater could not record the extraordinary termination.")
+        }
+    )
 })
 
 test("subscription changes reject unknown plans before calling Crater", async () => {

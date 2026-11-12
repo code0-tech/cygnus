@@ -7,6 +7,7 @@ import { PATCH as updateSubscription } from "../../src/app/api/crater/subscripti
 import { POST as cancelSubscription } from "../../src/app/api/crater/subscriptions/cancel/route"
 import { POST as previewSubscription } from "../../src/app/api/crater/subscriptions/preview/route"
 import { POST as resumeSubscription } from "../../src/app/api/crater/subscriptions/resume/route"
+import { POST as requestExtraordinaryTermination } from "../../src/app/api/crater/subscriptions/extraordinary-termination/route"
 
 type RouteHandler = (request: Request) => Promise<Response>
 
@@ -18,6 +19,7 @@ const limitedRoutes: Array<{ name: string; envPrefix: string; handler: RouteHand
     { name: "subscription update", envPrefix: "CRATER_SUBSCRIPTION", handler: updateSubscription, method: "PATCH", path: "/api/crater/subscriptions" },
     { name: "subscription cancellation", envPrefix: "CRATER_SUBSCRIPTION", handler: cancelSubscription, method: "POST", path: "/api/crater/subscriptions/cancel" },
     { name: "subscription resumption", envPrefix: "CRATER_SUBSCRIPTION", handler: resumeSubscription, method: "POST", path: "/api/crater/subscriptions/resume" },
+    { name: "extraordinary termination", envPrefix: "CRATER_SUBSCRIPTION", handler: requestExtraordinaryTermination, method: "POST", path: "/api/crater/subscriptions/extraordinary-termination" },
     { name: "subscription preview", envPrefix: "CRATER_SUBSCRIPTION_PREVIEW", handler: previewSubscription, method: "POST", path: "/api/crater/subscriptions/preview" },
     { name: "invoice preview", envPrefix: "CRATER_INVOICE_PREVIEW", handler: previewInvoice, method: "GET", path: "/api/crater/invoices/preview" },
 ]

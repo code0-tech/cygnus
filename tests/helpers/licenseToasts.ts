@@ -11,6 +11,7 @@ export const licenseToastContent: LicenseToastsContent = {
     canceled: entry("Subscription canceled"),
     cancellationScheduled: entry("Cancellation scheduled", "Access ends on {date}."),
     resumed: entry("Cancellation withdrawn"),
+    terminationRequested: entry("Termination request received"),
     paymentAssigned: entry("Payment method updated"),
     paymentRemoved: entry("Payment method removed"),
     paymentConfirmed: entry("Payment method added"),

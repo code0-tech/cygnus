@@ -88,6 +88,15 @@ export const LicenseToasts: GlobalConfig = {
             ]
         ),
         toast(
+            "terminationRequested",
+            "Termination requested",
+            ["Termination request received", "Kündigungsantrag eingegangen"],
+            [
+                "We review your request within three business days and send you a confirmation by email. Your subscription stays active until then.",
+                "Wir prüfen deinen Antrag innerhalb von drei Werktagen und senden dir eine Bestätigung per E-Mail. Bis dahin bleibt dein Abo aktiv.",
+            ]
+        ),
+        toast(
             "paymentAssigned",
             "Payment method assigned",
             ["Payment method updated", "Zahlungsmethode aktualisiert"],

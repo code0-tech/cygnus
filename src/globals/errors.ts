@@ -32,6 +32,11 @@ export const Errors: GlobalConfig = {
         localizedText("billingUpdate", "The billing period could not be updated.", "Das Abrechnungsintervall konnte nicht aktualisiert werden."),
         localizedText("subscriptionCancel", "The subscription could not be cancelled.", "Das Abonnement konnte nicht gekündigt werden."),
         localizedText("subscriptionResume", "The cancellation could not be reversed.", "Die Kündigung konnte nicht zurückgenommen werden."),
+        localizedText(
+            "extraordinaryTermination",
+            "The termination request could not be submitted. If you already submitted one, it is still being reviewed.",
+            "Der Kündigungsantrag konnte nicht gesendet werden. Falls du bereits einen gestellt hast, wird dieser noch geprüft."
+        ),
         localizedText("planUpgrade", "The plan could not be upgraded.", "Der Plan konnte nicht aktualisiert werden."),
         localizedText(
             "upgradePaymentPending",

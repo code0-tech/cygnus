@@ -270,6 +270,41 @@ export const LicenseDialogs: GlobalConfig = {
                                     { type: "textarea" }
                                 ),
                                 localizedText("resumeLabel", "Keep my subscription", "Abonnement behalten"),
+                                {
+                                    type: "collapsible",
+                                    label: "Extraordinary termination",
+                                    fields: [
+                                        localizedText("extraordinaryLabel", "Terminate for cause", "Außerordentlich kündigen"),
+                                        localizedText(
+                                            "extraordinaryDescription",
+                                            "If you have good cause, for example a prolonged outage or a breach of contract on our side, you can terminate extraordinarily. We review your request within three business days and let you know by email whether your subscription ends immediately or at the end of the billing period.",
+                                            "Liegt ein wichtiger Grund vor, etwa ein längerer Ausfall oder eine Vertragsverletzung unsererseits, kannst du außerordentlich kündigen. Wir prüfen deinen Antrag innerhalb von drei Werktagen und teilen dir per E-Mail mit, ob dein Abonnement sofort oder zum Ende der Abrechnungsperiode endet.",
+                                            { type: "textarea" }
+                                        ),
+                                        localizedText("extraordinaryReasonPlaceholder", "Select a reason", "Grund auswählen"),
+                                        localizedText("extraordinarySubmitLabel", "Submit termination request", "Kündigungsantrag senden"),
+                                        localizedText(
+                                            "extraordinaryRequestedDescription",
+                                            "Your request is being reviewed. We will let you know the outcome by email within three business days.",
+                                            "Dein Antrag wird geprüft. Wir teilen dir das Ergebnis innerhalb von drei Werktagen per E-Mail mit.",
+                                            { type: "textarea" }
+                                        ),
+                                        {
+                                            name: "extraordinaryReasons",
+                                            type: "group",
+                                            fields: [
+                                                localizedText("ProlongedOutage", "Prolonged outage of the service", "Längerer Ausfall des Dienstes"),
+                                                localizedText("UnresolvedMaterialDefect", "Material defect that remains unresolved", "Erheblicher Mangel, der nicht behoben wird"),
+                                                localizedText("CoreFeatureRemoved", "A core feature was removed", "Eine Kernfunktion wurde entfernt"),
+                                                localizedText("DataBreachByProvider", "Data breach on the provider's side", "Datenschutzverletzung beim Anbieter"),
+                                                localizedText("BreachOfContractualCommitment", "Breach of a contractual commitment", "Verletzung einer vertraglichen Zusage"),
+                                                localizedText("DpaViolation", "Violation of the data processing agreement", "Verstoß gegen den Auftragsverarbeitungsvertrag"),
+                                                localizedText("UnjustifiedSuspension", "Unjustified suspension of my account", "Unberechtigte Sperrung meines Kontos"),
+                                                localizedText("Other", "Other good cause", "Sonstiger wichtiger Grund"),
+                                            ],
+                                        },
+                                    ],
+                                },
                             ],
                         },
                     ],

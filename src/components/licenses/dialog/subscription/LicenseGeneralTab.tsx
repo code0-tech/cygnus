@@ -15,7 +15,8 @@ import type { AppLocale } from "@/lib/i18n"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
 import { formatPendingUpdateSelection, parseLicenseDate, resolvePendingUpdateDate } from "@/lib/licenses/pendingUpdate"
 import type { CustomerPaymentMethodSummary, LicenseDashboardLicense, PaymentMethodDisplayDetails } from "@/lib/licenses/types"
-import { cancelLicenseSubscription, resumeLicenseSubscription } from "@/lib/licenses/client"
+import { cancelLicenseSubscription, requestExtraordinaryTermination, resumeLicenseSubscription } from "@/lib/licenses/client"
+import { EXTRAORDINARY_TERMINATION_REASONS, type ExtraordinaryTerminationReason } from "@/lib/subscription/terminationReasons"
 import { updateSubscription } from "@/lib/subscription/client"
 import { PICTOR_BADGE_CLASS_NAME, StableBadge } from "@/components/ui/StableBadge"
 import { Alert, Badge, Button, SelectContent, SelectInput, SelectItem, SelectItemText, SelectPortal, SelectTrigger, SelectValue, SelectViewport, Text } from "@code0-tech/pictor"
@@ -131,7 +132,7 @@ export function LicenseGeneralTab({
         : null
     // The cancellation rows below replace the former cancel dialog: both the period end and the immediate variant confirm in place, inside the cancellation card.
     const [isCanceling, setIsCanceling] = useState(false)
-    const [confirming, setConfirming] = useState<"immediate" | "periodEnd" | null>(null)
+    const [confirming, setConfirming] = useState<"extraordinary" | "immediate" | "periodEnd" | null>(null)
     const isCancelPending = !isCanceled && Boolean(license?.cancelAt)
     const canCancelImmediately = !isCanceled && license?.immediateCancellationAvailable === true
     const cancellationDate = parseLicenseDate(license?.cancelAt ?? license?.currentPeriodEnd)
@@ -157,6 +158,30 @@ export function LicenseGeneralTab({
             toasts.success(subscription.status === "CANCELED" ? "canceled" : "cancellationScheduled", subscription.cancelAt)
         } catch (error) {
             toasts.error(error instanceof Error ? error.message : errors.subscriptionCancel)
+        } finally {
+            setIsCanceling(false)
+        }
+    }
+
+    // Inside the withdrawal window an immediate cancellation is the remedy and Crater refuses a reviewed termination, so
+    // the request is only offered afterwards. Crater exposes no review status, so "requested" only lasts for this view;
+    // a second request is refused by Crater and surfaces as an error.
+    const canRequestExtraordinaryTermination = !isCanceled && license?.immediateCancellationAvailable !== true
+    const [terminationReason, setTerminationReason] = useState<ExtraordinaryTerminationReason | null>(null)
+    const [isTerminationRequested, setIsTerminationRequested] = useState(false)
+
+    const requestTermination = async () => {
+        if (!license?.subscriptionId || !terminationReason || !canRequestExtraordinaryTermination || isCanceling) return
+        setIsCanceling(true)
+
+        try {
+            await requestExtraordinaryTermination(license.subscriptionId, terminationReason, errors.extraordinaryTermination)
+            setIsTerminationRequested(true)
+            setConfirming(null)
+            setTerminationReason(null)
+            toasts.success("terminationRequested")
+        } catch (error) {
+            toasts.error(error instanceof Error ? error.message : errors.extraordinaryTermination)
         } finally {
             setIsCanceling(false)
         }
@@ -464,6 +489,75 @@ export function LicenseGeneralTab({
                                                 >
                                                     {isCanceling ? <ButtonLoader label={content.cancel.immediateConfirmSubmitLabel} /> : content.cancel.immediateConfirmSubmitLabel}
                                                 </Button>
+                                            </div>
+                                        ) : null}
+                                    </LicenseTabRow>
+                                ) : null}
+
+                                {canRequestExtraordinaryTermination ? (
+                                    <LicenseTabRow
+                                        title={content.cancel.extraordinaryLabel}
+                                        description={isTerminationRequested ? content.cancel.extraordinaryRequestedDescription : content.cancel.extraordinaryDescription}
+                                        action={
+                                            confirming === "extraordinary" || isTerminationRequested ? null : (
+                                                <Button type="button" variant="normal" color="tertiary" paddingSize="xxs" disabled={isCanceling} onClick={() => setConfirming("extraordinary")}>
+                                                    {content.cancel.extraordinaryLabel}
+                                                </Button>
+                                            )
+                                        }
+                                    >
+                                        {/* Like the other cancellations this confirms in place; the reason has to be chosen before the request can be sent. */}
+                                        {confirming === "extraordinary" && !isTerminationRequested ? (
+                                            <div className="flex flex-col gap-2">
+                                                <SelectInput value={terminationReason ?? undefined} onValueChange={(value) => setTerminationReason(value as ExtraordinaryTerminationReason)}>
+                                                    <SelectTrigger w="100%" asChild>
+                                                        <Button type="button" variant="normal" paddingSize="xxs" w="100%" justify="space-between" disabled={isCanceling}>
+                                                            <SelectValue placeholder={content.cancel.extraordinaryReasonPlaceholder}>
+                                                                {terminationReason ? content.cancel.extraordinaryReasons[terminationReason] : content.cancel.extraordinaryReasonPlaceholder}
+                                                            </SelectValue>
+                                                            <IconChevronDown aria-hidden="true" size={13} />
+                                                        </Button>
+                                                    </SelectTrigger>
+                                                    <SelectPortal>
+                                                        <SelectContent position="popper" sideOffset={4}>
+                                                            <SelectViewport>
+                                                                {EXTRAORDINARY_TERMINATION_REASONS.map((reason) => (
+                                                                    <SelectItem key={reason} value={reason}>
+                                                                        <SelectItemText>{content.cancel.extraordinaryReasons[reason]}</SelectItemText>
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectViewport>
+                                                        </SelectContent>
+                                                    </SelectPortal>
+                                                </SelectInput>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="normal"
+                                                        paddingSize="xxs"
+                                                        w="100%"
+                                                        justify="center"
+                                                        disabled={isCanceling}
+                                                        onClick={() => {
+                                                            setConfirming(null)
+                                                            setTerminationReason(null)
+                                                        }}
+                                                    >
+                                                        {content.cancel.immediateConfirmBackLabel}
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="normal"
+                                                        color="error"
+                                                        paddingSize="xxs"
+                                                        w="100%"
+                                                        justify="center"
+                                                        disabled={isCanceling || !terminationReason}
+                                                        onClick={() => void requestTermination()}
+                                                    >
+                                                        {isCanceling ? <ButtonLoader label={content.cancel.extraordinarySubmitLabel} /> : content.cancel.extraordinarySubmitLabel}
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ) : null}
                                     </LicenseTabRow>

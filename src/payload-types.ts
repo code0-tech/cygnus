@@ -3415,6 +3415,21 @@ export interface LicenseDialog {
     pendingHeading: string;
     pendingDescription: string;
     resumeLabel: string;
+    extraordinaryLabel: string;
+    extraordinaryDescription: string;
+    extraordinaryReasonPlaceholder: string;
+    extraordinarySubmitLabel: string;
+    extraordinaryRequestedDescription: string;
+    extraordinaryReasons: {
+      ProlongedOutage: string;
+      UnresolvedMaterialDefect: string;
+      CoreFeatureRemoved: string;
+      DataBreachByProvider: string;
+      BreachOfContractualCommitment: string;
+      DpaViolation: string;
+      UnjustifiedSuspension: string;
+      Other: string;
+    };
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3456,6 +3471,10 @@ export interface LicenseToast {
     description: string;
   };
   resumed: {
+    title: string;
+    description: string;
+  };
+  terminationRequested: {
     title: string;
     description: string;
   };
@@ -3506,6 +3525,7 @@ export interface Error {
   billingUpdate: string;
   subscriptionCancel: string;
   subscriptionResume: string;
+  extraordinaryTermination: string;
   planUpgrade: string;
   upgradePaymentPending: string;
   paymentFallback: string;
@@ -4213,6 +4233,23 @@ export interface LicenseDialogsSelect<T extends boolean = true> {
         pendingHeading?: T;
         pendingDescription?: T;
         resumeLabel?: T;
+        extraordinaryLabel?: T;
+        extraordinaryDescription?: T;
+        extraordinaryReasonPlaceholder?: T;
+        extraordinarySubmitLabel?: T;
+        extraordinaryRequestedDescription?: T;
+        extraordinaryReasons?:
+          | T
+          | {
+              ProlongedOutage?: T;
+              UnresolvedMaterialDefect?: T;
+              CoreFeatureRemoved?: T;
+              DataBreachByProvider?: T;
+              BreachOfContractualCommitment?: T;
+              DpaViolation?: T;
+              UnjustifiedSuspension?: T;
+              Other?: T;
+            };
       };
   updatedAt?: T;
   createdAt?: T;
@@ -4261,6 +4298,12 @@ export interface LicenseToastsSelect<T extends boolean = true> {
         description?: T;
       };
   resumed?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
+  terminationRequested?:
     | T
     | {
         title?: T;
@@ -4325,6 +4368,7 @@ export interface ErrorsSelect<T extends boolean = true> {
   billingUpdate?: T;
   subscriptionCancel?: T;
   subscriptionResume?: T;
+  extraordinaryTermination?: T;
   planUpgrade?: T;
   upgradePaymentPending?: T;
   paymentFallback?: T;
