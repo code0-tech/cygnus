@@ -12,6 +12,21 @@ const sessionHeaders = {
     "content-type": "application/json",
 }
 const subscriptionId = "gid://crater/Subscription/42"
+const consents = { terms: true, withdrawal: true }
+
+// The LicenseSubscriptionCustomer page that locates the subscription's owner before a plan or usage change.
+function ownerLookup(customerType = "PERSONAL") {
+    return {
+        data: {
+            currentUser: {
+                customers: {
+                    nodes: [{ id: "gid://crater/Customer/1", customerType, subscriptions: { nodes: [{ id: subscriptionId }], pageInfo: { endCursor: null, hasNextPage: false } } }],
+                    pageInfo: { endCursor: null, hasNextPage: false },
+                },
+            },
+        },
+    }
+}
 
 test("subscription quantity parsing accepts Int32 boundaries and optional quantities", () => {
     for (const value of [1, "1", 2_147_483_647, "2147483647"]) {
@@ -43,7 +58,7 @@ test("subscription updates and previews reject invalid quantities with 400 befor
 })
 
 const subscriptionRoutes = [
-    { handler: updateSubscription, method: "PATCH", mutation: "subscriptionsUpdate", resource: "subscription", fields: { plan: "max" } },
+    { handler: updateSubscription, method: "PATCH", mutation: "subscriptionsUpdate", resource: "subscription", fields: { paymentPeriod: "yearly" } },
     { handler: previewSubscriptionUpdate, method: "POST", mutation: "subscriptionsPreviewUpdate", resource: "preview", fields: { plan: "max" } },
     { handler: cancelSubscription, method: "POST", mutation: "subscriptionsCancel", resource: "subscription", fields: {} },
     { handler: resumeSubscription, method: "POST", mutation: "subscriptionsResume", resource: "subscription", fields: {} },
@@ -112,6 +127,7 @@ test("subscription routes reject invalid requests before calling Crater", async 
 test("upgrades a subscription to a higher plan", async () => {
     await withGraphQLServer(
         [
+            ownerLookup(),
             {
                 data: {
                     subscriptionsUpdate: {
@@ -137,14 +153,16 @@ test("upgrades a subscription to a higher plan", async () => {
                 new Request("https://example.com/api/crater/subscriptions", {
                     method: "PATCH",
                     headers: sessionHeaders,
-                    body: JSON.stringify({ id: subscriptionId, plan: "max" }),
+                    body: JSON.stringify({ id: subscriptionId, plan: "max", consents }),
                 })
             )
 
             assert.equal(response.status, 200)
-            assert.equal(graphQLServer.requests[0].authorization, "Session c_ust_example")
-            assert.equal(graphQLServer.requests[0].body.operationName, "SubscriptionsUpdate")
-            assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, plan: "MAX" } })
+            assert.equal(graphQLServer.requests[0].body.operationName, "LicenseSubscriptionCustomer")
+            assert.equal(graphQLServer.requests[1].authorization, "Session c_ust_example")
+            assert.equal(graphQLServer.requests[1].body.operationName, "SubscriptionsUpdate")
+            // The consents are checked by the route and never forwarded to Crater.
+            assert.deepEqual(graphQLServer.requests[1].body.variables, { input: { id: subscriptionId, plan: "MAX" } })
             assert.deepEqual(await response.json(), {
                 aiTokens: null,
                 cancelAt: null,
@@ -166,6 +184,7 @@ test("upgrades a subscription to a higher plan", async () => {
 test("hands the payment client secret of an upgrade that waits for 3D Secure to the dashboard", async () => {
     await withGraphQLServer(
         [
+            ownerLookup(),
             {
                 data: {
                     subscriptionsUpdate: {
@@ -187,12 +206,12 @@ test("hands the payment client secret of an upgrade that waits for 3D Secure to 
                 new Request("https://example.com/api/crater/subscriptions", {
                     method: "PATCH",
                     headers: { ...sessionHeaders, authorization: "Session c_ust_three_d_secure" },
-                    body: JSON.stringify({ id: subscriptionId, plan: "max" }),
+                    body: JSON.stringify({ id: subscriptionId, plan: "max", consents }),
                 })
             )
 
             assert.equal(response.status, 200)
-            assert.match(String(graphQLServer.requests[0].body.query), /paymentClientSecret/)
+            assert.match(String(graphQLServer.requests[1].body.query), /paymentClientSecret/)
             const body = await response.json()
             assert.equal(body.paymentClientSecret, "pi_123_secret_456")
             // The upgrade is not applied yet: the plan stays the current one and the target waits in pendingUpdate.
@@ -223,6 +242,7 @@ test("changes the billing period and converts it to Crater's uppercase enum", as
 test("increases custom plan quantities", async () => {
     await withGraphQLServer(
         [
+            ownerLookup(),
             {
                 data: {
                     subscriptionsUpdate: { errors: [], subscription: { aiTokens: 500_000, id: subscriptionId, plan: "CUSTOM", status: "ACTIVE", workflowExecutions: 2_000 } },
@@ -234,23 +254,23 @@ test("increases custom plan quantities", async () => {
                 new Request("https://example.com/api/crater/subscriptions", {
                     method: "PATCH",
                     headers: sessionHeaders,
-                    body: JSON.stringify({ id: subscriptionId, plan: "custom", aiTokens: 500_000, workflowExecutions: 2_000 }),
+                    body: JSON.stringify({ id: subscriptionId, plan: "custom", aiTokens: 500_000, workflowExecutions: 2_000, consents }),
                 })
             )
 
             assert.equal(response.status, 200)
-            assert.deepEqual(graphQLServer.requests[0].body.variables, { input: { id: subscriptionId, plan: "CUSTOM", aiTokens: 500_000, workflowExecutions: 2_000 } })
+            assert.deepEqual(graphQLServer.requests[1].body.variables, { input: { id: subscriptionId, plan: "CUSTOM", aiTokens: 500_000, workflowExecutions: 2_000 } })
         }
     )
 })
 
 test("forwards a Crater subscription update error as 422", async () => {
-    await withGraphQLServer([{ data: { subscriptionsUpdate: { errors: [{ errorCode: "INVALID_CHECKOUT_SELECTION", details: [] }], subscription: null } } }], async () => {
+    await withGraphQLServer([ownerLookup(), { data: { subscriptionsUpdate: { errors: [{ errorCode: "INVALID_CHECKOUT_SELECTION", details: [] }], subscription: null } } }], async () => {
         const response = await updateSubscription(
             new Request("https://example.com/api/crater/subscriptions", {
                 method: "PATCH",
                 headers: sessionHeaders,
-                body: JSON.stringify({ id: subscriptionId, plan: "max" }),
+                body: JSON.stringify({ id: subscriptionId, plan: "max", consents }),
             })
         )
 
@@ -395,6 +415,7 @@ test("subscription preview sends the generated plan enum", async () => {
 test("returns a scheduled update separately from the active configuration", async () => {
     await withGraphQLServer(
         [
+            ownerLookup(),
             {
                 data: {
                     subscriptionsUpdate: {
@@ -415,7 +436,7 @@ test("returns a scheduled update separately from the active configuration", asyn
                 new Request("https://example.com/api/crater/subscriptions", {
                     method: "PATCH",
                     headers: sessionHeaders,
-                    body: JSON.stringify({ id: subscriptionId, plan: "pro", paymentPeriod: "yearly" }),
+                    body: JSON.stringify({ id: subscriptionId, plan: "pro", paymentPeriod: "yearly", consents }),
                 })
             )
             assert.equal(response.status, 200)
@@ -427,7 +448,7 @@ test("returns a scheduled update separately from the active configuration", asyn
                 pendingUpdate: { plan: "pro", paymentPeriod: "yearly", effectiveAt: "2026-11-01T00:00:00Z" },
                 paymentClientSecret: null,
             })
-            const query = String(server.requests[0].body.query)
+            const query = String(server.requests[1].body.query)
             assert.match(query, /pendingUpdate/)
             assert.match(query, /cancelAt/)
             assert.doesNotMatch(query, /expireAt/)
@@ -491,4 +512,58 @@ test("preserves the domain error when Crater refuses a payment method assignment
             assert.equal((await response.json()).errorCode, "INVALID_PAYMENT_METHOD")
         }
     )
+})
+
+function upgradeRequest(body: Record<string, unknown>, authorization = "Session c_ust_consent") {
+    return new Request("https://example.com/api/crater/subscriptions", { method: "PATCH", headers: { ...sessionHeaders, authorization }, body: JSON.stringify({ id: subscriptionId, ...body }) })
+}
+
+test("plan and usage changes are refused without the required consents before anything is changed", async () => {
+    const cases: Array<{ customerType: string; body: Record<string, unknown>; missing: string[] }> = [
+        { customerType: "PERSONAL", body: { plan: "max" }, missing: ["terms", "withdrawal"] },
+        { customerType: "PERSONAL", body: { plan: "max", consents: { terms: true } }, missing: ["withdrawal"] },
+        { customerType: "PERSONAL", body: { plan: "max", consents: { terms: "true", withdrawal: 1 } }, missing: ["terms", "withdrawal"] },
+        { customerType: "BUSINESS", body: { plan: "max", consents: { withdrawal: true } }, missing: ["terms"] },
+        { customerType: "BUSINESS", body: { plan: "custom", aiTokens: 500_000, consents: [] }, missing: ["terms"] },
+        // A customer whose type Crater does not report must give both.
+        { customerType: "", body: { plan: "max", consents: { terms: true } }, missing: ["withdrawal"] },
+    ]
+    for (const [index, { customerType, body, missing }] of cases.entries()) {
+        await withGraphQLServer([ownerLookup(customerType)], async (server) => {
+            const response = await updateSubscription(upgradeRequest(body, `Session c_ust_consent_${index}`))
+            assert.equal(response.status, 400)
+            assert.deepEqual(await response.json(), { error: "The required consents were not given.", errorCode: "MISSING_CONSENT", missing })
+            assert.deepEqual(server.requests.map(({ body }) => body.operationName), ["LicenseSubscriptionCustomer"])
+        })
+    }
+})
+
+test("business customers upgrade with the terms alone", async () => {
+    await withGraphQLServer([ownerLookup("BUSINESS"), { data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, plan: "MAX", status: "ACTIVE" } } } }], async (server) => {
+        const response = await updateSubscription(upgradeRequest({ plan: "max", consents: { terms: true, withdrawal: false } }, "Session c_ust_business_upgrade"))
+        assert.equal(response.status, 200)
+        assert.deepEqual(server.requests.map(({ body }) => body.operationName), ["LicenseSubscriptionCustomer", "SubscriptionsUpdate"])
+    })
+})
+
+test("an upgrade of a subscription outside the session's customers is refused before Crater changes it", async () => {
+    const foreign = { data: { currentUser: { customers: { nodes: [{ id: "gid://crater/Customer/1", customerType: "PERSONAL", subscriptions: { nodes: [{ id: "gid://crater/Subscription/7" }], pageInfo: { hasNextPage: false } } }], pageInfo: { hasNextPage: false } } } } }
+    for (const { responses, status } of [
+        { responses: [foreign], status: 404 },
+        { responses: [{ data: { currentUser: null } }], status: 401 },
+    ]) {
+        await withGraphQLServer(responses, async (server) => {
+            assert.equal((await updateSubscription(upgradeRequest({ plan: "max", consents }, `Session c_ust_foreign_${status}`))).status, status)
+            assert.ok(server.requests.every(({ body }) => body.operationName !== "SubscriptionsUpdate"))
+        })
+    }
+})
+
+test("billing period and payment method changes need no consent lookup", async () => {
+    for (const body of [{ paymentPeriod: "yearly" }, { paymentMethodId: "pm_new" }]) {
+        await withGraphQLServer([{ data: { subscriptionsUpdate: { errors: [], subscription: { id: subscriptionId, plan: "PRO", status: "ACTIVE" } } } }], async (server) => {
+            assert.equal((await updateSubscription(upgradeRequest(body, `Session c_ust_no_consent_${Object.keys(body)[0]}`))).status, 200)
+            assert.deepEqual(server.requests.map(({ body }) => body.operationName), ["SubscriptionsUpdate"])
+        })
+    }
 })

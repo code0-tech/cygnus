@@ -43,6 +43,12 @@ export interface SubscriptionUpdateRequest extends SubscriptionUpdateFields {
     id: string
 }
 
+/** The checkboxes the user ticked; the API route checks them again before it changes plan or usage. */
+export interface PurchaseConsents {
+    terms: boolean
+    withdrawal: boolean
+}
+
 export interface SubscriptionUpdatePreview {
     // Crater resolves the quantities the change lands on; null unless the resolved plan carries them.
     aiTokens: number | null

@@ -1,5 +1,7 @@
 import { SUBSCRIPTION_PENDING_UPDATE_FIELDS } from "@/lib/crater/subscriptionFragments"
 import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
+import { consentRejection } from "@/lib/crater/consents.server"
+import { findCustomerForSubscription } from "@/lib/licenses/snapshotLookup.server"
 import { parseSubscriptionChangeFields } from "@/lib/crater/request"
 import { readSubscriptionRequest } from "@/lib/crater/subscriptionRequests.server"
 import { normalizeCraterPaymentPeriod, normalizeCraterPlan } from "@/lib/crater/values"
@@ -61,6 +63,16 @@ export const PATCH = withCraterSession({ log: "Crater subscription update error"
 
     const fields = parseSubscriptionChangeFields(body, true)
     if ("error" in fields) return craterJson({ error: fields.error }, 400)
+
+    // A plan or usage change is a new purchase and needs the terms and, for personal customers, the withdrawal
+    // consent. Switching only the billing period or the payment method does not.
+    if (fields.plan || fields.aiTokens || fields.workflowExecutions) {
+        const owner = await findCustomerForSubscription(token, id)
+        if (owner.status === "unauthenticated") return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+        if (owner.status === "missing") return craterJson({ error: "The subscription was not found." }, 404)
+        const rejection = consentRejection(body, owner.customerType)
+        if (rejection) return rejection
+    }
 
     return runCraterResourceMutation(token, SUBSCRIPTIONS_UPDATE, { input: { id, ...fields } }, (data) => data.subscriptionsUpdate, {
         rejectionMessage: "Crater could not update the subscription.",

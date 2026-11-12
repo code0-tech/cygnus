@@ -1,4 +1,4 @@
-import type { SubscriptionUpdateRequest, SubscriptionUpdatePreview, SubscriptionUpdateResult } from "@/lib/subscription/types"
+import type { PurchaseConsents, SubscriptionUpdateRequest, SubscriptionUpdatePreview, SubscriptionUpdateResult } from "@/lib/subscription/types"
 async function subscriptionRequest<T extends object>(path: string, method: "PATCH" | "POST", request: SubscriptionUpdateRequest, errorMessage: string, signal?: AbortSignal): Promise<T> {
     const response = await fetch(path, {
         method,
@@ -18,6 +18,6 @@ export function previewSubscriptionUpdate(request: SubscriptionUpdateRequest, er
     return subscriptionRequest<SubscriptionUpdatePreview>("/api/crater/subscriptions/preview", "POST", request, errorMessage, signal)
 }
 
-export function updateSubscription(request: SubscriptionUpdateRequest & { paymentMethodId?: string }, errorMessage: string) {
+export function updateSubscription(request: SubscriptionUpdateRequest & { consents?: PurchaseConsents; paymentMethodId?: string }, errorMessage: string) {
     return subscriptionRequest<SubscriptionUpdateResult>("/api/crater/subscriptions", "PATCH", request, errorMessage)
 }

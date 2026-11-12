@@ -12,6 +12,7 @@ export interface CheckoutPaymentFormProps {
     collectTaxId: boolean
     content: CheckoutFormContent
     customerEmail: string | null
+    customerId: string | null
     errors: ErrorsContent
     customerSelect: ReactNode
     customerSelectSkeleton: ReactNode

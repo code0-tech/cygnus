@@ -77,3 +77,24 @@ export async function loadCustomerPage(token: string, after?: string) {
         },
     }
 }
+
+// Bounds the paging if Crater kept returning fresh cursors; at 50 customers per page this covers 10,000 customers.
+const MAX_CUSTOMER_TYPE_PAGES = 200
+
+/** The type of one of the session user's customers, looked up in Crater rather than taken from the client. */
+export async function findCustomerType(token: string, customerId: string) {
+    const seenCursors = new Set<string>()
+    let after: string | undefined
+    for (let page = 0; page < MAX_CUSTOMER_TYPE_PAGES; page += 1) {
+        const result = await loadCustomerPage(token, after)
+        if (!result) return { status: "unauthenticated" as const }
+        const customer = result.customers.find((candidate) => candidate.id === customerId)
+        if (customer) return { status: "found" as const, customerType: normalizeCraterCustomerType(customer.customerType) }
+        if (!result.pageInfo.hasNextPage) return { status: "missing" as const }
+        const cursor = result.pageInfo.endCursor
+        if (!cursor || seenCursors.has(cursor)) throw new Error("Crater returned an invalid customer cursor.")
+        seenCursors.add(cursor)
+        after = cursor
+    }
+    throw new Error("Crater customer lookup exceeded its page budget.")
+}

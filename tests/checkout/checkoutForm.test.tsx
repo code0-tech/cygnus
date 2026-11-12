@@ -573,8 +573,12 @@ function useTestForm<T extends Record<string, unknown>>({
 
 test("creates a customer with contact details only when continuing to payment", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
+    let consentStatus = 200
     globalThis.fetch = (async (input, init) => {
         requests.push({ init, url: String(input) })
+        if (String(input) === "/api/crater/checkout/consent") {
+            return new Response(JSON.stringify(consentStatus === 200 ? { accepted: true } : { error: "The required consents were not given.", errorCode: "MISSING_CONSENT" }), { status: consentStatus })
+        }
         const body =
             String(input) === "/api/crater/customer"
                 ? init?.method === "POST"
@@ -629,6 +633,12 @@ test("creates a customer with contact details only when continuing to payment", 
     await screen.findByRole("button", { name: content.payNowLabel })
     act(() => paymentElementOnReady?.())
     act(() => paymentElementOnChange?.({ complete: true }))
+    // A refused consent check stops the payment before Stripe is asked to confirm it.
+    consentStatus = 400
+    await user.click(screen.getByRole("button", { name: content.payNowLabel }))
+    await screen.findByText(errors.paymentConfirmation)
+    assert.equal(stripeConfirmCalls, 0)
+    consentStatus = 200
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
     await user.click(screen.getByRole("button", { name: content.payNowLabel }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 1))
@@ -637,6 +647,11 @@ test("creates a customer with contact details only when continuing to payment", 
     await user.click(screen.getByRole("button", { name: content.payNowLabel }))
     await waitFor(() => assert.equal(stripeConfirmCalls, 2))
     assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }, { redirect: "always" }])
+    const consentRequests = requests.filter((request) => request.url === "/api/crater/checkout/consent")
+    assert.equal(consentRequests.length, 3)
+    for (const request of consentRequests) {
+        assert.deepEqual(JSON.parse(String(request.init?.body)), { customerId: "gid://crater/Customer/1", consents: { terms: true, withdrawal: true } })
+    }
 })
 
 test("recreates the checkout session for a selected or newly created customer", async () => {

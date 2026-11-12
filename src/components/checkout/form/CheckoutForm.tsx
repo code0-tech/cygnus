@@ -112,6 +112,7 @@ function CheckoutFormContent() {
         errors,
         customerSelectSkeleton,
         customerEmail,
+        customerId: selectedCustomerId,
         email: stripeEmail,
         emailComplete: stripeEmailComplete,
         emailSyncedToStripe: stripeEmailSynced,

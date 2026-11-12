@@ -1,6 +1,7 @@
 "use client"
 
 import { getStripePricingFromSession, getTaxQuoteFromSession, type CheckoutTaxIdDraft } from "@/lib/checkout/stripeCheckout"
+import { verifyCheckoutConsents } from "@/lib/checkout/client"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -33,6 +34,7 @@ export function CheckoutPaymentFields({
     collectTaxId,
     content,
     customerEmail,
+    customerId,
     errors,
     customerSelect,
     customerSelectSkeleton,
@@ -256,6 +258,8 @@ export function CheckoutPaymentFields({
                 setErrorMessage(errors.billingAddressUpdate)
                 return
             }
+            if (!customerId) throw new Error("The checkout has no customer to verify the consents for.")
+            await verifyCheckoutConsents({ customerId, consents: { terms: acceptedTerms, withdrawal: requiresWithdrawalConsent && acceptedWithdrawalConsent } })
             const result = await checkoutState.checkout.confirm({ redirect: "always" })
 
             if (result.type === "error") {

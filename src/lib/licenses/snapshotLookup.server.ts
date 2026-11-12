@@ -1,4 +1,5 @@
 import { createApolloClient } from "@/lib/apolloClient"
+import { normalizeCraterCustomerType } from "@/lib/crater/values"
 import type { Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -65,6 +66,7 @@ const SUBSCRIPTION_CUSTOMER: TypedDocumentNode<LookupData, SubscriptionCustomerV
             customers(first: 1, after: $customerAfter) {
                 nodes {
                     id
+                    customerType
                     subscriptions(first: 50, after: $subscriptionAfter) {
                         nodes {
                             id
@@ -240,7 +242,7 @@ export async function findCustomerForSubscription(sessionToken: string, subscrip
         if (!customer?.id) return { status: "missing" as const }
         if (selectedCustomerId && selectedCustomerId !== customer.id) throw new Error("Crater returned a different customer while locating a subscription.")
         if (customer.subscriptions?.nodes?.some((subscription) => subscription?.id === subscriptionId)) {
-            return { status: "found" as const, customerId: customer.id }
+            return { status: "found" as const, customerId: customer.id, customerType: normalizeCraterCustomerType(customer.customerType) }
         }
         subscriptionAfter = nextCursor(customer.subscriptions?.pageInfo, subscriptionCursors)
         if (subscriptionAfter) {

@@ -286,6 +286,17 @@ export async function createCheckoutSession({ customerId, locale, searchParams }
     } satisfies CheckoutSessionData
 }
 
+/** Lets the server check the ticked consents before the browser confirms the payment with Stripe. */
+export async function verifyCheckoutConsents({ customerId, consents }: { customerId: string; consents: { terms: boolean; withdrawal: boolean } }) {
+    const response = await checkoutFetch("/api/crater/checkout/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId, consents }),
+        credentials: "same-origin",
+    })
+    if (!response.ok) throw await createCheckoutSubmissionError(response, "The checkout consents were not accepted.", "session")
+}
+
 export async function sendCheckoutOffer({ customerId, email, searchParams }: { customerId: string; email: string; searchParams: URLSearchParams }) {
     const response = await checkoutFetch("/api/crater/checkout/offer", {
         method: "POST",

@@ -123,7 +123,7 @@ export function LicenseUpgradeDialog({ checkoutPackages, content, customerId, er
         setIsSaving(true)
 
         try {
-            const subscription = await updateSubscription({ id: license.subscriptionId, ...changeFields }, errors.planUpgrade)
+            const subscription = await updateSubscription({ id: license.subscriptionId, ...changeFields, consents: { terms: acceptedTerms, withdrawal: acceptedWithdrawalConsent } }, errors.planUpgrade)
             updateLicense(license.id, {
                 pendingUpdate: subscription.pendingUpdate ?? null,
                 ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
