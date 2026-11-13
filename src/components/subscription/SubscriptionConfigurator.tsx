@@ -30,6 +30,13 @@ import { LinkButton } from "../ui/LinkButton"
 
 export type SubscriptionOptionImageKey = "b2b" | "b2c" | "pro" | "max" | "custom" | "selfHosted" | "cloud"
 
+// Step order matches the rendered [data-subscription-step] sections; the payment period step has no own image and keeps the deployment image.
+function getStepImageKey(stepIndex: number, selection: SubscriptionSelection): SubscriptionOptionImageKey {
+    if (stepIndex === 0) return selection.customerType
+    if (stepIndex === 1) return selection.plan
+    return selection.deployment === "self_hosted" ? "selfHosted" : "cloud"
+}
+
 function SubscriptionOptionCategoryLabel({ label, description }: { label: string; description?: string | null }) {
     return (
         <div>
@@ -64,6 +71,8 @@ export function SubscriptionConfigurator({ locale, content, onActiveImageChangeA
     const [activeStepIndex, setActiveStepIndex] = useState(0)
     const [showBottomBlur, setShowBottomBlur] = useState(false)
     const [showStepIndicator, setShowStepIndicator] = useState(false)
+    const selectionRef = useRef(selection)
+    selectionRef.current = selection
     const workflowExecutionPackages = normalizeUsagePackages(checkoutPackages.quantitySteps[selection.customerType].workflowExecutions)
     const aiTokenPackages = normalizeUsagePackages(checkoutPackages.quantitySteps[selection.customerType].aiTokens)
     const quantityLabels = { aiTokens: content.plan.aiTokensLabel, workflowExecutions: content.plan.workflowExecutionsLabel }
@@ -134,6 +143,11 @@ export function SubscriptionConfigurator({ locale, content, onActiveImageChangeA
 
         window.history.replaceState(window.history.state, "", nextUrl)
     }, [pathname, selectionSearchParamsString])
+
+    // Only react to scrolling into another step, so a click in a not-yet-active step keeps the image chosen by selectOption.
+    useEffect(() => {
+        onActiveImageChangeAction?.(getStepImageKey(activeStepIndex, selectionRef.current))
+    }, [activeStepIndex, onActiveImageChangeAction])
 
     useEffect(() => {
         setAiTokensPreview(selection.aiTokens)
