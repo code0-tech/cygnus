@@ -76,7 +76,7 @@
     "devDependencies": {
         "@ai-sdk/mistral": "^4.0.80",
         "@swc-node/register": "^1.12.1",
-        "@tailwindcss/postcss": "^4.3.3",
+        "@tailwindcss/postcss": "^4.3.5",
         "@testing-library/react": "^16.3.2",
         "@testing-library/user-event": "^14.6.1",
         "@types/node": "^25.9.9",
@@ -86,7 +86,7 @@
         "happy-dom": "^21.0.0",
         "postcss": "^8.5.32",
         "prettier": "^3.9.10",
-        "tailwindcss": "^4.3.3",
+        "tailwindcss": "^4.3.5",
         "tsx": "^4.23.15",
         "typescript": "^6.0.3"
     },
