@@ -3539,6 +3539,10 @@ export interface Error {
   billingAddressUpdate: string;
   emailUpdate: string;
   paymentConfirmation: string;
+  checkoutConsentMissing: string;
+  checkoutConsentRecord: string;
+  checkoutConsentSession: string;
+  checkoutRestart: string;
   discountSessionRequired: string;
   discountValidation: string;
   offerSend: string;
@@ -4382,6 +4386,10 @@ export interface ErrorsSelect<T extends boolean = true> {
   billingAddressUpdate?: T;
   emailUpdate?: T;
   paymentConfirmation?: T;
+  checkoutConsentMissing?: T;
+  checkoutConsentRecord?: T;
+  checkoutConsentSession?: T;
+  checkoutRestart?: T;
   discountSessionRequired?: T;
   discountValidation?: T;
   offerSend?: T;

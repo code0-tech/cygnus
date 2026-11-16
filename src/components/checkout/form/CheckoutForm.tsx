@@ -29,6 +29,7 @@ const RETIRING_FORM_CALLBACKS = {
     onPaymentConfirmationChange: noop,
     onPricingChange: noop,
     onSendOffer: () => Promise.resolve(),
+    onRestartCheckout: resolveFalse,
     onSessionExpired: resolveFalse,
     onSessionLoadError: resolveFalse,
     onSessionLoadErrorChange: noop,
@@ -58,6 +59,7 @@ function CheckoutFormContent() {
         retryCheckout,
         setStripeCheckout,
         recoverCheckoutSessionLoad,
+        refreshCheckoutSession,
         refreshExpiredCheckoutSession,
         resolvedError,
         selectedCustomerId,
@@ -144,6 +146,7 @@ function CheckoutFormContent() {
                     onPricingChange={handlePricingChange}
                     onSendOffer={sendOffer}
                     onStripeCheckoutChange={setStripeCheckout}
+                    onRestartCheckout={refreshCheckoutSession}
                     onSessionExpired={refreshExpiredCheckoutSession}
                     onSessionLoadError={recoverCheckoutSessionLoad}
                     onSessionLoadErrorChange={setStripeSessionError}

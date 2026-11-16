@@ -75,6 +75,8 @@ let checkoutStages: string[] = []
 let checkoutStage = "billingAddress"
 const checkoutStageListeners = new Set<() => void>()
 let stripeConfirmCalls = 0
+// Consent requests and Stripe confirmations in the order they happened.
+let checkoutEvents: string[] = []
 let stripeConfirmErrorMessage: string | null = null
 let stripeCheckoutLoadErrorMessage: string | null = null
 let stripeConfirmOptions: unknown[] = []
@@ -276,6 +278,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
                           email: null,
                           confirm: async (options: unknown) => {
                               stripeConfirmCalls += 1
+                              checkoutEvents.push("confirm")
                               stripeConfirmOptions.push(options)
                               if (stripeConfirmErrorMessage) return { type: "error", error: { message: stripeConfirmErrorMessage } }
                               return { type: "success", session: {} }
@@ -302,7 +305,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
     },
 })
 
-const { act, cleanup, render: renderComponent, screen, waitFor } = await import("@testing-library/react")
+const { act, cleanup, fireEvent, render: renderComponent, screen, waitFor } = await import("@testing-library/react")
 const { StripeProvider } = await import("../../src/components/providers/StripeProvider")
 function render(ui: React.ReactNode) {
     return renderComponent(ui, { wrapper: ({ children }) => <StripeProvider locale="en" publicKey="pk_test_example">{children}</StripeProvider> })
@@ -352,6 +355,7 @@ afterEach(() => {
     checkoutStages = []
     checkoutStage = "billingAddress"
     stripeConfirmCalls = 0
+    checkoutEvents = []
     stripeConfirmErrorMessage = null
     stripeCheckoutLoadErrorMessage = null
     window.sessionStorage.removeItem("code0.checkout.sessionLoadRecovery")
@@ -378,6 +382,10 @@ const errors = {
     billingAddressUpdate: "Billing address update failed",
     emailUpdate: "Email update failed",
     paymentConfirmation: "Payment confirmation failed",
+    checkoutConsentMissing: "Please confirm the highlighted consents",
+    checkoutConsentRecord: "Consent could not be saved",
+    checkoutConsentSession: "This checkout can no longer be completed",
+    checkoutRestart: "Restart checkout",
     discountSessionRequired: "Discount session required",
     discountValidation: "Discount validation failed",
     paymentFallback: "Checkout failed",
@@ -577,7 +585,11 @@ test("creates a customer with contact details only when continuing to payment", 
     globalThis.fetch = (async (input, init) => {
         requests.push({ init, url: String(input) })
         if (String(input) === "/api/crater/checkout/consent") {
-            return new Response(JSON.stringify(consentStatus === 200 ? { accepted: true } : { error: "The required consents were not given.", errorCode: "MISSING_CONSENT" }), { status: consentStatus })
+            checkoutEvents.push("consent")
+            return new Response(
+                JSON.stringify(consentStatus === 200 ? { recorded: true } : { error: "Crater did not record the checkout consents.", errorCode: "MISSING_CHECKOUT_CONSENT", details: [] }),
+                { status: consentStatus }
+            )
         }
         const body =
             String(input) === "/api/crater/customer"
@@ -635,10 +647,10 @@ test("creates a customer with contact details only when continuing to payment", 
     await screen.findByRole("button", { name: content.payNowLabel })
     act(() => paymentElementOnReady?.())
     act(() => paymentElementOnChange?.({ complete: true }))
-    // A refused consent check stops the payment before Stripe is asked to confirm it.
-    consentStatus = 400
+    // A consent Crater refuses to record stops the payment before Stripe is asked to confirm it.
+    consentStatus = 422
     await user.click(screen.getByRole("button", { name: content.payNowLabel }))
-    await screen.findByText(errors.paymentConfirmation)
+    await screen.findByText(errors.checkoutConsentMissing)
     assert.equal(stripeConfirmCalls, 0)
     consentStatus = 200
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
@@ -652,8 +664,164 @@ test("creates a customer with contact details only when continuing to payment", 
     const consentRequests = requests.filter((request) => request.url === "/api/crater/checkout/consent")
     assert.equal(consentRequests.length, 3)
     for (const request of consentRequests) {
-        assert.deepEqual(JSON.parse(String(request.init?.body)), { customerId: "gid://crater/Customer/1", consents: { terms: true, withdrawal: true } })
+        assert.deepEqual(JSON.parse(String(request.init?.body)), { sessionId: "cs_test", consents: { terms: true, withdrawal: true } })
     }
+    // Every confirmation directly follows a recorded consent.
+    assert.deepEqual(checkoutEvents, ["consent", "consent", "confirm", "consent", "confirm"])
+})
+
+type ConsentResponder = (body: { sessionId: string; consents: Record<string, unknown> }) => Response | Promise<Response>
+
+/** Restores a checkout on the payment step for a personal or business customer with a payment element that is ready. */
+async function renderPaymentStep({ customerType, onConsent }: { customerType: "business" | "personal"; onConsent: ConsentResponder }) {
+    checkoutSearchParams.set("customerType", customerType === "business" ? "b2b" : "b2c")
+    saveCheckoutContactDraft({
+        billingAddress: stripeBillingAddress,
+        customerId: "gid://crater/Customer/7",
+        email: "ada@example.com",
+        emailSyncedToStripe: true,
+        searchParams: checkoutSearchParams,
+        stage: "payment",
+    })
+    const consentBodies: Array<{ sessionId: string; consents: Record<string, unknown> }> = []
+    const sessionRequests: string[] = []
+    globalThis.fetch = (async (input, init) => {
+        const url = String(input)
+        if (url === "/api/crater/checkout/consent") {
+            checkoutEvents.push("consent")
+            const body = JSON.parse(String(init?.body))
+            consentBodies.push(body)
+            return onConsent(body)
+        }
+        if (url === "/api/crater/customer") {
+            return Response.json({ customers: [{ customerType, email: "ada@example.com", id: "gid://crater/Customer/7", name: "Ada" }] })
+        }
+        sessionRequests.push(url)
+        const suffix = sessionRequests.length === 1 ? "" : `_${sessionRequests.length}`
+        return Response.json({ clientSecret: `cs_test_consent_secret${suffix}`, expiresAt: 1_800_000_000, id: `cs_test_consent${suffix}` })
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByTestId("stripe-payment")
+    await waitFor(() => assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress]))
+    act(() => paymentElementOnReady?.())
+    act(() => paymentElementOnChange?.({ complete: true }))
+    const payButton = () => screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement
+    return { consentBodies, payButton, sessionRequests, user: userEvent.setup() }
+}
+
+const recordedConsent = () => Response.json({ recorded: true })
+
+test("records the consent for the current checkout session before confirming the payment", async () => {
+    const { consentBodies, payButton, user } = await renderPaymentStep({ customerType: "personal", onConsent: recordedConsent })
+    // Personal customers see and need the withdrawal consent.
+    const withdrawal = screen.getByRole("checkbox", { name: content.withdrawalConsentText })
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    assert.equal(payButton().disabled, true)
+    await user.click(withdrawal)
+    assert.equal(payButton().disabled, false)
+
+    await user.click(payButton())
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.deepEqual(consentBodies, [{ sessionId: "cs_test_consent", consents: { terms: true, withdrawal: true } }])
+    assert.deepEqual(checkoutEvents, ["consent", "confirm"])
+    assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }])
+})
+
+test("business customers record the terms alone and see no withdrawal consent", async () => {
+    const { consentBodies, payButton, user } = await renderPaymentStep({ customerType: "business", onConsent: recordedConsent })
+    assert.equal(screen.queryByRole("checkbox", { name: content.withdrawalConsentText }), null)
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    await user.click(payButton())
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.deepEqual(consentBodies, [{ sessionId: "cs_test_consent", consents: { terms: true } }])
+})
+
+test("highlights the consents when Crater reports one missing and never confirms", async () => {
+    const { payButton, user } = await renderPaymentStep({
+        customerType: "personal",
+        onConsent: () => Response.json({ error: "Crater did not record the checkout consents.", errorCode: "MISSING_CHECKOUT_CONSENT", details: [] }, { status: 422 }),
+    })
+    const terms = screen.getByRole("checkbox", { name: /Terms and Conditions/ })
+    const withdrawal = screen.getByRole("checkbox", { name: content.withdrawalConsentText })
+    await user.click(terms)
+    await user.click(withdrawal)
+    await user.click(payButton())
+
+    await screen.findByText(errors.checkoutConsentMissing)
+    assert.equal(stripeConfirmCalls, 0)
+    assert.ok(terms.closest(".input--not-valid"))
+    assert.ok(withdrawal.closest(".input--not-valid"))
+    // Touching a highlighted consent clears its highlight.
+    await user.click(withdrawal)
+    assert.equal(withdrawal.closest(".input--not-valid"), null)
+    assert.ok(terms.closest(".input--not-valid"))
+})
+
+test("offers to restart the checkout when Crater refuses the session and never confirms", async () => {
+    const { payButton, sessionRequests, user } = await renderPaymentStep({
+        customerType: "business",
+        onConsent: () => Response.json({ error: "Crater did not record the checkout consents.", errorCode: "INVALID_CHECKOUT_CONSENT_SESSION", details: [] }, { status: 422 }),
+    })
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    await user.click(payButton())
+
+    await screen.findByText(errors.checkoutConsentSession)
+    assert.equal(stripeConfirmCalls, 0)
+    assert.deepEqual(sessionRequests, ["/api/crater/checkout/session"])
+    // Restarting creates a fresh Checkout Session instead of retrying the one Crater refused.
+    await user.click(screen.getByRole("button", { name: errors.checkoutRestart }))
+    await waitFor(() => assert.deepEqual(sessionRequests, ["/api/crater/checkout/session", "/api/crater/checkout/session"]))
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_consent_secret_2"))
+    assert.equal(screen.queryByText(errors.checkoutConsentSession), null)
+    assert.equal(stripeConfirmCalls, 0)
+})
+
+test("a network error while recording the consent never confirms and can be retried", async () => {
+    let failNext = true
+    const { payButton, user } = await renderPaymentStep({
+        customerType: "business",
+        onConsent: () => {
+            if (!failNext) return recordedConsent()
+            failNext = false
+            throw new TypeError("Failed to fetch")
+        },
+    })
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    await user.click(payButton())
+
+    await screen.findByText(errors.checkoutConsentRecord)
+    assert.equal(stripeConfirmCalls, 0)
+    assert.equal(payButton().disabled, false)
+    await user.click(payButton())
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.deepEqual(checkoutEvents, ["consent", "consent", "confirm"])
+})
+
+test("a double submit records the consent and confirms only once, with the pay button disabled meanwhile", async () => {
+    let releaseConsent = () => {}
+    const consentGate = new Promise<void>((resolve) => (releaseConsent = resolve))
+    const { payButton, user } = await renderPaymentStep({
+        customerType: "business",
+        onConsent: async () => {
+            await consentGate
+            return recordedConsent()
+        },
+    })
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    // The label turns into the loader while confirming, so keep the element itself.
+    const button = payButton()
+    const form = screen.getByTestId("stripe-payment").closest("form")!
+    act(() => {
+        fireEvent.submit(form)
+        fireEvent.submit(form)
+    })
+    await waitFor(() => assert.equal(button.disabled, true))
+    await user.dblClick(button)
+    assert.equal(stripeConfirmCalls, 0)
+    await act(async () => releaseConsent())
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.deepEqual(checkoutEvents, ["consent", "confirm"])
 })
 
 test("recreates the checkout session for a selected or newly created customer", async () => {

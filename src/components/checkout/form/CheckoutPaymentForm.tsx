@@ -39,7 +39,7 @@ export function CheckoutPaymentForm({ billingAddress, customerEmail, email, emai
 
     return (
         <CheckoutElementsProvider key={`${session.clientSecret}:${STRIPE_APPEARANCE_VERSION}`} stripe={stripePromise} options={options}>
-            <CheckoutPaymentFields {...props} billingAddress={billingAddress} customerEmail={customerEmail} email={email} emailSyncedToStripe={emailSyncedToStripe} sessionKey={session.clientSecret} />
+            <CheckoutPaymentFields {...props} billingAddress={billingAddress} customerEmail={customerEmail} email={email} emailSyncedToStripe={emailSyncedToStripe} sessionId={session.id} sessionKey={session.clientSecret} />
         </CheckoutElementsProvider>
     )
 }

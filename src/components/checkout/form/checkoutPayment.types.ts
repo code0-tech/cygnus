@@ -29,6 +29,8 @@ export interface CheckoutPaymentFormProps {
     onPricingChange: (pricing: CheckoutStripePricingData | null) => void
     onSendOffer: (email: string) => Promise<void>
     onStripeCheckoutChange: (checkout: CheckoutPromotionCodeSdk | null) => void
+    /** Replaces the checkout session on the user's request, for one Crater can no longer record consent for. */
+    onRestartCheckout: () => Promise<boolean>
     onSessionExpired: () => Promise<boolean>
     onSessionLoadError: () => Promise<boolean>
     onSessionLoadErrorChange: (error: string | null) => void

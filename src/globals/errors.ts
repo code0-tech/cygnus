@@ -70,6 +70,22 @@ export const Errors: GlobalConfig = {
             "The payment could not be confirmed. Please check your payment details.",
             "Die Zahlung konnte nicht bestätigt werden. Bitte überprüfe deine Zahlungsangaben."
         ),
+        localizedText(
+            "checkoutConsentMissing",
+            "Please confirm the highlighted consents to continue.",
+            "Bitte bestätige die markierten Zustimmungen, um fortzufahren."
+        ),
+        localizedText(
+            "checkoutConsentRecord",
+            "Your consent could not be saved, so the payment was not started. Please try again.",
+            "Deine Zustimmung konnte nicht gespeichert werden, daher wurde die Zahlung nicht gestartet. Bitte versuche es erneut."
+        ),
+        localizedText(
+            "checkoutConsentSession",
+            "This checkout can no longer be completed. Please restart the checkout.",
+            "Dieser Checkout kann nicht mehr abgeschlossen werden. Bitte starte den Checkout neu."
+        ),
+        localizedText("checkoutRestart", "Restart checkout", "Checkout neu starten"),
         localizedText("discountSessionRequired", "A checkout session is required to validate a discount.", "Eine Checkout-Sitzung ist erforderlich, um einen Rabatt zu validieren."),
         localizedText("discountValidation", "The discount code could not be validated.", "Der Rabattcode konnte nicht validiert werden."),
         localizedText("offerSend", "The offer could not be sent. Please try again.", "Das Angebot konnte nicht gesendet werden. Bitte versuche es erneut."),

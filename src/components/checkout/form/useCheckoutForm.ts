@@ -528,6 +528,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
         retryCheckout,
         markCheckoutSessionReady,
         stripeCheckoutReady,
+        refreshCheckoutSession,
         refreshExpiredCheckoutSession,
         recoverCheckoutSessionLoad,
         resolvedError,
