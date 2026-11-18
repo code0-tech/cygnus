@@ -44,6 +44,30 @@ export interface SubscriptionPendingUpdate {
     effectiveAt?: string
 }
 
+/**
+ * One metric of the current usage period. Amounts stay decimal strings (Crater's BigInt), since they survive JSON
+ * unchanged and are only turned into a `bigint` where they are formatted.
+ */
+export interface LicenseUsageMetric {
+    /** `null` means unlimited. */
+    allowance: string | null
+    exceeded: boolean
+    /** `null` while the allowance is unlimited. */
+    remaining: string | null
+    used: string
+}
+
+export interface LicenseUsage {
+    /** Only `available` carries numbers; `unavailable` must never be shown as zero. */
+    availability: "available" | "unavailable" | "unsupported"
+    aiTokens: LicenseUsageMetric | null
+    lastUpdatedAt: string | null
+    periodEnd: string | null
+    periodStart: string | null
+    resetsAt: string | null
+    workflowExecutions: LicenseUsageMetric | null
+}
+
 export interface LicenseDashboardLicense {
     aiTokens?: number
     canceledAt?: string
@@ -73,6 +97,7 @@ export interface LicenseDashboardLicense {
     subscriptionCreatedAt?: string
     subscriptionStatus?: DashboardSubscriptionStatus
     updatedAt?: string
+    usage?: LicenseUsage
     workflowExecutions?: number
 }
 

@@ -1,5 +1,6 @@
 import type { Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
+import { SUBSCRIPTION_USAGE_FIELDS } from "@/lib/crater/subscriptionFragments"
 
 type LicenseDashboardQuery = Pick<Query, "currentUser">
 type CustomerPageVariables = { customerAfter?: string | null }
@@ -178,6 +179,7 @@ export const CUSTOMER_LICENSE_PAGE: TypedDocumentNode<LicenseDashboardQuery, Lic
 
 export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
     ${SUBSCRIPTION_FIELDS}
+    ${SUBSCRIPTION_USAGE_FIELDS}
     query LicenseNavigationPage($customerAfter: String, $licenseAfter: String, $invoiceAfter: String) {
         currentUser {
             customers(after: $customerAfter, first: 1) {
@@ -197,6 +199,9 @@ export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, L
                             cursor
                             node {
                                 ...LicenseDashboardSubscriptionFields
+                                usage {
+                                    ...SubscriptionUsageFields
+                                }
                                 currentLicense {
                                     endDate
                                     id

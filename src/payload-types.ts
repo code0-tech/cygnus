@@ -3244,6 +3244,15 @@ export interface License {
     aiTokensLabel: string;
     editionLabel: string;
     nextBillingDateLabel: string;
+    usageLabel: string;
+    usageDescription: string;
+    usageOfLabel: string;
+    usageRemainingLabel: string;
+    usageUnlimitedLabel: string;
+    usageExceededLabel: string;
+    usageResetsAtLabel: string;
+    usageUpdatedAtLabel: string;
+    usageUnavailableDescription: string;
   };
   values: {
     customerTypes: {
@@ -4052,6 +4061,15 @@ export interface LicensesSelect<T extends boolean = true> {
         aiTokensLabel?: T;
         editionLabel?: T;
         nextBillingDateLabel?: T;
+        usageLabel?: T;
+        usageDescription?: T;
+        usageOfLabel?: T;
+        usageRemainingLabel?: T;
+        usageUnlimitedLabel?: T;
+        usageExceededLabel?: T;
+        usageResetsAtLabel?: T;
+        usageUpdatedAtLabel?: T;
+        usageUnavailableDescription?: T;
       };
   values?:
     | T

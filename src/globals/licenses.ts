@@ -69,6 +69,24 @@ export const Licenses: GlobalConfig = {
                                 localizedText("aiTokensLabel", "AI tokens", "KI-Tokens"),
                                 localizedText("editionLabel", "Edition", "Edition"),
                                 localizedText("nextBillingDateLabel", "Next billing date", "Nächste Abrechnung"),
+                                localizedText("usageLabel", "Usage", "Nutzung"),
+                                localizedText(
+                                    "usageDescription",
+                                    "Consumption in the current usage period. The figures can lag a few minutes behind.",
+                                    "Verbrauch im aktuellen Nutzungszeitraum. Die Zahlen können einige Minuten verzögert sein.",
+                                    { type: "textarea" }
+                                ),
+                                localizedText("usageOfLabel", "of {allowance}", "von {allowance}"),
+                                localizedText("usageRemainingLabel", "{remaining} remaining", "{remaining} übrig"),
+                                localizedText("usageUnlimitedLabel", "Unlimited", "Unbegrenzt"),
+                                localizedText("usageExceededLabel", "Allowance exceeded", "Kontingent überschritten"),
+                                localizedText("usageResetsAtLabel", "Resets on {date}", "Wird am {date} zurückgesetzt"),
+                                localizedText("usageUpdatedAtLabel", "Updated {time}", "Stand: {time}"),
+                                localizedText(
+                                    "usageUnavailableDescription",
+                                    "Usage can't be loaded right now. Please try again later.",
+                                    "Die Nutzung kann gerade nicht abgerufen werden. Bitte versuche es später erneut."
+                                ),
                             ],
                         },
                     ],

@@ -1,7 +1,16 @@
 import { normalizeCraterDeploymentType, normalizeCraterPaymentPeriod, normalizeCraterPlan, normalizeCraterCustomerType } from "@/lib/crater/values"
 import { normalizeUsagePackages } from "@/lib/subscription/usagePackages"
-import type { DashboardSubscriptionStatus, LicenseDashboardCustomer, LicenseDashboardData, LicenseDashboardInvoice, LicenseDashboardLicense, SubscriptionPendingUpdate } from "@/lib/licenses/types"
-import type { Customer, Invoice, Subscription, SubscriptionPendingUpdate as CraterPendingUpdate, User } from "@code0-tech/crater-graphql-types"
+import type {
+    DashboardSubscriptionStatus,
+    LicenseDashboardCustomer,
+    LicenseDashboardData,
+    LicenseDashboardInvoice,
+    LicenseDashboardLicense,
+    LicenseUsage,
+    LicenseUsageMetric,
+    SubscriptionPendingUpdate,
+} from "@/lib/licenses/types"
+import type { Customer, Invoice, Subscription, SubscriptionPendingUpdate as CraterPendingUpdate, SubscriptionUsage, SubscriptionUsageMetric, User } from "@code0-tech/crater-graphql-types"
 
 function displayName(name: string | null | undefined, email: string | null | undefined, id: string) {
     return name?.trim() || email?.trim() || id
@@ -91,6 +100,43 @@ function mapInvoice(invoice: Invoice): LicenseDashboardInvoice | null {
     }
 }
 
+const USAGE_AMOUNT_PATTERN = /^\d+$/
+const USAGE_AVAILABILITIES = { AVAILABLE: "available", UNAVAILABLE: "unavailable", UNSUPPORTED: "unsupported" } as const
+
+function mapUsageAmount(value: string | null | undefined) {
+    return typeof value === "string" && USAGE_AMOUNT_PATTERN.test(value) ? value : null
+}
+
+function mapUsageMetric(metric: SubscriptionUsageMetric | null | undefined): LicenseUsageMetric | null {
+    const used = mapUsageAmount(metric?.used)
+    if (!metric || used === null) return null
+
+    return {
+        allowance: mapUsageAmount(metric.allowance),
+        exceeded: metric.exceeded === true,
+        remaining: mapUsageAmount(metric.remaining),
+        used,
+    }
+}
+
+export function mapSubscriptionUsage(usage: SubscriptionUsage | null | undefined): LicenseUsage | null {
+    const availability = usage?.availability ? USAGE_AVAILABILITIES[`${usage.availability}`.toUpperCase() as keyof typeof USAGE_AVAILABILITIES] : undefined
+    if (!usage || !availability) return null
+
+    // Numbers only exist while AVAILABLE; anything else must not reach the page as a zero.
+    const aiTokens = availability === "available" ? mapUsageMetric(usage.aiTokens) : null
+    const workflowExecutions = availability === "available" ? mapUsageMetric(usage.workflowExecutions) : null
+    return {
+        availability: availability === "available" && !aiTokens && !workflowExecutions ? "unavailable" : availability,
+        aiTokens,
+        lastUpdatedAt: availability === "available" ? (usage.lastUpdatedAt ?? null) : null,
+        periodEnd: usage.periodEnd ?? null,
+        periodStart: usage.periodStart ?? null,
+        resetsAt: usage.resetsAt ?? null,
+        workflowExecutions,
+    }
+}
+
 export function deriveLicenseStatus(subscriptionStatus: string | null | undefined, hasLicense: boolean): LicenseDashboardLicense["status"] {
     if (!hasLicense) return "pending"
     return (subscriptionStatus?.trim().toUpperCase() || undefined) as DashboardSubscriptionStatus | undefined
@@ -104,6 +150,7 @@ export function mapSubscription(subscription: Subscription, customer: Customer):
     const paymentPeriod = normalizeCraterPaymentPeriod(subscription.paymentPeriod)
     const plan = normalizeCraterPlan(subscription.plan)
     const license = subscription.currentLicense
+    const usage = mapSubscriptionUsage(subscription.usage)
     const status = deriveLicenseStatus(subscription.status, Boolean(license?.id))
     const namespaceParent = subscription.namespace?.parent
     const namespaceName = namespaceParent?.__typename === "NamespaceOrganization"
@@ -133,6 +180,7 @@ export function mapSubscription(subscription: Subscription, customer: Customer):
         ...(license?.startDate ? { startDate: license.startDate } : {}),
         ...(status ? { status } : {}),
         ...(subscription.updatedAt ? { updatedAt: subscription.updatedAt } : {}),
+        ...(usage ? { usage } : {}),
         ...(typeof subscription.workflowExecutions === "number" ? { workflowExecutions: subscription.workflowExecutions } : {}),
         subscriptionId: subscription.id,
         ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),

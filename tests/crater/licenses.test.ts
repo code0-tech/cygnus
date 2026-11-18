@@ -340,6 +340,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         assert.match(response.headers.get("set-cookie") ?? "", /crater_session=persisted-token/)
         assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
         assert.equal(graphQLServer.requests[1].body.operationName, "LicenseDashboard")
+        assert.doesNotMatch(graphQLServer.requests[1].body.query ?? "", /usage \{/)
         assert.match(graphQLServer.requests[1].body.query ?? "", /customers\(after: \$customerAfter, first: 25\)/)
         assert.match(graphQLServer.requests[1].body.query ?? "", /subscriptions\(first: 5\)/)
         assert.match(graphQLServer.requests[0].body.query ?? "", /fragment LicenseDashboardNamespaceFields on Namespace/)
@@ -595,6 +596,15 @@ test("license detail loads lightweight navigation and forwards the invoice curso
                                                 status: "ACTIVE",
                                                 updatedAt: "2026-08-12T10:00:00Z",
                                                 workflowExecutions: 250000,
+                                                usage: {
+                                                    availability: "AVAILABLE",
+                                                    periodStart: "2026-08-01T00:00:00Z",
+                                                    periodEnd: "2026-09-01T00:00:00Z",
+                                                    resetsAt: "2026-09-01T00:00:00Z",
+                                                    lastUpdatedAt: "2026-08-12T09:00:00Z",
+                                                    aiTokens: { used: "120000000", allowance: "500000000", remaining: "380000000", exceeded: false },
+                                                    workflowExecutions: { used: "0", allowance: "250000", remaining: "250000", exceeded: false },
+                                                },
                                                 currentLicense: {
                                                     endDate: "2026-09-01T00:00:00Z",
                                                     id: "gid://crater/License/9",
@@ -666,6 +676,18 @@ test("license detail loads lightweight navigation and forwards the invoice curso
             ["gid://crater/Subscription/9", "gid://crater/Subscription/8", "gid://crater/Subscription/7"]
         )
         assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /aiTokens/)
+        // Usage reads Sagittarius live, so only the detail query asks for it and passes it through unchanged.
+        assert.match(graphQLServer.requests[1].body.query ?? "", /usage \{/)
+        assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /usage/)
+        assert.deepEqual(body.licenses[0].usage, {
+            availability: "available",
+            aiTokens: { allowance: "500000000", exceeded: false, remaining: "380000000", used: "120000000" },
+            lastUpdatedAt: "2026-08-12T09:00:00Z",
+            periodEnd: "2026-09-01T00:00:00Z",
+            periodStart: "2026-08-01T00:00:00Z",
+            resetsAt: "2026-09-01T00:00:00Z",
+            workflowExecutions: { allowance: "250000", exceeded: false, remaining: "250000", used: "0" },
+        })
     })
 })
 
