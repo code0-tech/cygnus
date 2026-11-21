@@ -3,11 +3,10 @@ import { gql, type TypedDocumentNode } from "@apollo/client"
 import { SUBSCRIPTION_USAGE_FIELDS } from "@/lib/crater/subscriptionFragments"
 
 type LicenseDashboardQuery = Pick<Query, "currentUser">
-type CustomerPageVariables = { customerAfter?: string | null }
-type LicenseDetailVariables = { customerAfter?: string | null; invoiceAfter?: string | null; licenseAfter?: string | null }
+type LicenseDetailVariables = { invoiceAfter?: string | null; licenseAfter?: string | null }
 
 const PAGE_SIZE = 25
-const RECENT_LICENSES_PER_CUSTOMER = 5
+const RECENT_LICENSES = 5
 
 const NAMESPACE_FIELDS = gql`
     fragment LicenseDashboardNamespaceFields on Namespace {
@@ -73,74 +72,58 @@ const NAVIGATION_SUBSCRIPTION_FIELDS = gql`
     }
 `
 
-export const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVariables> = gql`
+export const LICENSE_DASHBOARD: TypedDocumentNode<LicenseDashboardQuery, Record<string, never>> = gql`
     ${SUBSCRIPTION_FIELDS}
-    query LicenseDashboard($customerAfter: String) {
+    query LicenseDashboard {
         currentUser {
-            customers(after: $customerAfter, first: ${PAGE_SIZE}) {
-                count
-                nodes {
-                    id
-                    customerType
-                    checkoutLimits {
-                        aiTokens
-                        workflowExecutions
-                    }
-                    name
-                    email
-                    updatedAt
-                    subscriptions(first: ${RECENT_LICENSES_PER_CUSTOMER}) {
-                        count
-                        nodes {
-                            ...LicenseDashboardSubscriptionFields
-                            currentLicense {
-                                endDate
-                                id
-                                startDate
-                            }
+            customer {
+                id
+                customerType
+                checkoutLimits {
+                    aiTokens
+                    workflowExecutions
+                }
+                name
+                email
+                updatedAt
+                subscriptions(first: ${RECENT_LICENSES}) {
+                    count
+                    nodes {
+                        ...LicenseDashboardSubscriptionFields
+                        currentLicense {
+                            endDate
+                            id
+                            startDate
                         }
                     }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
                 }
             }
         }
     }
 `
 
-export const CUSTOMER_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, CustomerPageVariables> = gql`
+export const CUSTOMER_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, Record<string, never>> = gql`
     ${NAVIGATION_SUBSCRIPTION_FIELDS}
-    query CustomerNavigationPage($customerAfter: String) {
+    query CustomerNavigationPage {
         currentUser {
-            customers(after: $customerAfter, first: ${PAGE_SIZE}) {
-                edges {
-                    cursor
-                    node {
-                        id
-                        customerType
-                        name
-                        email
-                        updatedAt
-                        subscriptions(first: ${PAGE_SIZE}) {
-                            count
-                            edges {
-                                cursor
-                                node {
-                                    ...LicenseNavigationSubscriptionFields
-                                }
-                            }
-                            pageInfo {
-                                endCursor
-                                hasNextPage
-                            }
+            customer {
+                id
+                customerType
+                name
+                email
+                updatedAt
+                subscriptions(first: ${PAGE_SIZE}) {
+                    count
+                    edges {
+                        cursor
+                        node {
+                            ...LicenseNavigationSubscriptionFields
                         }
                     }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
+                    pageInfo {
+                        endCursor
+                        hasNextPage
+                    }
                 }
             }
         }
@@ -149,27 +132,25 @@ export const CUSTOMER_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, 
 
 export const CUSTOMER_LICENSE_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
     ${NAVIGATION_SUBSCRIPTION_FIELDS}
-    query CustomerLicensePage($customerAfter: String, $licenseAfter: String) {
+    query CustomerLicensePage($licenseAfter: String) {
         currentUser {
-            customers(after: $customerAfter, first: 1) {
-                nodes {
-                    id
-                    customerType
-                    name
-                    email
-                    updatedAt
-                    subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
-                        count
-                        edges {
-                            cursor
-                            node {
-                                ...LicenseNavigationSubscriptionFields
-                            }
+            customer {
+                id
+                customerType
+                name
+                email
+                updatedAt
+                subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                    count
+                    edges {
+                        cursor
+                        node {
+                            ...LicenseNavigationSubscriptionFields
                         }
-                        pageInfo {
-                            endCursor
-                            hasNextPage
-                        }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
                     }
                 }
             }
@@ -180,62 +161,60 @@ export const CUSTOMER_LICENSE_PAGE: TypedDocumentNode<LicenseDashboardQuery, Lic
 export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
     ${SUBSCRIPTION_FIELDS}
     ${SUBSCRIPTION_USAGE_FIELDS}
-    query LicenseNavigationPage($customerAfter: String, $licenseAfter: String, $invoiceAfter: String) {
+    query LicenseNavigationPage($licenseAfter: String, $invoiceAfter: String) {
         currentUser {
-            customers(after: $customerAfter, first: 1) {
-                nodes {
-                    id
-                    customerType
-                    checkoutLimits {
-                        aiTokens
-                        workflowExecutions
-                    }
-                    name
-                    email
-                    updatedAt
-                    subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
-                        count
-                        edges {
-                            cursor
-                            node {
-                                ...LicenseDashboardSubscriptionFields
-                                usage {
-                                    ...SubscriptionUsageFields
-                                }
-                                currentLicense {
-                                    endDate
-                                    id
-                                    startDate
-                                    invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
-                                        count
-                                        nodes {
-                                            createdAt
-                                            currency
-                                            id
-                                            invoiceNumber
-                                            status
-                                            stripePdfUrl
-                                            net
-                                            tax
-                                            lineItems {
-                                                amount
-                                                description
-                                                quantity
-                                            }
-                                            total
+            customer {
+                id
+                customerType
+                checkoutLimits {
+                    aiTokens
+                    workflowExecutions
+                }
+                name
+                email
+                updatedAt
+                subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                    count
+                    edges {
+                        cursor
+                        node {
+                            ...LicenseDashboardSubscriptionFields
+                            usage {
+                                ...SubscriptionUsageFields
+                            }
+                            currentLicense {
+                                endDate
+                                id
+                                startDate
+                                invoices(after: $invoiceAfter, first: ${PAGE_SIZE}) {
+                                    count
+                                    nodes {
+                                        createdAt
+                                        currency
+                                        id
+                                        invoiceNumber
+                                        status
+                                        stripePdfUrl
+                                        net
+                                        tax
+                                        lineItems {
+                                            amount
+                                            description
+                                            quantity
                                         }
-                                        pageInfo {
-                                            endCursor
-                                            hasNextPage
-                                        }
+                                        total
+                                    }
+                                    pageInfo {
+                                        endCursor
+                                        hasNextPage
                                     }
                                 }
                             }
                         }
-                        pageInfo {
-                            endCursor
-                            hasNextPage
-                        }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
                     }
                 }
             }
@@ -245,42 +224,40 @@ export const LICENSE_NAVIGATION_PAGE: TypedDocumentNode<LicenseDashboardQuery, L
 
 export const LICENSE_CUSTOMER_DETAIL: TypedDocumentNode<LicenseDashboardQuery, LicenseDetailVariables> = gql`
     ${SUBSCRIPTION_FIELDS}
-    query LicenseCustomerDetail($customerAfter: String, $licenseAfter: String) {
+    query LicenseCustomerDetail($licenseAfter: String) {
         currentUser {
-            customers(after: $customerAfter, first: 1) {
-                nodes {
-                    address {
-                        city
-                        country
-                        line1
-                        line2
-                        postalCode
-                        state
-                    }
-                    id
-                    customerType
-                    checkoutLimits {
-                        aiTokens
-                        workflowExecutions
-                    }
-                    name
-                    email
-                    phone
-                    updatedAt
-                    subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
-                        count
-                        nodes {
-                            ...LicenseDashboardSubscriptionFields
-                            currentLicense {
-                                endDate
-                                id
-                                startDate
-                            }
+            customer {
+                address {
+                    city
+                    country
+                    line1
+                    line2
+                    postalCode
+                    state
+                }
+                id
+                customerType
+                checkoutLimits {
+                    aiTokens
+                    workflowExecutions
+                }
+                name
+                email
+                phone
+                updatedAt
+                subscriptions(after: $licenseAfter, first: ${PAGE_SIZE}) {
+                    count
+                    nodes {
+                        ...LicenseDashboardSubscriptionFields
+                        currentLicense {
+                            endDate
+                            id
+                            startDate
                         }
-                        pageInfo {
-                            endCursor
-                            hasNextPage
-                        }
+                    }
+                    pageInfo {
+                        endCursor
+                        hasNextPage
                     }
                 }
             }

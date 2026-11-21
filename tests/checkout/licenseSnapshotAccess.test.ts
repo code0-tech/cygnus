@@ -23,28 +23,22 @@ test.after(() => {
 const customerId = "gid://crater/Customer/3"
 const snapshotId = "gid://crater/License/99"
 const subscriptionId = "gid://crater/Subscription/7"
-const end = { endCursor: null, hasNextPage: false }
-const customers = { data: { currentUser: { customers: { edges: [{ cursor: "customer-3", node: { id: customerId } }], pageInfo: end } } } }
-function subscriptionPage(id = subscriptionId, snapshots: string[] = [snapshotId], snapshotCursor: string | null = null, subscriptionCursor: string | null = null) {
+function subscriptionPage(id = subscriptionId, snapshots: string[] = [snapshotId], snapshotCursor: string | null = null, subscriptionCursor: string | null = null, owner = customerId) {
     return {
         data: {
             currentUser: {
-                customers: {
-                    nodes: [
-                        {
-                            id: customerId,
-                            subscriptions: {
-                                nodes: [
-                                    {
-                                        id,
-                                        currentLicense: { id: "gid://crater/License/100" },
-                                        licenses: { nodes: snapshots.map((id) => ({ id })), pageInfo: { endCursor: snapshotCursor, hasNextPage: Boolean(snapshotCursor) } },
-                                    },
-                                ],
-                                pageInfo: { endCursor: subscriptionCursor, hasNextPage: Boolean(subscriptionCursor) },
+                customer: {
+                    id: owner,
+                    subscriptions: {
+                        nodes: [
+                            {
+                                id,
+                                currentLicense: { id: "gid://crater/License/100" },
+                                licenses: { nodes: snapshots.map((id) => ({ id })), pageInfo: { endCursor: snapshotCursor, hasNextPage: Boolean(snapshotCursor) } },
                             },
-                        },
-                    ],
+                        ],
+                        pageInfo: { endCursor: subscriptionCursor, hasNextPage: Boolean(subscriptionCursor) },
+                    },
                 },
             },
         },
@@ -57,7 +51,7 @@ function request(licenseId = snapshotId) {
 }
 
 test("opens the subscription detail belonging to the checkout snapshot", async () => {
-    await withGraphQLServer([customers, subscriptionPage()], async (server) => {
+    await withGraphQLServer([subscriptionPage()], async (server) => {
         const response = await GET(request())
         assert.equal(response.status, 307)
         assert.equal(response.headers.get("location"), "https://code0.example/de/licenses/customer/3/license/7")
@@ -67,41 +61,40 @@ test("opens the subscription detail belonging to the checkout snapshot", async (
     })
 })
 
-test("resolves older snapshots after renewal across customer, subscription and snapshot pages", async () => {
-    const otherCustomerPage = {
-        data: { currentUser: { customers: { edges: [{ cursor: "customer-1", node: { id: "gid://crater/Customer/1" } }], pageInfo: { endCursor: "customer-1", hasNextPage: true } } } },
-    }
+test("resolves older snapshots after renewal across subscription and snapshot pages", async () => {
     await withGraphQLServer(
-        [otherCustomerPage, customers, subscriptionPage("gid://crater/Subscription/6", [], null, "subscription-6"), subscriptionPage(subscriptionId, [], "snapshot-50"), subscriptionPage()],
+        [subscriptionPage("gid://crater/Subscription/6", [], null, "subscription-6"), subscriptionPage(subscriptionId, [], "snapshot-50"), subscriptionPage()],
         async (server) => {
             const response = await GET(request())
             assert.equal(response.headers.get("location"), "https://code0.example/de/licenses/customer/3/license/7")
             assert.deepEqual(
                 server.requests.map((entry) => entry.body.variables),
-                [
-                    {},
-                    { customerAfter: "customer-1" },
-                    { customerAfter: "customer-1" },
-                    { customerAfter: "customer-1", subscriptionAfter: "subscription-6" },
-                    { customerAfter: "customer-1", subscriptionAfter: "subscription-6", snapshotAfter: "snapshot-50" },
-                ]
+                [{}, { subscriptionAfter: "subscription-6" }, { subscriptionAfter: "subscription-6", snapshotAfter: "snapshot-50" }]
             )
         }
     )
 })
 
 test("refuses snapshots outside the selected customer", async () => {
-    await withGraphQLServer([customers, subscriptionPage(subscriptionId, [])], async () => {
+    await withGraphQLServer([subscriptionPage(subscriptionId, [])], async () => {
         const response = await GET(request())
         assert.equal(response.status, 404)
         assert.equal(response.headers.get("location"), null)
     })
 })
 
+test("refuses a customer id that is not the user's own customer", async () => {
+    await withGraphQLServer([subscriptionPage(subscriptionId, [snapshotId], null, null, "gid://crater/Customer/4")], async (server) => {
+        const response = await GET(request())
+        assert.equal(response.status, 404)
+        assert.equal(server.requests.length, 1)
+    })
+})
+
 test("stops repeated snapshot cursors instead of looping", async () => {
-    await withGraphQLServer([customers, subscriptionPage(subscriptionId, [], "repeated"), subscriptionPage(subscriptionId, [], "repeated")], async (server) => {
+    await withGraphQLServer([subscriptionPage(subscriptionId, [], "repeated"), subscriptionPage(subscriptionId, [], "repeated")], async (server) => {
         assert.equal((await GET(request())).status, 502)
-        assert.equal(server.requests.length, 3)
+        assert.equal(server.requests.length, 2)
     })
 })
 

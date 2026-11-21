@@ -153,9 +153,7 @@ export function mapSubscription(subscription: Subscription, customer: Customer):
     const usage = mapSubscriptionUsage(subscription.usage)
     const status = deriveLicenseStatus(subscription.status, Boolean(license?.id))
     const namespaceParent = subscription.namespace?.parent
-    const namespaceName = namespaceParent?.__typename === "NamespaceOrganization"
-        ? namespaceParent.name
-        : namespaceParent?.__typename === "NamespaceUser" ? namespaceParent.username : null
+    const namespaceName = namespaceParent?.__typename === "NamespaceOrganization" ? namespaceParent.name : namespaceParent?.__typename === "NamespaceUser" ? namespaceParent.username : null
 
     return {
         ...(typeof subscription.aiTokens === "number" ? { aiTokens: subscription.aiTokens } : {}),
@@ -196,9 +194,9 @@ export function mapSubscription(subscription: Subscription, customer: Customer):
 export function mapUserData(currentUser: User): LicenseDashboardData {
     const customers: LicenseDashboardCustomer[] = []
     const licenses: LicenseDashboardLicense[] = []
+    const customer = currentUser.customer
 
-    for (const customer of currentUser.customers?.nodes ?? []) {
-        if (!customer) continue
+    if (customer) {
         const mappedCustomer = mapCustomer(customer)
         if (mappedCustomer) customers.push(mappedCustomer)
 
@@ -213,12 +211,11 @@ export function mapUserData(currentUser: User): LicenseDashboardData {
     return { customers, licenses }
 }
 
-export function mapPageInfo(pageInfo: { endCursor?: string | null; hasNextPage?: boolean | null } | null | undefined, totalCount?: number | null, contextCursor?: string | null) {
+export function mapPageInfo(pageInfo: { endCursor?: string | null; hasNextPage?: boolean | null } | null | undefined, totalCount?: number | null) {
     return {
         endCursor: pageInfo?.endCursor ?? null,
         hasNextPage: pageInfo?.hasNextPage === true,
         ...(typeof totalCount === "number" ? { totalCount } : {}),
-        ...(contextCursor !== undefined ? { contextCursor } : {}),
     }
 }
 

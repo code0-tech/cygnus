@@ -135,14 +135,11 @@ test("license access never exchanges tokens from links, even with a login-state 
 const subscriptionCustomer = {
     data: {
         currentUser: {
-            customers: {
-                nodes: [{ id: "gid://crater/Customer/3", subscriptions: { nodes: [{ id: "gid://crater/Subscription/666" }], pageInfo: { hasNextPage: false } } }],
-                pageInfo: { hasNextPage: false },
-            },
+            customer: { id: "gid://crater/Customer/3", subscriptions: { nodes: [{ id: "gid://crater/Subscription/666" }], pageInfo: { hasNextPage: false } } },
         },
     },
 }
-const noCustomers = { data: { currentUser: { customers: { nodes: [], pageInfo: { hasNextPage: false } } } } }
+const noCustomers = { data: { currentUser: { customer: null } } }
 const linkHeaders: Array<Record<string, string>> = [
     {},
     { referer: "https://attacker.example/" },
@@ -234,50 +231,42 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         {
             data: {
                 currentUser: {
-                    customers: {
-                        edges: [
-                            {
-                                cursor: "customer-7",
-                                node: {
-                                    id: "gid://crater/Customer/7",
-                                    customerType: "business",
-                                    email: "billing@example.com",
-                                    name: "Example GmbH",
-                                    updatedAt: "2026-08-10T10:00:00Z",
-                                    subscriptions: {
-                                        count: 2,
-                                        edges: [
-                                            {
-                                                cursor: "license-1",
-                                                node: {
-                                                    id: "gid://crater/Subscription/1",
-                                                    status: "ACTIVE",
-                                                    currentLicense: { id: "gid://crater/License/1" },
-                                                    plan: "PRO",
-                                                    deploymentType: "CLOUD",
-                                                    namespace: { id: "namespace-1", parent: { __typename: "NamespaceOrganization", name: "Example Workspace" } },
-                                                    updatedAt: "2026-08-10T10:00:00Z",
-                                                },
-                                            },
-                                            {
-                                                cursor: "license-2",
-                                                node: {
-                                                    id: "gid://crater/Subscription/2",
-                                                    status: "ACTIVE",
-                                                    currentLicense: { id: "gid://crater/License/2" },
-                                                    plan: "CUSTOM",
-                                                    deploymentType: "SELF_HOSTED",
-                                                    namespace: null,
-                                                    updatedAt: "2026-08-12T10:00:00Z",
-                                                },
-                                            },
-                                        ],
-                                        pageInfo: { endCursor: "license-2", hasNextPage: false },
+                    customer: {
+                        id: "gid://crater/Customer/7",
+                        customerType: "business",
+                        email: "billing@example.com",
+                        name: "Example GmbH",
+                        updatedAt: "2026-08-10T10:00:00Z",
+                        subscriptions: {
+                            count: 2,
+                            edges: [
+                                {
+                                    cursor: "license-1",
+                                    node: {
+                                        id: "gid://crater/Subscription/1",
+                                        status: "ACTIVE",
+                                        currentLicense: { id: "gid://crater/License/1" },
+                                        plan: "PRO",
+                                        deploymentType: "CLOUD",
+                                        namespace: { id: "namespace-1", parent: { __typename: "NamespaceOrganization", name: "Example Workspace" } },
+                                        updatedAt: "2026-08-10T10:00:00Z",
                                     },
                                 },
-                            },
-                        ],
-                        pageInfo: { endCursor: "customer-7", hasNextPage: false },
+                                {
+                                    cursor: "license-2",
+                                    node: {
+                                        id: "gid://crater/Subscription/2",
+                                        status: "ACTIVE",
+                                        currentLicense: { id: "gid://crater/License/2" },
+                                        plan: "CUSTOM",
+                                        deploymentType: "SELF_HOSTED",
+                                        namespace: null,
+                                        updatedAt: "2026-08-12T10:00:00Z",
+                                    },
+                                },
+                            ],
+                            pageInfo: { endCursor: "license-2", hasNextPage: false },
+                        },
                     },
                 },
             },
@@ -285,45 +274,41 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         {
             data: {
                 currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                id: "gid://crater/Customer/7",
-                                customerType: "business",
-                                email: "billing@example.com",
-                                name: "Example GmbH",
-                                updatedAt: "2026-08-10T10:00:00Z",
-                                subscriptions: {
-                                    count: 2,
-                                    nodes: [
-                                        {
-                                            aiTokens: 500000000,
-                                            id: "gid://crater/Subscription/1",
-                                            status: "ACTIVE",
-                                            currentLicense: { id: "gid://crater/License/1" },
-                                            plan: "PRO",
-                                            deploymentType: "CLOUD",
-                                            namespace: { id: "namespace-1", parent: { __typename: "NamespaceOrganization", name: "Example Workspace" } },
-                                            paymentPeriod: "YEARLY",
-                                            updatedAt: "2026-08-10T10:00:00Z",
-                                            workflowExecutions: 250000,
-                                        },
-                                        {
-                                            aiTokens: 100000000,
-                                            id: "gid://crater/Subscription/2",
-                                            status: "ACTIVE",
-                                            currentLicense: { id: "gid://crater/License/2" },
-                                            plan: "CUSTOM",
-                                            deploymentType: "SELF_HOSTED",
-                                            namespace: null,
-                                            paymentPeriod: "MONTHLY",
-                                            updatedAt: "2026-08-12T10:00:00Z",
-                                            workflowExecutions: 100000,
-                                        },
-                                    ],
+                    customer: {
+                        id: "gid://crater/Customer/7",
+                        customerType: "business",
+                        email: "billing@example.com",
+                        name: "Example GmbH",
+                        updatedAt: "2026-08-10T10:00:00Z",
+                        subscriptions: {
+                            count: 2,
+                            nodes: [
+                                {
+                                    aiTokens: 500000000,
+                                    id: "gid://crater/Subscription/1",
+                                    status: "ACTIVE",
+                                    currentLicense: { id: "gid://crater/License/1" },
+                                    plan: "PRO",
+                                    deploymentType: "CLOUD",
+                                    namespace: { id: "namespace-1", parent: { __typename: "NamespaceOrganization", name: "Example Workspace" } },
+                                    paymentPeriod: "YEARLY",
+                                    updatedAt: "2026-08-10T10:00:00Z",
+                                    workflowExecutions: 250000,
                                 },
-                            },
-                        ],
+                                {
+                                    aiTokens: 100000000,
+                                    id: "gid://crater/Subscription/2",
+                                    status: "ACTIVE",
+                                    currentLicense: { id: "gid://crater/License/2" },
+                                    plan: "CUSTOM",
+                                    deploymentType: "SELF_HOSTED",
+                                    namespace: null,
+                                    paymentPeriod: "MONTHLY",
+                                    updatedAt: "2026-08-12T10:00:00Z",
+                                    workflowExecutions: 100000,
+                                },
+                            ],
+                        },
                     },
                 },
             },
@@ -341,7 +326,10 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
         assert.equal(graphQLServer.requests[1].body.operationName, "LicenseDashboard")
         assert.doesNotMatch(graphQLServer.requests[1].body.query ?? "", /usage \{/)
-        assert.match(graphQLServer.requests[1].body.query ?? "", /customers\(after: \$customerAfter, first: 25\)/)
+        // A user manages a single customer, so the dashboard reads it directly instead of paging customers.
+        assert.match(graphQLServer.requests[1].body.query ?? "", /customer \{/)
+        assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /customers/)
+        assert.doesNotMatch(graphQLServer.requests[1].body.query ?? "", /customers|customerAfter/)
         assert.match(graphQLServer.requests[1].body.query ?? "", /subscriptions\(first: 5\)/)
         assert.match(graphQLServer.requests[0].body.query ?? "", /fragment LicenseDashboardNamespaceFields on Namespace/)
         assert.match(graphQLServer.requests[0].body.query ?? "", /on NamespaceOrganization/)
@@ -432,7 +420,7 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
                     updatedAt: "2026-08-10T10:00:00Z",
                 },
             ],
-            pagination: { customers: { endCursor: null, hasNextPage: false } },
+            pagination: { customers: { endCursor: null, hasNextPage: false, totalCount: 1 } },
         })
     })
 })
@@ -442,28 +430,20 @@ test("license dashboard navigation includes licenses beyond a customer's first C
         {
             data: {
                 currentUser: {
-                    customers: {
-                        edges: [
-                            {
-                                cursor: "customer-1",
-                                node: {
-                                    id: "gid://crater/Customer/1",
-                                    customerType: "personal",
-                                    name: "All Licenses",
-                                    subscriptions: {
-                                        count: 26,
-                                        edges: [
-                                            {
-                                                cursor: "license-25",
-                                                node: { id: "gid://crater/Subscription/25", plan: "PRO", updatedAt: "2026-08-10T10:00:00Z" },
-                                            },
-                                        ],
-                                        pageInfo: { endCursor: "license-25", hasNextPage: true },
-                                    },
+                    customer: {
+                        id: "gid://crater/Customer/1",
+                        customerType: "personal",
+                        name: "All Licenses",
+                        subscriptions: {
+                            count: 26,
+                            edges: [
+                                {
+                                    cursor: "license-25",
+                                    node: { id: "gid://crater/Subscription/25", plan: "PRO", updatedAt: "2026-08-10T10:00:00Z" },
                                 },
-                            },
-                        ],
-                        pageInfo: { endCursor: "customer-1", hasNextPage: false },
+                            ],
+                            pageInfo: { endCursor: "license-25", hasNextPage: true },
+                        },
                     },
                 },
             },
@@ -471,24 +451,20 @@ test("license dashboard navigation includes licenses beyond a customer's first C
         {
             data: {
                 currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                id: "gid://crater/Customer/1",
-                                customerType: "personal",
-                                name: "All Licenses",
-                                subscriptions: {
-                                    count: 26,
-                                    edges: [
-                                        {
-                                            cursor: "license-26",
-                                            node: { id: "gid://crater/Subscription/26", plan: "MAX", updatedAt: "2026-08-11T10:00:00Z" },
-                                        },
-                                    ],
-                                    pageInfo: { endCursor: "license-26", hasNextPage: false },
+                    customer: {
+                        id: "gid://crater/Customer/1",
+                        customerType: "personal",
+                        name: "All Licenses",
+                        subscriptions: {
+                            count: 26,
+                            edges: [
+                                {
+                                    cursor: "license-26",
+                                    node: { id: "gid://crater/Subscription/26", plan: "MAX", updatedAt: "2026-08-11T10:00:00Z" },
                                 },
-                            },
-                        ],
+                            ],
+                            pageInfo: { endCursor: "license-26", hasNextPage: false },
+                        },
                     },
                 },
             },
@@ -496,20 +472,14 @@ test("license dashboard navigation includes licenses beyond a customer's first C
         {
             data: {
                 currentUser: {
-                    customers: {
-                        count: 1,
-                        nodes: [
-                            {
-                                id: "gid://crater/Customer/1",
-                                customerType: "personal",
-                                name: "All Licenses",
-                                subscriptions: {
-                                    count: 26,
-                                    nodes: [{ id: "gid://crater/Subscription/26", plan: "MAX", updatedAt: "2026-08-11T10:00:00Z" }],
-                                },
-                            },
-                        ],
-                        pageInfo: { endCursor: "customer-1", hasNextPage: false },
+                    customer: {
+                        id: "gid://crater/Customer/1",
+                        customerType: "personal",
+                        name: "All Licenses",
+                        subscriptions: {
+                            count: 26,
+                            nodes: [{ id: "gid://crater/Subscription/26", plan: "MAX", updatedAt: "2026-08-11T10:00:00Z" }],
+                        },
                     },
                 },
             },
@@ -535,38 +505,18 @@ test("license detail loads lightweight navigation and forwards the invoice curso
         {
             data: {
                 currentUser: {
-                    customers: {
-                        edges: [
-                            {
-                                cursor: "customer-7",
-                                node: {
-                                    id: "gid://crater/Customer/7",
-                                    customerType: "personal",
-                                    email: "first@example.com",
-                                    name: "First",
-                                    subscriptions: {
-                                        count: 1,
-                                        edges: [{ cursor: "license-7", node: { id: "gid://crater/Subscription/7", plan: "PRO", updatedAt: "2026-08-10T10:00:00Z" } }],
-                                    },
-                                },
-                            },
-                            {
-                                cursor: "customer-8",
-                                node: {
-                                    id: "gid://crater/Customer/8",
-                                    customerType: "business",
-                                    email: "second@example.com",
-                                    name: "Second",
-                                    subscriptions: {
-                                        count: 2,
-                                        edges: [
-                                            { cursor: "license-8a", node: { id: "gid://crater/Subscription/8", plan: "PRO", updatedAt: "2026-08-11T10:00:00Z" } },
-                                            { cursor: "license-8b", node: { id: "gid://crater/Subscription/9", plan: "CUSTOM", updatedAt: "2026-08-12T10:00:00Z" } },
-                                        ],
-                                    },
-                                },
-                            },
-                        ],
+                    customer: {
+                        id: "gid://crater/Customer/8",
+                        customerType: "business",
+                        email: "second@example.com",
+                        name: "Second",
+                        subscriptions: {
+                            count: 2,
+                            edges: [
+                                { cursor: "license-8a", node: { id: "gid://crater/Subscription/8", plan: "PRO", updatedAt: "2026-08-11T10:00:00Z" } },
+                                { cursor: "license-8b", node: { id: "gid://crater/Subscription/9", plan: "CUSTOM", updatedAt: "2026-08-12T10:00:00Z" } },
+                            ],
+                        },
                     },
                 },
             },
@@ -574,63 +524,59 @@ test("license detail loads lightweight navigation and forwards the invoice curso
         {
             data: {
                 currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                id: "gid://crater/Customer/8",
-                                customerType: "business",
-                                email: "second@example.com",
-                                name: "Second",
-                                subscriptions: {
-                                    count: 2,
-                                    edges: [
-                                        { cursor: "license-8a", node: { id: "gid://crater/Subscription/8", plan: "PRO", updatedAt: "2026-08-11T10:00:00Z" } },
-                                        {
-                                            cursor: "license-8b",
-                                            node: {
-                                                aiTokens: 500000000,
-                                                deploymentType: "SELF_HOSTED",
-                                                id: "gid://crater/Subscription/9",
-                                                paymentPeriod: "MONTHLY",
-                                                plan: "CUSTOM",
-                                                status: "ACTIVE",
-                                                updatedAt: "2026-08-12T10:00:00Z",
-                                                workflowExecutions: 250000,
-                                                usage: {
-                                                    availability: "AVAILABLE",
-                                                    periodStart: "2026-08-01T00:00:00Z",
-                                                    periodEnd: "2026-09-01T00:00:00Z",
-                                                    resetsAt: "2026-09-01T00:00:00Z",
-                                                    lastUpdatedAt: "2026-08-12T09:00:00Z",
-                                                    aiTokens: { used: "120000000", allowance: "500000000", remaining: "380000000", exceeded: false },
-                                                    workflowExecutions: { used: "0", allowance: "250000", remaining: "250000", exceeded: false },
-                                                },
-                                                currentLicense: {
-                                                    endDate: "2026-09-01T00:00:00Z",
-                                                    id: "gid://crater/License/9",
-                                                    invoices: {
-                                                        count: 1,
-                                                        nodes: [
-                                                            {
-                                                                createdAt: "2026-08-01T00:00:00Z",
-                                                                currency: "eur",
-                                                                id: "gid://crater/Invoice/12",
-                                                                invoiceNumber: "INV-0012",
-                                                                status: "paid",
-                                                                stripePdfUrl: "https://pay.stripe.com/invoice/example/pdf",
-                                                                total: 13500,
-                                                            },
-                                                        ],
-                                                        pageInfo: { endCursor: "invoice-25", hasNextPage: false },
+                    customer: {
+                        id: "gid://crater/Customer/8",
+                        customerType: "business",
+                        email: "second@example.com",
+                        name: "Second",
+                        subscriptions: {
+                            count: 2,
+                            edges: [
+                                { cursor: "license-8a", node: { id: "gid://crater/Subscription/8", plan: "PRO", updatedAt: "2026-08-11T10:00:00Z" } },
+                                {
+                                    cursor: "license-8b",
+                                    node: {
+                                        aiTokens: 500000000,
+                                        deploymentType: "SELF_HOSTED",
+                                        id: "gid://crater/Subscription/9",
+                                        paymentPeriod: "MONTHLY",
+                                        plan: "CUSTOM",
+                                        status: "ACTIVE",
+                                        updatedAt: "2026-08-12T10:00:00Z",
+                                        workflowExecutions: 250000,
+                                        usage: {
+                                            availability: "AVAILABLE",
+                                            periodStart: "2026-08-01T00:00:00Z",
+                                            periodEnd: "2026-09-01T00:00:00Z",
+                                            resetsAt: "2026-09-01T00:00:00Z",
+                                            lastUpdatedAt: "2026-08-12T09:00:00Z",
+                                            aiTokens: { used: "120000000", allowance: "500000000", remaining: "380000000", exceeded: false },
+                                            workflowExecutions: { used: "0", allowance: "250000", remaining: "250000", exceeded: false },
+                                        },
+                                        currentLicense: {
+                                            endDate: "2026-09-01T00:00:00Z",
+                                            id: "gid://crater/License/9",
+                                            invoices: {
+                                                count: 1,
+                                                nodes: [
+                                                    {
+                                                        createdAt: "2026-08-01T00:00:00Z",
+                                                        currency: "eur",
+                                                        id: "gid://crater/Invoice/12",
+                                                        invoiceNumber: "INV-0012",
+                                                        status: "paid",
+                                                        stripePdfUrl: "https://pay.stripe.com/invoice/example/pdf",
+                                                        total: 13500,
                                                     },
-                                                },
+                                                ],
+                                                pageInfo: { endCursor: "invoice-25", hasNextPage: false },
                                             },
                                         },
-                                    ],
-                                    pageInfo: { endCursor: "license-8b", hasNextPage: false },
+                                    },
                                 },
-                            },
-                        ],
+                            ],
+                            pageInfo: { endCursor: "license-8b", hasNextPage: false },
+                        },
                     },
                 },
             },
@@ -646,7 +592,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
         assert.equal(response.status, 200)
         assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
         assert.equal(graphQLServer.requests[1].body.operationName, "LicenseNavigationPage")
-        assert.deepEqual(graphQLServer.requests[1].body.variables, { customerAfter: "customer-7", invoiceAfter: "invoice-25" })
+        assert.deepEqual(graphQLServer.requests[1].body.variables, { invoiceAfter: "invoice-25" })
         assert.deepEqual(
             body.customers.map((customer: { id: string }) => customer.id),
             ["gid://crater/Customer/8"]
@@ -673,7 +619,7 @@ test("license detail loads lightweight navigation and forwards the invoice curso
         assert.match(graphQLServer.requests[1].body.query ?? "", /endDate/)
         assert.deepEqual(
             body.navigationLicenses.map((license: { id: string }) => license.id),
-            ["gid://crater/Subscription/9", "gid://crater/Subscription/8", "gid://crater/Subscription/7"]
+            ["gid://crater/Subscription/9", "gid://crater/Subscription/8"]
         )
         assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /aiTokens/)
         // Usage reads Sagittarius live, so only the detail query asks for it and passes it through unchanged.
@@ -696,18 +642,14 @@ test("paginates licenses on a customer detail page", async () => {
         {
             data: {
                 currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                customerType: "personal",
-                                id: "gid://crater/Customer/1",
-                                subscriptions: {
-                                    count: 51,
-                                    nodes: [{ id: "gid://crater/Subscription/26", plan: "PRO" }],
-                                    pageInfo: { endCursor: "license-50", hasNextPage: true },
-                                },
-                            },
-                        ],
+                    customer: {
+                        customerType: "personal",
+                        id: "gid://crater/Customer/1",
+                        subscriptions: {
+                            count: 51,
+                            nodes: [{ id: "gid://crater/Subscription/26", plan: "PRO" }],
+                            pageInfo: { endCursor: "license-50", hasNextPage: true },
+                        },
                     },
                 },
             },
@@ -724,7 +666,7 @@ test("paginates licenses on a customer detail page", async () => {
         assert.equal(graphQLServer.requests[0].body.operationName, "LicenseCustomerDetail")
         assert.deepEqual(graphQLServer.requests[0].body.variables, { licenseAfter: "license-25" })
         const body = await response.json()
-        assert.deepEqual(body.pagination, { licenses: { contextCursor: null, endCursor: "license-50", hasNextPage: true, totalCount: 51 } })
+        assert.deepEqual(body.pagination, { licenses: { endCursor: "license-50", hasNextPage: true, totalCount: 51 } })
         assert.deepEqual(
             body.licenses.map((license: { id: string }) => license.id),
             ["gid://crater/Subscription/26"]
@@ -732,39 +674,16 @@ test("paginates licenses on a customer detail page", async () => {
     })
 })
 
-test("finds a license customer beyond the first Crater cursor page", async () => {
+test("opens the customer page of the user's own customer", async () => {
     await withGraphQLServer([
+        { data: { currentUser: { customer: { id: "gid://crater/Customer/26", customerType: "BUSINESS", subscriptions: { edges: [] } } } } },
         {
             data: {
                 currentUser: {
-                    customers: {
-                        edges: [{ cursor: "customer-25", node: { id: "gid://crater/Customer/25", subscriptions: { edges: [] } } }],
-                        pageInfo: { endCursor: "customer-25", hasNextPage: true },
-                    },
-                },
-            },
-        },
-        {
-            data: {
-                currentUser: {
-                    customers: {
-                        edges: [{ cursor: "customer-26", node: { id: "gid://crater/Customer/26", customerType: "BUSINESS", subscriptions: { edges: [] } } }],
-                        pageInfo: { endCursor: "customer-26", hasNextPage: false },
-                    },
-                },
-            },
-        },
-        {
-            data: {
-                currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                customerType: "BUSINESS",
-                                id: "gid://crater/Customer/26",
-                                subscriptions: { count: 0, nodes: [], pageInfo: { endCursor: null, hasNextPage: false } },
-                            },
-                        ],
+                    customer: {
+                        customerType: "BUSINESS",
+                        id: "gid://crater/Customer/26",
+                        subscriptions: { count: 0, nodes: [], pageInfo: { endCursor: null, hasNextPage: false } },
                     },
                 },
             },
@@ -774,14 +693,42 @@ test("finds a license customer beyond the first Crater cursor page", async () =>
 
         assert.equal(response.status, 200)
         assert.equal(graphQLServer.requests[0].body.operationName, "CustomerNavigationPage")
-        assert.deepEqual(graphQLServer.requests[1].body.variables, { customerAfter: "customer-25" })
-        assert.equal(graphQLServer.requests[2].body.operationName, "LicenseCustomerDetail")
-        assert.deepEqual(graphQLServer.requests[2].body.variables, { customerAfter: "customer-25" })
+        assert.equal(graphQLServer.requests[1].body.operationName, "LicenseCustomerDetail")
+        assert.deepEqual(graphQLServer.requests[1].body.variables, {})
         assert.deepEqual(await response.json(), {
             customers: [{ customerType: "business", id: "gid://crater/Customer/26", subscriptionCount: 0 }],
             licenses: [],
             navigationLicenses: [],
-            pagination: { licenses: { contextCursor: "customer-25", endCursor: null, hasNextPage: false, totalCount: 0 } },
+            pagination: { licenses: { endCursor: null, hasNextPage: false, totalCount: 0 } },
+        })
+    })
+})
+
+test("refuses customer and license pages of a customer the user does not manage", async () => {
+    const ownCustomer = { data: { currentUser: { customer: { id: "gid://crater/Customer/26", subscriptions: { edges: [] } } } } }
+    for (const query of [
+        "view=customer&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F25",
+        "view=license&customerId=gid%3A%2F%2Fcrater%2FCustomer%2F25&licenseId=gid%3A%2F%2Fcrater%2FSubscription%2F1",
+    ]) {
+        await withGraphQLServer([ownCustomer], async (graphQLServer) => {
+            const response = await getLicenseDashboard(new Request(`https://example.com/api/crater/licenses?${query}`, { headers: sessionHeaders }))
+
+            assert.equal(response.status, 404)
+            assert.equal(graphQLServer.requests.length, 1)
+        })
+    }
+})
+
+test("a user without a customer sees an empty dashboard", async () => {
+    await withGraphQLServer([{ data: { currentUser: { customer: null } } }, { data: { currentUser: { customer: null } } }], async () => {
+        const response = await getLicenseDashboard(new Request("https://example.com/api/crater/licenses", { headers: sessionHeaders }))
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), {
+            customers: [],
+            licenses: [],
+            navigationLicenses: [],
+            pagination: { customers: { endCursor: null, hasNextPage: false, totalCount: 0 } },
         })
     })
 })

@@ -7,7 +7,7 @@ test("checkout errors preserve structured diagnostics without appending them to 
         error: "Backend message", errorCode: "RATE_LIMITED", details: ["Internal detail", 42],
     }, { status: 429, headers: { "Retry-After": "42" } }))
     try {
-        await assert.rejects(createCheckoutSession({ customerId: "customer-1", locale: "en", searchParams: new URLSearchParams() }), (error: unknown) => {
+        await assert.rejects(createCheckoutSession({ locale: "en", searchParams: new URLSearchParams() }), (error: unknown) => {
             assert.ok(error instanceof CheckoutSubmissionError)
             assert.equal(error.kind, "session")
             assert.equal(error.message, "Backend message")

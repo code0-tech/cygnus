@@ -38,8 +38,6 @@ export function CheckoutPaymentFields({
     content,
     customerEmail,
     errors,
-    customerSelect,
-    customerSelectSkeleton,
     email,
     emailComplete,
     emailSyncedToStripe,
@@ -359,7 +357,6 @@ export function CheckoutPaymentFields({
                 collectTaxId={collectTaxId}
                 content={content}
                 customerEmail={customerEmail}
-                customerSelect={customerSelectSkeleton}
                 isBusinessCustomer={isBusinessCustomer}
                 stage={activeStep}
             />
@@ -373,7 +370,6 @@ export function CheckoutPaymentFields({
                 <>
                     <section className="w-full space-y-4">
                         <h3 className="text-lg text-white">{content.contactHeading}</h3>
-                        {customerSelect}
                         {customerEmail ? (
                             <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]! [&_.input-wrapper:hover]:bg-[#17151e]!">
                                 <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>

@@ -2,7 +2,7 @@ import { readGuestCheckoutSession } from "@/lib/checkout/guestCheckoutSession"
 import { craterJson } from "@/lib/crater/api.server"
 import { isCustomerId, isValidEmail, optionalString, readJsonObject, readOptionalAddress } from "@/lib/crater/request"
 import { normalizeCraterCustomerType, toCraterCustomerTypeEnum } from "@/lib/crater/values"
-import type { CustomerAddressCreateInput, CustomerAddressUpdateInput, CustomersCreateInput, CustomersUpdateInput, CustomerTaxIdInput } from "@code0-tech/crater-graphql-types"
+import type { CustomerAddressCreateInput, CustomerAddressUpdateInput, CustomersCreateInput, CustomersUpdateInput } from "@code0-tech/crater-graphql-types"
 import type { NextResponse } from "next/server"
 
 type RequestResult<T> = { data: T; response?: never } | { data?: never; response: NextResponse }
@@ -46,9 +46,13 @@ function readUpdateAddress(value: unknown): CustomerAddressUpdateInput | undefin
     return address
 }
 
-// Omitted leaves the tax IDs unchanged, null removes them, and an object keeps exactly that pair.
-function readUpdateTaxId(value: unknown): CustomerTaxIdInput | null | undefined | typeof INVALID_UPDATE_VALUE {
-    if (value === undefined || value === null) return value
+type TaxIdUpdate = Pick<CustomersUpdateInput, "taxIdType" | "taxIdValue">
+
+// Omitted leaves the tax IDs unchanged, null removes them, and an object keeps exactly that pair. Crater takes the
+// pair flat on customersUpdate, with explicit nulls on both to remove it.
+function readUpdateTaxId(value: unknown): TaxIdUpdate | undefined | typeof INVALID_UPDATE_VALUE {
+    if (value === undefined) return undefined
+    if (value === null) return { taxIdType: null, taxIdValue: null }
     if (typeof value !== "object" || Array.isArray(value)) return INVALID_UPDATE_VALUE
 
     const source = value as Record<string, unknown>
@@ -126,7 +130,7 @@ export async function readCustomerUpdateRequest(request: Request): Promise<Reque
                 ...(email !== undefined ? { email } : {}),
                 ...(name !== undefined ? { name } : {}),
                 ...(phone !== undefined ? { phone } : {}),
-                ...(taxId !== undefined ? { taxId } : {}),
+                ...(taxId !== undefined ? taxId : {}),
             },
             ...(typeof removePaymentMethodId === "string" ? { removePaymentMethodId: removePaymentMethodId.trim() } : {}),
         },

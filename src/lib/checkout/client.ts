@@ -184,28 +184,16 @@ function parseCheckoutCustomer(value: unknown): CheckoutCustomerData | null {
     }
 }
 
-export interface CheckoutCustomerPage {
-    customers: CheckoutCustomerData[]
-    endCursor: string | null
-    hasNextPage: boolean
-}
-
-function readCheckoutCustomerPage(body: unknown): CheckoutCustomerPage {
+function readCheckoutCustomers(body: unknown): CheckoutCustomerData[] {
     const source = body && typeof body === "object" ? (body as Record<string, unknown>) : null
     const values = source && Array.isArray(source.customers) ? source.customers : null
     if (!values) throw new CheckoutSubmissionError("customer", null, "Crater returned no customer list.")
-
-    const pageInfo = source?.pageInfo && typeof source.pageInfo === "object" ? source.pageInfo : null
-    return {
-        customers: values.map(parseCheckoutCustomer).filter((customer): customer is CheckoutCustomerData => customer !== null),
-        endCursor: pageInfo && "endCursor" in pageInfo && typeof pageInfo.endCursor === "string" ? pageInfo.endCursor : null,
-        hasNextPage: Boolean(pageInfo && "hasNextPage" in pageInfo && pageInfo.hasNextPage === true),
-    }
+    return values.map(parseCheckoutCustomer).filter((customer): customer is CheckoutCustomerData => customer !== null)
 }
 
 /**
- * Validates the Crater session and loads the first page of customers in one request. `null` when there is no usable
- * session. `customerPage` is `null` when the response carries no customer list, so the caller loads it separately.
+ * Validates the Crater session and loads the user's customer in one request. `null` when there is no usable session.
+ * `customers` is `null` when the response carries no customer list, so the caller loads it separately.
  */
 export async function bootstrapCheckout() {
     const response = await checkoutFetch("/api/crater/checkout/bootstrap", {
@@ -217,39 +205,21 @@ export async function bootstrapCheckout() {
 
     const body: unknown = await response.json()
     const guestEmail = body && typeof body === "object" && "guestEmail" in body && typeof body.guestEmail === "string" ? body.guestEmail : null
-    let customerPage: CheckoutCustomerPage | null = null
+    let customers: CheckoutCustomerData[] | null = null
     try {
-        customerPage = readCheckoutCustomerPage(body)
+        customers = readCheckoutCustomers(body)
     } catch {
-        customerPage = null
+        customers = null
     }
-    return { customerPage, guestEmail }
+    return { customers, guestEmail }
 }
 
-/** Loads every customer page, starting after `firstPage` when the checkout bootstrap already delivered it. */
-export async function getCheckoutCustomers(firstPage: CheckoutCustomerPage | null = null) {
-    const customers: CheckoutCustomerData[] = []
-    const seenCursors = new Set<string>()
-    let page = firstPage
+export async function getCheckoutCustomers(preloaded: CheckoutCustomerData[] | null = null) {
+    if (preloaded) return preloaded
 
-    while (true) {
-        if (!page) page = await fetchCheckoutCustomerPage(null)
-        customers.push(...page.customers)
-        if (!page.hasNextPage) break
-        if (!page.endCursor || seenCursors.has(page.endCursor)) throw new CheckoutSubmissionError("customer", null, "Crater returned an invalid customer cursor.")
-        seenCursors.add(page.endCursor)
-        page = await fetchCheckoutCustomerPage(page.endCursor)
-    }
-
-    return customers
-}
-
-async function fetchCheckoutCustomerPage(after: string | null) {
-    const url = new URL("/api/crater/customer", window.location.origin)
-    if (after) url.searchParams.set("after", after)
-    const response = await checkoutFetch(`${url.pathname}${url.search}`, { credentials: "same-origin" })
+    const response = await checkoutFetch("/api/crater/customer", { credentials: "same-origin" })
     if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to load billing customers.", "customer")
-    return readCheckoutCustomerPage(await response.json())
+    return readCheckoutCustomers(await response.json())
 }
 
 export async function createCheckoutCustomer({ customerType, email, billingAddress }: { customerType: CraterCustomerType; email: string; billingAddress: StripeCheckoutContact }) {
@@ -266,11 +236,11 @@ export async function createCheckoutCustomer({ customerType, email, billingAddre
     return customer
 }
 
-export async function createCheckoutSession({ customerId, locale, searchParams }: { customerId: string; locale: AppLocale; searchParams: URLSearchParams }) {
+export async function createCheckoutSession({ locale, searchParams }: { locale: AppLocale; searchParams: URLSearchParams }) {
     const checkoutResponse = await checkoutFetch("/api/crater/checkout/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), customerId, locale }),
+        body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), locale }),
         credentials: "same-origin",
     })
     if (!checkoutResponse.ok) throw await createCheckoutSubmissionError(checkoutResponse, "Failed to create a Crater checkout session.", "session")
@@ -305,11 +275,11 @@ export async function recordCheckoutConsent({ sessionId, consents, termsVersion 
     if (!response.ok) throw await createCheckoutSubmissionError(response, "The checkout consents could not be recorded.", "consent")
 }
 
-export async function sendCheckoutOffer({ customerId, email, searchParams }: { customerId: string; email: string; searchParams: URLSearchParams }) {
+export async function sendCheckoutOffer({ email, searchParams }: { email: string; searchParams: URLSearchParams }) {
     const response = await checkoutFetch("/api/crater/checkout/offer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), customerId, email }),
+        body: JSON.stringify({ ...Object.fromEntries(searchParams.entries()), email }),
         credentials: "same-origin",
     })
     if (!response.ok) throw await createCheckoutSubmissionError(response, "Failed to send the offer.", "offer")

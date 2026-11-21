@@ -1,5 +1,4 @@
 import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
-import { isCustomerId, optionalString, readJsonObject } from "@/lib/crater/request"
 import type { Mutation, MutationCustomerPaymentMethodSetupCreateArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -23,15 +22,9 @@ const CUSTOMER_PAYMENT_METHOD_SETUP_CREATE: TypedDocumentNode<CustomerPaymentMet
 
 export const POST = withCraterSession(
     { log: "Crater payment method setup error", error: "Could not create the payment method setup session.", rateLimit: "paymentMethodSetup" },
-    async (request, token) => {
-        const body = await readJsonObject(request)
-        const customerId = optionalString(body?.customerId)
 
-        if (!customerId || !isCustomerId(customerId)) {
-            return craterJson({ error: "A valid Crater customer id is required." }, 400)
-        }
-
-        return runCraterResourceMutation(token, CUSTOMER_PAYMENT_METHOD_SETUP_CREATE, { input: { customerId } }, (data) => data.customerPaymentMethodSetupCreate, {
+    async (_request, token) => {
+        return runCraterResourceMutation(token, CUSTOMER_PAYMENT_METHOD_SETUP_CREATE, { input: {} }, (data) => data.customerPaymentMethodSetupCreate, {
             rejectionMessage: "Crater could not create the payment method setup session.",
             selectResource: (payload) => payload.session?.clientSecret,
             missingResourceMessage: "Crater returned no SetupIntent client secret.",

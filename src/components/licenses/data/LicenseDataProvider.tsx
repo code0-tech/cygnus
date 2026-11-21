@@ -203,7 +203,7 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
             try {
                 const { data: nextData, status } = await fetchLicenseDashboard(pathname, {
                     origin: window.location.origin,
-                    pagination: { cursor: pageInfo.endCursor, customerContext: typeof pageInfo.contextCursor === "string" ? pageInfo.contextCursor : undefined, resource },
+                    pagination: { cursor: pageInfo.endCursor, resource },
                 })
                 if (status === 401 || status === 403) {
                     setNeedsLogin(true)

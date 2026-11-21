@@ -26,14 +26,11 @@ test.after(() => {
 
 const end = { endCursor: null, hasNextPage: false }
 const noUser = { data: { currentUser: null } }
-function customerPage(customerId: string, subscriptionIds: string[], customerCursor: string | null = null) {
+function customerPage(customerId: string, subscriptionIds: string[], subscriptionPage: { endCursor: string | null; hasNextPage: boolean } = end) {
     return {
         data: {
             currentUser: {
-                customers: {
-                    nodes: [{ id: customerId, subscriptions: { nodes: subscriptionIds.map((id) => ({ id })), pageInfo: end } }],
-                    pageInfo: { endCursor: customerCursor, hasNextPage: Boolean(customerCursor) },
-                },
+                customer: { id: customerId, subscriptions: { nodes: subscriptionIds.map((id) => ({ id })), pageInfo: subscriptionPage } },
             },
         },
     }
@@ -89,14 +86,14 @@ test("license and customer actions open the general tab of their dialog", async 
 })
 
 test("an existing Crater session is reused and the link token is not exchanged", async () => {
-    const otherCustomer = customerPage("gid://crater/Customer/1", ["gid://crater/Subscription/2"], "customer-1")
-    await withGraphQLServer([otherCustomer, ownedSubscription], async (server) => {
+    const firstPage = customerPage("gid://crater/Customer/3", ["gid://crater/Subscription/2"], { endCursor: "subscription-2", hasNextPage: true })
+    await withGraphQLServer([firstPage, ownedSubscription], async (server) => {
         const response = await GET(entryRequest({ token: "sagittarius-secret", subscriptionId: "5", action: "license" }, "crater_session=existing-session"))
 
         assert.equal(response.headers.get("location"), "https://code0.example/en/licenses/customer/3/license/5/edit?tab=general")
         assert.ok(server.requests.every((entry) => entry.authorization === "Session existing-session"))
         assert.ok(server.requests.every((entry) => !JSON.stringify(entry.body).includes("sagittarius-secret")))
-        assert.deepEqual(server.requests[1].body.variables, { customerAfter: "customer-1" })
+        assert.deepEqual(server.requests[1].body.variables, { subscriptionAfter: "subscription-2" })
         assert.equal(response.headers.getSetCookie().length, 0)
     })
 })

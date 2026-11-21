@@ -8,7 +8,6 @@ type PaginatedLicenseResource = "customers" | "invoices" | "licenses"
 
 interface LicenseDashboardRequest {
     cursor: string
-    customerContext?: string
     resource: PaginatedLicenseResource
 }
 
@@ -46,7 +45,6 @@ function createLicenseDashboardUrl(pathname: string, origin: string, pagination?
         const cursorName = pagination.resource === "customers" ? "customerAfter" : pagination.resource === "licenses" ? "licenseAfter" : "invoiceAfter"
         dataUrl.searchParams.set(cursorName, pagination.cursor)
         dataUrl.searchParams.set("includeNavigation", "false")
-        if (pagination.customerContext) dataUrl.searchParams.set("customerContext", pagination.customerContext)
     }
 
     return dataUrl
@@ -130,12 +128,12 @@ export async function requestExtraordinaryTermination(id: string, reason: Extrao
     if (!response.ok) throw new Error(errorMessage)
 }
 
-export async function createPaymentMethodSetup(customerId: string, errorMessage: string) {
+export async function createPaymentMethodSetup(errorMessage: string) {
     const response = await fetch("/api/crater/customer/payment-method-setup", {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ customerId }),
+        body: JSON.stringify({}),
     })
     const result: unknown = await response.json()
     if (!response.ok || !result || typeof result !== "object" || !("clientSecret" in result) || typeof result.clientSecret !== "string") throw new Error(errorMessage)

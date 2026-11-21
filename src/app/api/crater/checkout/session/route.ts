@@ -1,6 +1,6 @@
 import { guestCheckoutId } from "@/lib/checkout/guestCheckoutSession"
 import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
-import { isCustomerId, optionalString, parseCheckoutQuantity, readJsonObject, type JsonObject } from "@/lib/crater/request"
+import { optionalString, parseCheckoutQuantity, readJsonObject, type JsonObject } from "@/lib/crater/request"
 import { parseCraterPaymentPeriod, parseCraterPlan } from "@/lib/crater/values"
 import { resolveSiteUrl } from "@/lib/siteConfig"
 import { DEFAULT_LOCALE, isSupportedLocale } from "@/lib/i18n"
@@ -41,7 +41,6 @@ export const POST = withCraterSession({ log: "Crater checkout session error", er
 
     const requestData = body.metadata && typeof body.metadata === "object" && !Array.isArray(body.metadata) ? (body.metadata as JsonObject) : body
     const plan = optionalString(requestData.plan)
-    const customerId = optionalString(requestData.customerId)
     const deploymentType = optionalString(requestData.deploymentType)
     const namespaceId = optionalString(requestData.namespaceId) ?? optionalString(requestData.namespace)
     const requestedLocale = optionalString(requestData.locale)
@@ -64,10 +63,6 @@ export const POST = withCraterSession({ log: "Crater checkout session error", er
 
     if (namespaceId && deploymentType !== "cloud") {
         return craterJson({ error: "namespaceId is only allowed for cloud deployments." }, 400)
-    }
-
-    if (!customerId || !isCustomerId(customerId)) {
-        return craterJson({ error: "customerId is required and must be a valid Crater global ID." }, 400)
     }
 
     if (namespaceId && Buffer.byteLength(namespaceId, "utf8") > 500) {
@@ -95,7 +90,6 @@ export const POST = withCraterSession({ log: "Crater checkout session error", er
     const guestId = guestCheckoutId(request)
     if (guestId) returnUrl.searchParams.set("guestCheckout", guestId)
     const input: CheckoutCreateSessionVariables["input"] = {
-        customerId,
         returnUrl: `${returnUrl.toString()}${returnUrl.search ? "&" : "?"}session_id={CHECKOUT_SESSION_ID}`,
         paymentPeriod: craterPaymentPeriod,
         plan: craterPlan,

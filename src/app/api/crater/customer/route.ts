@@ -1,7 +1,7 @@
 import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
 import { prepareCustomerPaymentMethodRemoval } from "@/lib/crater/customerPaymentMethods.server"
 import { readCustomerCreateRequest, readCustomerUpdateRequest } from "@/lib/crater/customer/requests.server"
-import { CUSTOMER_FIELDS, loadCustomerPage, MAX_CUSTOMER_CURSOR_LENGTH, normalizeCustomer } from "@/lib/crater/customer/customerList.server"
+import { CUSTOMER_FIELDS, loadCurrentCustomer, normalizeCustomer } from "@/lib/crater/customer/customerList.server"
 import type { Mutation, MutationCustomersCreateArgs, MutationCustomersUpdateArgs } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
@@ -42,13 +42,10 @@ const CUSTOMERS_UPDATE: TypedDocumentNode<CustomersUpdateData, CustomersUpdateVa
     ${CRATER_ERROR_FIELDS}
 `
 
-export const GET = withCraterSession({ log: "Crater customer list error", error: "Could not load Crater customers." }, async (request, token) => {
-    const after = new URL(request.url).searchParams.get("after")?.trim() || undefined
-    if (after && after.length > MAX_CUSTOMER_CURSOR_LENGTH) return craterJson({ error: "The customer cursor is invalid." }, 400)
-
-    const page = await loadCustomerPage(token, after)
-    if (!page) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
-    return craterJson(page)
+export const GET = withCraterSession({ log: "Crater customer list error", error: "Could not load Crater customers." }, async (_request, token) => {
+    const current = await loadCurrentCustomer(token)
+    if (!current) return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+    return craterJson({ customers: current.customer ? [current.customer] : [] })
 })
 
 export const POST = withCraterSession({ log: "Crater customer creation error", error: "Could not create Crater customer.", rateLimit: "customer" }, async (request, token) => {

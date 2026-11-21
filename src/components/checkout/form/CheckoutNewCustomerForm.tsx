@@ -12,12 +12,11 @@ import { StripeElementSlot } from "./CheckoutFormSkeleton"
 type DefaultBillingAddress = { name?: string | null; address: StripeCheckoutContact["address"] }
 
 interface CheckoutNewCustomerFormProps {
-    customerSelect: ReactNode
     onSubmit: () => void
     sendOffer: ReactNode
 }
 
-export function CheckoutNewCustomerForm({ customerSelect, onSubmit, sendOffer }: CheckoutNewCustomerFormProps) {
+export function CheckoutNewCustomerForm({ onSubmit, sendOffer }: CheckoutNewCustomerFormProps) {
     const emailInputId = useId()
     const { content, customerType, guestEmail, isLoading, setStripeBillingAddress, setStripeEmail, stripeBillingAddress, stripeBillingAddressComplete, stripeEmail, stripeEmailComplete } = useCheckoutFormState()
     const [isAddressReady, setIsAddressReady] = useState(false)
@@ -35,7 +34,6 @@ export function CheckoutNewCustomerForm({ customerSelect, onSubmit, sendOffer }:
         >
             <section className="w-full space-y-4">
                 <h3 className="text-lg text-white">{content.contactHeading}</h3>
-                {customerSelect}
                 <div>
                     <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>
                     <EmailInput

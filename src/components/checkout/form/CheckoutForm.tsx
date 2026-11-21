@@ -1,6 +1,5 @@
 "use client"
 
-import { CheckoutCustomerSelect } from "./CheckoutCustomerSelect"
 import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/form/CheckoutFormProvider"
 import { CheckoutErrorState } from "@/components/checkout/form/CheckoutErrorState"
 import { CheckoutPaymentForm } from "@/components/checkout/form/CheckoutPaymentForm"
@@ -63,7 +62,6 @@ function CheckoutFormContent() {
         refreshExpiredCheckoutSession,
         resolvedError,
         selectedCustomerId,
-        selectCheckoutCustomer,
         sendOffer,
         setStripeBillingAddress,
         setStripeEmail,
@@ -81,16 +79,6 @@ function CheckoutFormContent() {
     const { finishSwap, retiringSession } = useSessionSwap(checkoutSession)
     const isSwappingSession = Boolean(retiringSession)
     const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId)
-    const showCustomerSelect = stage === "billingAddress" && Boolean(hasExistingCustomers) && customers.length > 0
-    const customerSelect = showCustomerSelect ? (
-        <CheckoutCustomerSelect content={content} customers={customers} selectedCustomer={selectedCustomer} onValueChange={(value) => void selectCheckoutCustomer(value)} />
-    ) : null
-    // The real select, disabled, keeps the placeholder at the exact height. It only appears once customers are known.
-    const customerSelectSkeleton = showCustomerSelect ? (
-        <div data-testid="checkout-customer-select-skeleton" className="animate-pulse motion-reduce:animate-none">
-            <CheckoutCustomerSelect content={content} customers={customers} disabled selectedCustomer={selectedCustomer} onValueChange={() => {}} />
-        </div>
-    ) : null
     const customerEmail = guestEmail ?? selectedCustomer?.email ?? null
 
     const handleSessionReady = useCallback(() => {
@@ -112,7 +100,6 @@ function CheckoutFormContent() {
         collectTaxId: customerType === "business",
         content,
         errors,
-        customerSelectSkeleton,
         customerEmail,
         customerId: selectedCustomerId,
         email: stripeEmail,
@@ -126,7 +113,7 @@ function CheckoutFormContent() {
         <div className="relative">
             {retiringSession && (
                 <div key={retiringSession.clientSecret} aria-hidden="true" inert className="opacity-50 transition-opacity">
-                    <CheckoutPaymentForm {...paymentFormProps} {...RETIRING_FORM_CALLBACKS} customerSelect={customerSelectSkeleton} session={retiringSession} />
+                    <CheckoutPaymentForm {...paymentFormProps} {...RETIRING_FORM_CALLBACKS} session={retiringSession} />
                 </div>
             )}
             <div
@@ -137,7 +124,6 @@ function CheckoutFormContent() {
             >
                 <CheckoutPaymentForm
                     {...paymentFormProps}
-                    customerSelect={customerSelect}
                     onAddressChange={setStripeBillingAddress}
                     onEmailChange={setStripeEmail}
                     onEmailSyncedChange={setStripeEmailSynced}
@@ -161,7 +147,6 @@ function CheckoutFormContent() {
         ) : (
             <Elements stripe={stripePromise} options={{ appearance: stripeAppearance }}>
                 <CheckoutNewCustomerForm
-                    customerSelect={customerSelect}
                     onSubmit={() => void continueNewCustomer()}
                     sendOffer={
                         customerType === "business" ? (
@@ -183,7 +168,6 @@ function CheckoutFormContent() {
             collectTaxId={customerType === "business" && hasExistingCustomers === true}
             content={content}
             customerEmail={customerEmail}
-            customerSelect={customerSelectSkeleton}
             isBusinessCustomer={customerType === "business"}
             stage={stage}
         />

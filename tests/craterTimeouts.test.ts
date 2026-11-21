@@ -36,18 +36,15 @@ test("a Crater request that never answers fails after the configured timeout", a
 })
 
 test("a subscription lookup stops when Crater keeps paging with fresh cursors", async () => {
-    const endlessCustomers = Array.from({ length: 260 }, (_, index) => ({
+    const endlessSubscriptions = Array.from({ length: 260 }, (_, index) => ({
         data: {
             currentUser: {
-                customers: {
-                    nodes: [{ id: `gid://crater/Customer/${index}`, subscriptions: { nodes: [], pageInfo: { hasNextPage: false } } }],
-                    pageInfo: { hasNextPage: true, endCursor: `cursor-${index}` },
-                },
+                customer: { id: "gid://crater/Customer/1", subscriptions: { nodes: [{ id: `gid://crater/Subscription/${index + 2}` }], pageInfo: { hasNextPage: true, endCursor: `cursor-${index}` } } },
             },
         },
     }))
 
-    await withGraphQLServer(endlessCustomers, async (server) => {
+    await withGraphQLServer(endlessSubscriptions, async (server) => {
         await assert.rejects(findCustomerForSubscription("session", "gid://crater/Subscription/1"), /query budget/)
         assert.equal(server.requests.length, 250)
     })

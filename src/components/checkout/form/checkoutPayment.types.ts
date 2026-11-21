@@ -2,7 +2,6 @@ import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import type { CheckoutSessionData, CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
 import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
 import type { StripeCheckoutContact } from "@stripe/stripe-js"
-import type { ReactNode } from "react"
 
 type CheckoutFormContent = CheckoutData["form"]
 
@@ -14,8 +13,6 @@ export interface CheckoutPaymentFormProps {
     customerEmail: string | null
     customerId: string | null
     errors: ErrorsContent
-    customerSelect: ReactNode
-    customerSelectSkeleton: ReactNode
     email: string | null
     emailComplete: boolean
     emailSyncedToStripe: boolean

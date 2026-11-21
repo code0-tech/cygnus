@@ -66,7 +66,7 @@ export function PaymentMethodSetupDialog({ content, disabled = false, errors, on
         setHasError(false)
         let active = true
 
-        void createPaymentMethodSetup(owner.customerId, errors.paymentMethodUpdate)
+        void createPaymentMethodSetup(errors.paymentMethodUpdate)
             .then((nextClientSecret) => {
                 if (active) setClientSecret(nextClientSecret)
             })

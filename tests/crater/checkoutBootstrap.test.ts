@@ -8,16 +8,13 @@ test("checkout bootstrap requires a Crater session", async () => {
     assert.equal(response.status, 403)
 })
 
-test("checkout bootstrap validates the session and returns the first customer page in one Crater query", async () => {
+test("checkout bootstrap validates the session and returns the user's customer in one Crater query", async () => {
     await withGraphQLServer(
         [
             {
                 data: {
                     currentUser: {
-                        customers: {
-                            nodes: [{ id: "gid://crater/Customer/1", customerType: "PERSONAL", email: "ada@example.com", name: "Ada" }],
-                            pageInfo: { endCursor: "customer-50", hasNextPage: true },
-                        },
+                        customer: { id: "gid://crater/Customer/1", customerType: "PERSONAL", email: "ada@example.com", name: "Ada" },
                     },
                 },
             },
@@ -29,11 +26,12 @@ test("checkout bootstrap validates the session and returns the first customer pa
             assert.deepEqual(await response.json(), {
                 authenticated: true,
                 customers: [{ id: "gid://crater/Customer/1", customerType: "personal", email: "ada@example.com", name: "Ada" }],
-                pageInfo: { endCursor: "customer-50", hasNextPage: true },
             })
             assert.equal(graphQLServer.requests.length, 1)
             assert.equal(graphQLServer.requests[0].authorization, "Session bootstrap-token")
-            assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutCustomers")
+            assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutCustomer")
+            assert.match(graphQLServer.requests[0].body.query ?? "", /customer \{/)
+            assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /customers/)
         }
     )
 })
@@ -44,5 +42,14 @@ test("checkout bootstrap rejects a session Crater resolves no user for and clear
 
         assert.equal(response.status, 401)
         assert.match(response.headers.get("set-cookie") ?? "", /crater_session=;/)
+    })
+})
+
+test("checkout bootstrap returns no customer before customersCreate has run", async () => {
+    await withGraphQLServer([{ data: { currentUser: { customer: null } } }], async () => {
+        const response = await bootstrapCheckout(new Request("https://example.com/api/crater/checkout/bootstrap", { headers: { authorization: "Session bootstrap-token" } }))
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { authenticated: true, customers: [] })
     })
 })

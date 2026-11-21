@@ -20,10 +20,7 @@ function ownerLookup(customerType = "PERSONAL") {
     return {
         data: {
             currentUser: {
-                customers: {
-                    nodes: [{ id: "gid://crater/Customer/1", customerType, subscriptions: { nodes: [{ id: subscriptionId }], pageInfo: { endCursor: null, hasNextPage: false } } }],
-                    pageInfo: { endCursor: null, hasNextPage: false },
-                },
+                customer: { id: "gid://crater/Customer/1", customerType, subscriptions: { nodes: [{ id: subscriptionId }], pageInfo: { endCursor: null, hasNextPage: false } } },
             },
         },
     }
@@ -600,7 +597,7 @@ test("business customers upgrade with the terms alone", async () => {
 })
 
 test("an upgrade of a subscription outside the session's customers is refused before Crater changes it", async () => {
-    const foreign = { data: { currentUser: { customers: { nodes: [{ id: "gid://crater/Customer/1", customerType: "PERSONAL", subscriptions: { nodes: [{ id: "gid://crater/Subscription/7" }], pageInfo: { hasNextPage: false } } }], pageInfo: { hasNextPage: false } } } } }
+    const foreign = { data: { currentUser: { customer: { id: "gid://crater/Customer/1", customerType: "PERSONAL", subscriptions: { nodes: [{ id: "gid://crater/Subscription/7" }], pageInfo: { hasNextPage: false } } } } } }
     for (const { responses, status } of [
         { responses: [foreign], status: 404 },
         { responses: [{ data: { currentUser: null } }], status: 401 },

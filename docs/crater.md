@@ -26,7 +26,7 @@ Migration `20261114120000_create_checkout_consents.rb` creates the append-only `
 The ERD describes the following relationships:
 
 - A `Customer` has an address and is associated with invoices, subscriptions, and users.
-- `Customer` and `User` are connected through `CustomerUser`.
+- `Customer` and `User` are connected through `CustomerUser`. A user manages exactly one customer: the join table still allows several rows for a future permission model, but the API exposes `User.customer` (singular) and `customersCreate` refuses a second one with `CUSTOMER_ALREADY_EXISTS`. Mutations that act for a customer resolve it from the authenticated user through `BaseMutation#current_customer` instead of taking a `customerId` argument.
 - A `User` has `UserSession` records.
 - An `Invoice` consists of `InvoiceItem` entries and points at the `Subscription` it was issued for.
 - A `Subscription` forms the basis of a `License`.
@@ -208,7 +208,7 @@ When syncing a customer with an address to Stripe, Crater explicitly clears `shi
 
 Crater creates Stripe Checkout Sessions in subscription mode for the current customer. Checkout uses Stripe's embedded Elements/custom UI mode rather than redirecting the customer to a Stripe-hosted Checkout page. A checkout uses the Pro, Max, or dynamic Custom plan.
 
-The required `customerId` identifies a customer belonging to the authenticated user through `CustomerUser`. There is no automatic customer selection. Creating the session never creates a customer; `customersCreate` must run first if no suitable customer exists.
+There is no `customerId` argument: the session is always created for the single customer the authenticated user manages, resolved server-side through `CustomerUser`, which also guarantees ownership. Creating the session never creates a customer; `customersCreate` must run first if the user has none, otherwise the mutation returns `INVALID_CHECKOUT_CUSTOMER`.
 
 A `CheckoutSession` returns:
 
@@ -467,8 +467,8 @@ Its metadata carries the contract both sides of the flow agree on, defined once 
 Access is the existing membership rule and nothing else:
 
 - The request needs an active Crater `UserSession`; like every mutation except `usersLogin`, an anonymous request is answered with HTTP `403 Forbidden` before the resolver runs.
-- The customer is loaded through `CustomerPolicy`, so the authenticated user must be linked to it through `CustomerUser`. `GlobalPolicy` additionally grants `use_payment_method_setup` to any authenticated user; being an admin grants nothing extra.
-- A customer that does not exist, one belonging to somebody else, and one without a `stripe_customer_id` are all answered with `INVALID_PAYMENT_METHOD_SETUP_CUSTOMER` and an identical message, so the response never reveals which of the three it was.
+- The mutation takes no `customerId`; the customer is the one the authenticated user manages, resolved through `CustomerUser`, so ownership is implied. `GlobalPolicy` additionally grants `use_payment_method_setup` to any authenticated user; being an admin grants nothing extra.
+- A user without a customer and a customer without a `stripe_customer_id` are both answered with `INVALID_PAYMENT_METHOD_SETUP_CUSTOMER` and an identical message.
 - Stripe failures surface as `INVALID_PAYMENT_METHOD_SETUP_SESSION` with a fixed message. Stripe IDs, API keys, personal data, and Stripe responses never appear in an error. Logging is limited to the internal customer ID and the error class.
 
 This flow does not touch Stripe Tax: automatic tax calculation and tax registrations are unchanged.
@@ -488,7 +488,7 @@ Anything inconsistent leaves the event unprocessed, so it stays visible in the l
 
 #### The client flow
 
-1. Call `customerPaymentMethodSetupCreate` with the `customerId` and read `session.clientSecret`.
+1. Call `customerPaymentMethodSetupCreate` (no arguments besides the optional `clientMutationId`) and read `session.clientSecret`.
 2. Hand the client secret to Stripe Elements.
 3. Render the Payment Element.
 4. Confirm with `stripe.confirmSetup()`.
@@ -523,7 +523,7 @@ mutation CustomerPaymentMethodSetupCreate($input: CustomerPaymentMethodSetupCrea
 ```ts
 const { data } = await client.mutate({
     mutation: CustomerPaymentMethodSetupCreate,
-    variables: { input: { customerId } },
+    variables: { input: {} },
 })
 
 const clientSecret = data.customerPaymentMethodSetupCreate.session.clientSecret
@@ -832,7 +832,7 @@ query CheckoutPackages {
 
 `currentUser` is the entry point for the read-only dashboard. It exposes only data the authenticated user is a member of:
 
-- `User.customers` is a `CustomerConnection!` over the customers linked through `CustomerUser`. Customers of other users never appear.
+- `User.customer` is a nullable `Customer` — the single customer the user manages through `CustomerUser` (the oldest link, should several rows ever exist), or `null` before `customersCreate` has run. The former `customers` connection and the `CustomerConnection`/`CustomerEdge` types are removed. Customers of other users never appear.
 - `Customer.licenses` is removed. Read subscriptions and each subscription's `currentLicense` to obtain the newest snapshot.
 - `License.invoices` is an `InvoiceConnection!` over the invoices of the license's subscription. A license without invoices returns an empty connection rather than `null`.
 - `Customer.subscriptions` is a `SubscriptionConnection!` over the customer's subscriptions, ordered by `updated_at DESC` and then `id DESC` like the licenses. It is what the subscription mutations address, and a customer without subscriptions returns an empty connection rather than `null`.
@@ -942,80 +942,77 @@ fragment SubscriptionUsage on Subscription {
 ```graphql
 query LicenseDashboard {
     currentUser {
-        customers(first: 100) {
-            count
-            nodes {
-                id
-                customerType
-                name
-                email
-                updatedAt
-                checkoutLimits {
-                    aiTokens
-                    workflowExecutions
-                }
-                paymentMethods
-                subscriptions(first: 5) {
-                    count
-                    nodes {
+        customer {
+            id
+            customerType
+            name
+            email
+            updatedAt
+            checkoutLimits {
+                aiTokens
+                workflowExecutions
+            }
+            paymentMethods
+            subscriptions(first: 5) {
+                count
+                nodes {
+                    id
+                    status
+                    plan
+                    cancelAt
+                    immediateCancellationAvailable
+                    immediateCancellationUntil
+                    namespace {
                         id
-                        status
+                        parent {
+                            __typename
+                            ... on NamespaceOrganization {
+                                name
+                            }
+                            ... on NamespaceUser {
+                                username
+                                firstname
+                                lastname
+                            }
+                        }
+                    }
+                    paymentMethodId
+                    pendingUpdate {
                         plan
-                        cancelAt
-                        immediateCancellationAvailable
-                        immediateCancellationUntil
-                        namespace {
-                            id
-                            parent {
-                                __typename
-                                ... on NamespaceOrganization {
-                                    name
-                                }
-                                ... on NamespaceUser {
-                                    username
-                                    firstname
-                                    lastname
-                                }
-                            }
+                        paymentPeriod
+                        aiTokens
+                        workflowExecutions
+                        effectiveAt
+                    }
+                    usage {
+                        availability
+                        resetsAt
+                        aiTokens {
+                            used
+                            allowance
+                            remaining
+                            exceeded
                         }
-                        paymentMethodId
-                        pendingUpdate {
-                            plan
-                            paymentPeriod
-                            aiTokens
-                            workflowExecutions
-                            effectiveAt
+                        workflowExecutions {
+                            used
+                            allowance
+                            remaining
+                            exceeded
                         }
-                        usage {
-                            availability
-                            resetsAt
-                            aiTokens {
-                                used
-                                allowance
-                                remaining
-                                exceeded
-                            }
-                            workflowExecutions {
-                                used
-                                allowance
-                                remaining
-                                exceeded
-                            }
-                        }
-                        currentLicense {
+                    }
+                    currentLicense {
+                        id
+                        startDate
+                        endDate
+                        features
+                    }
+                    licenses(first: 20) {
+                        count
+                        nodes {
                             id
                             startDate
                             endDate
-                            features
-                        }
-                        licenses(first: 20) {
-                            count
-                            nodes {
-                                id
-                                startDate
-                                endDate
-                                updatedAt
-                            }
+                            updatedAt
                         }
                     }
                 }
@@ -1050,32 +1047,30 @@ Because every snapshot of a subscription resolves the same invoice history, `Lic
 ```graphql
 query LicenseInvoices {
     currentUser {
-        customers(first: 100) {
-            nodes {
-                subscriptions(first: 100) {
-                    nodes {
+        customer {
+            subscriptions(first: 100) {
+                nodes {
+                    id
+                    currentLicense {
                         id
-                        currentLicense {
-                            id
-                            invoices(first: 100) {
-                                count
-                                nodes {
-                                    id
-                                    invoiceNumber
-                                    status
-                                    currency
-                                    total
-                                    net
-                                    tax
-                                    lineItems {
-                                        amount
-                                        description
-                                        quantity
-                                    }
-                                    stripePdfUrl
-                                    createdAt
-                                    updatedAt
+                        invoices(first: 100) {
+                            count
+                            nodes {
+                                id
+                                invoiceNumber
+                                status
+                                currency
+                                total
+                                net
+                                tax
+                                lineItems {
+                                    amount
+                                    description
+                                    quantity
                                 }
+                                stripePdfUrl
+                                createdAt
+                                updatedAt
                             }
                         }
                     }
@@ -1092,7 +1087,7 @@ Invoices are ordered by `period_start DESC`, then `created_at DESC`, then `id DE
 
 Reading invoices requires `read_invoice`, which `InvoicePolicy` derives from `read_customer` on the invoice's customer. A user who is not a member of that customer through `CustomerUser` never sees the invoice, not even when reaching it through a license.
 
-Invoices are batched by `Sources::InvoicesBySubscription`, reached through `customers -> subscriptions -> currentLicense -> invoices` or the snapshot history.
+Invoices are batched by `Sources::InvoicesBySubscription`, reached through `customer -> subscriptions -> currentLicense -> invoices` or the snapshot history.
 
 `CheckoutPrice` contains:
 
@@ -1182,7 +1177,7 @@ Guest creation uses the usual `input` object and returns `errors`; profile compl
 | `customersCreate`                  | `customerType!`, `name!`, `email!`, `address!`; optional phone and tax ID                     | Created `Customer`                                                                                                                          |
 | `customersUpdate`                  | `id!`, optional contact details, address, flat `taxIdType`/`taxIdValue`, and `paymentMethods` | Updated `Customer`; attached payment methods the `paymentMethods` list no longer names are detached in Stripe and dropped from the customer |
 | `customersDelete`                  | `id!`                                                                                         | Deleted `Customer`                                                                                                                          |
-| `customerPaymentMethodSetupCreate` | `customerId!`                                                                                 | Stripe SetupIntent `clientSecret` for collecting a new default payment method                                                               |
+| `customerPaymentMethodSetupCreate` | none (resolves the current user's customer)                                                   | Stripe SetupIntent `clientSecret` for collecting a new default payment method                                                               |
 
 `customersCreate` requires the customer type and contact/address details:
 
@@ -1202,26 +1197,25 @@ customersCreate(
 
 Its behaviour:
 
-- Every call creates a customer. Nothing is reused: a user that already has one and asks for another gets a second, distinct customer with its own Stripe Customer, and the existing one keeps its membership.
+- A user manages a single customer. A user that already has one gets `CUSTOMER_ALREADY_EXISTS`, checked before anything is created in Stripe. The authoritative check runs again inside the persist transaction under a row lock on the user (taken after the Stripe call, so no lock is held across network I/O): of two concurrent calls only the first persists, and the loser deletes the Stripe Customer it created and also returns `CUSTOMER_ALREADY_EXISTS`.
 - Customer type, name, email, and address are required. A malformed email or invalid model data returns `INVALID_CUSTOMER`; missing non-null GraphQL inputs fail schema validation.
 - `CustomerAddressCreateInput` requires all six address fields. Updates use the separate `CustomerAddressUpdateInput` with optional fields. Stripe Checkout can collect updated contact details and sync them back after completion.
 - There is no checkout-flow argument. The checkout runs for a customer that already exists; see [checkout and Stripe](#checkout-and-stripe).
 
 #### Checkout
 
-| Mutation                | Key arguments                                                                                                                 | Result                                                                                                        |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `checkoutCreateSession` | `customerId!`, `deploymentType!`, `plan!`, `paymentPeriod!`, `returnUrl!`; optional quantities, `namespaceId`, and `referral` | Embedded `CheckoutSession` with a frontend `clientSecret`                                                     |
-| `checkoutRecordConsent` | `sessionId!`, `terms!`; optional `termsVersion`, `withdrawal`                                                                 | Stored `CheckoutConsent`; must run before the payment is confirmed, see [checkout consent](#checkout-consent) |
+| Mutation                | Key arguments                                                                                                  | Result                                                                                                        |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `checkoutCreateSession` | `deploymentType!`, `plan!`, `paymentPeriod!`, `returnUrl!`; optional quantities, `namespaceId`, and `referral` | Embedded `CheckoutSession` with a frontend `clientSecret`                                                     |
+| `checkoutRecordConsent` | `sessionId!`, `terms!`; optional `termsVersion`, `withdrawal`                                                  | Stored `CheckoutConsent`; must run before the payment is confirmed, see [checkout consent](#checkout-consent) |
 
 For `checkoutCreateSession`:
 
 - The request must include `Authorization: Session <crater-session-token>`; the mutation is not anonymously accessible.
-- `customerId: CustomerID!` is required and must name a customer linked to the authenticated user. Create a customer first when necessary.
-- Membership uses the same rule as `CustomerPolicy.read_customer`. A nonexistent customer and one belonging to another user return identical `INVALID_CHECKOUT_CUSTOMER` responses.
+- There is no `customerId` argument. The session is created for the customer the authenticated user manages; a user without one gets `INVALID_CHECKOUT_CUSTOMER`, so create the customer first. `quotesCreate` resolves its customer the same way and returns `INVALID_QUOTE_CUSTOMER` when there is none.
 - A repeated `checkoutCreateSession` for the same customer creates a new Stripe session but no additional customer.
 - `deploymentType` selects the Cloud or Self-Hosted price catalog, and the customer's stored type selects its B2B or B2C Prices. This applies to Pro, Max, and Custom components. Both customer types support monthly, quarterly, and yearly periods. Invalid periods return `INVALID_CHECKOUT_SELECTION`; a Price available only for the other customer type within the chosen deployment returns `CUSTOMER_TYPE_MISMATCH`.
-- The Stripe Checkout Session is created with the selected customer's `stripe_customer_id`, so the contact details, billing address, and tax ID that Stripe collects are synced back to exactly that customer. Its Crater customer ID is stored in the subscription metadata as `crater_customer_id`.
+- The Stripe Checkout Session is created with the customer's `stripe_customer_id`, so the contact details, billing address, and tax ID that Stripe collects are synced back to exactly that customer. Its Crater customer ID is stored in the subscription metadata as `crater_customer_id`.
 - Crater never sends `customer_email`; the Stripe Customer is referenced by ID, and Stripe rejects both parameters together. An email already on the Stripe Customer is therefore never restated, and a missing one is collected by the client's `ContactDetailsElement`.
 - A regular checkout uses `plan`, `paymentPeriod`, and, where applicable, `deploymentType` and `namespaceId`. There is no `promotionCode` argument; see [discounts](#discounts-in-a-checkout).
 - `plan: custom` requires both `aiTokens` and `workflowExecutions`, each matching one of the customer's configured packages exposed by `Customer.checkoutLimits`.
@@ -1296,6 +1290,7 @@ Documented error codes:
 | `GUEST_USER_CREATION_FAILED`            | Sagittarius could not create the guest user                                                                                                                          |
 | `TAX_ID_UNAVAILABLE`                    | Stripe could not reconcile the customer tax IDs                                                                                                                      |
 | `INVALID_EMAIL`                         | The email passed to guest creation is blank                                                                                                                          |
+| `CUSTOMER_ALREADY_EXISTS`               | The current user already manages a customer                                                                                                                          |
 | `CUSTOMER_TYPE_MISMATCH`                | The selected customer's type does not match the selected checkout                                                                                                    |
 | `INVALID_CHECKOUT_CUSTOMER`             | The selected customer does not exist or is not accessible to the current user                                                                                        |
 | `INVALID_CHECKOUT_SESSION`              | The checkout session could not be created                                                                                                                            |
@@ -1337,9 +1332,9 @@ Documented error codes:
 3. The client passes that token to Crater's anonymous `usersLogin` mutation.
 4. Crater verifies the token with Sagittarius, maps the returned Sagittarius user ID to a local user, creates a `UserSession`, and returns its token.
 5. The client sends the Crater token on subsequent mutations as `Authorization: Session <token>`; no authentication cookie is required.
-6. The authenticated user selects one of their customers, or creates one with `customersCreate`, which requires the customer type, name, email, and address.
+6. The authenticated user reads `currentUser.customer`; if it is `null`, they create their single customer with `customersCreate`, which requires the customer type, name, email, and address.
 7. For a Custom plan, the frontend selects both quantities from the matching customer type's `checkoutPackages.quantitySteps` (or reads `Customer.checkoutLimits` after the customer exists). Standard plans use the configured fixed quantities from `checkoutPackages.planQuantities`.
-8. Crater creates an embedded Stripe Checkout Session for the selected plan and required `customerId`, returning its `clientSecret`.
+8. Crater creates an embedded Stripe Checkout Session for the selected plan and the user's customer, returning its `clientSecret`.
 9. The frontend mounts Stripe's custom checkout UI, which collects billing details and calculates tax. Promotion codes are applied and validated through `checkout.applyPromotionCode()` and removed through `checkout.removePromotionCode()`. Right before confirming the payment, the frontend calls `checkoutRecordConsent` with the session ID, `terms: true`, and — for personal customers — `withdrawal: true`. A checkout confirmed without it is cancelled and refunded by the webhook.
 10. Subscription metadata includes the Crater customer ID, deployment type, customer type, plan, payment period, resolved quantities, optional namespace ID, and optional referral.
 11. The verified `checkout.session.completed` webhook creates or updates Crater's subscription projection and syncs the email, name, phone, address, and tax ID from the session's `customer_details` back to the Crater customer. The webhook does not grant paid access by itself.

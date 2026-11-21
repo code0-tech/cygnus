@@ -5,8 +5,7 @@ import { POST as sendOffer } from "../../src/app/api/crater/checkout/offer/route
 import { createGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSession"
 import { withGraphQLServer } from "../helpers/graphqlTestServer"
 
-const customerId = "gid://crater/Customer/3"
-const selection = { customerId, deploymentType: "cloud", plan: "custom", paymentPeriod: "yearly", aiTokens: "500000", workflowExecutions: "2000" }
+const selection = { deploymentType: "cloud", plan: "custom", paymentPeriod: "yearly", aiTokens: "500000", workflowExecutions: "2000" }
 
 function request(body: unknown, token = "c_ust_offer") {
     return new Request("https://example.com/api/crater/checkout/offer", {
@@ -18,7 +17,8 @@ function request(body: unknown, token = "c_ust_offer") {
 
 test("sends the checkout selection to Crater as an offer for the entered email", async () => {
     await withGraphQLServer([{ data: { quotesCreate: { errors: [] } } }], async (server) => {
-        const response = await sendOffer(request({ ...selection, email: " buyer@example.com " }))
+        // A stale client may still send a customerId; Crater resolves the user's customer itself, so it is not forwarded.
+        const response = await sendOffer(request({ ...selection, customerId: "gid://crater/Customer/3", email: " buyer@example.com " }))
 
         assert.equal(response.status, 201)
         assert.equal(response.headers.get("cache-control"), "no-store")
@@ -26,7 +26,7 @@ test("sends the checkout selection to Crater as an offer for the entered email",
         assert.equal(server.requests[0].authorization, "Session c_ust_offer")
         assert.equal(server.requests[0].body.operationName, "QuotesCreate")
         assert.deepEqual(server.requests[0].body.variables, {
-            input: { customerId, email: "buyer@example.com", plan: "CUSTOM", paymentPeriod: "YEARLY", deploymentType: "CLOUD", aiTokens: 500_000, workflowExecutions: 2_000 },
+            input: { email: "buyer@example.com", plan: "CUSTOM", paymentPeriod: "YEARLY", deploymentType: "CLOUD", aiTokens: 500_000, workflowExecutions: 2_000 },
         })
     })
 })
@@ -45,7 +45,6 @@ test("forwards Crater's offer error codes", async () => {
 test("refuses incomplete or malformed offers before calling Crater", async () => {
     const cases = [
         { body: { ...selection, email: "not-an-email" }, error: "A valid email is required to send the offer." },
-        { body: { ...selection, customerId: "gid://crater/Subscription/3", email: "buyer@example.com" }, error: "customerId is required and must be a valid Crater global ID." },
         { body: { ...selection, deploymentType: "hybrid", email: "buyer@example.com" }, error: "deploymentType must be cloud or self_hosted." },
         { body: { ...selection, plan: "enterprise", email: "buyer@example.com" }, error: "plan must be pro, max, or custom." },
         { body: { ...selection, paymentPeriod: "weekly", email: "buyer@example.com" }, error: "paymentPeriod must be monthly, quarterly, or yearly." },

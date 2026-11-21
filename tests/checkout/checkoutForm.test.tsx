@@ -622,7 +622,8 @@ test("creates a customer with contact details only when continuing to payment", 
         email: "ada@example.com",
         address: { city: "Berlin", country: "DE", line1: stripeBillingAddress.address.line1, line2: null, postalCode: "10115", state: "Berlin" },
     })
-    assert.equal(JSON.parse(String(requests[2].init?.body)).customerId, "gid://crater/Customer/1")
+    // Crater checks out the user's single customer; the session request names none.
+    assert.equal("customerId" in JSON.parse(String(requests[2].init?.body)), false)
     assert.deepEqual(stripeEmailUpdates, [])
     assert.equal(checkoutStage, "payment")
     await waitFor(() => assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress]))
@@ -639,9 +640,9 @@ test("creates a customer with contact details only when continuing to payment", 
     assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, false)
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
     act(() => billingAddressOnReady?.())
-    await screen.findByText(content.customerSelectLabel)
-    assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, "ada@example.com")
-    assert.ok(screen.getByText("Ada Lovelace"))
+    await waitFor(() => assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, "ada@example.com"))
+    // A user manages a single customer, so there is no customer to choose and no second one to create.
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST").length, 1)
     await user.click(screen.getByRole("button", { name: content.continueLabel }))
     await screen.findByRole("button", { name: content.payNowLabel })
@@ -824,83 +825,83 @@ test("a double submit records the consent and confirms only once, with the pay b
     assert.deepEqual(checkoutEvents, ["consent", "confirm"])
 })
 
-test("recreates the checkout session for a selected or newly created customer", async () => {
+test("uses the user's single customer without offering a customer choice", async () => {
     const requests: Array<{ init?: RequestInit; url: string }> = []
-    let sessionCount = 0
     globalThis.fetch = (async (input, init) => {
         const url = String(input)
         requests.push({ init, url })
-
-        if (url === "/api/crater/customer" && init?.method !== "POST") {
-            return new Response(
-                JSON.stringify({
-                    customers: [
-                        { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" },
-                        { customerType: "personal", email: "grace@example.com", id: "gid://crater/Customer/2", name: "Grace" },
-                    ],
-                }),
-                { status: 200, headers: { "content-type": "application/json" } }
-            )
-        }
-
         if (url === "/api/crater/customer") {
-            return new Response(JSON.stringify({ customerType: "personal", email: null, id: "gid://crater/Customer/3", name: null }), {
-                status: 201,
-                headers: { "content-type": "application/json" },
-            })
+            return Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
         }
-
-        sessionCount += 1
-        return new Response(JSON.stringify({ clientSecret: `cs_customer_${sessionCount}`, expiresAt: 1_800_000_000, id: `cs_customer_${sessionCount}` }), {
-            status: 200,
-            headers: { "content-type": "application/json" },
-        })
+        return Response.json({ clientSecret: "cs_single_customer", expiresAt: 1_800_000_000, id: "cs_single_customer" })
     }) as typeof fetch
 
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
-    // Until Crater has answered it is unknown whether there are customers, so the placeholder reserves no select yet.
-    assert.ok(screen.getByTestId("checkout-form-skeleton"))
-    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_1"))
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_single_customer"))
     act(() => {
         contactDetailsOnReady?.()
         billingAddressOnReady?.()
     })
-    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
-    assert.ok(screen.getByText(content.customerSelectLabel))
-    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 1)
 
-    act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_2"))
-    act(() => {
-        contactDetailsOnReady?.()
-        billingAddressOnReady?.()
-    })
-    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
+    assert.equal(screen.queryByText(content.newCustomerLabel), null)
+    assert.equal(customerSelectOnValueChange, null)
+    assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, "ada@example.com")
+    assert.deepEqual(
+        requests.map(({ url, init }) => [url, init?.method ?? "GET"]),
+        [
+            ["/api/crater/customer", "GET"],
+            ["/api/crater/checkout/session", "POST"],
+        ]
+    )
+})
 
-    act(() => customerSelectOnValueChange?.("new"))
-    await screen.findByTestId("standalone-address")
-    assert.equal(sessionCount, 2)
-    assert.equal(requests.filter((request) => request.init?.method === "POST" && request.url === "/api/crater/customer").length, 0)
+test("a customer of the other type cannot check out and is not offered a second customer", async () => {
+    checkoutSearchParams.set("customerType", "b2b")
+    const requests: string[] = []
+    globalThis.fetch = (async (input) => {
+        requests.push(String(input))
+        return Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
+    }) as typeof fetch
+
+    render(
+        <CheckoutErrorBoundary>
+            <CheckoutForm content={content} errors={errors} locale="en" />
+        </CheckoutErrorBoundary>
+    )
+    await screen.findByTestId("checkout-error-page")
+    assert.deepEqual(requests, ["/api/crater/customer"])
+    assert.equal(screen.queryByTestId("standalone-address"), null)
+})
+
+test("a customer created meanwhile in another tab is picked up instead of failing the checkout", async () => {
+    const customer = { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/5", name: "Ada" }
+    let customerReads = 0
+    let creations = 0
+    globalThis.fetch = (async (input, init) => {
+        const url = String(input)
+        if (url === "/api/crater/customer" && init?.method === "POST") {
+            creations += 1
+            return Response.json({ error: "Crater could not create the customer.", errorCode: "CUSTOMER_ALREADY_EXISTS", details: [] }, { status: 422 })
+        }
+        if (url === "/api/crater/customer") {
+            customerReads += 1
+            return Response.json({ customers: customerReads === 1 ? [] : [customer] })
+        }
+        return Response.json({ clientSecret: "cs_existing_customer", expiresAt: 1_800_000_000, id: "cs_existing_customer" })
+    }) as typeof fetch
+
     const user = userEvent.setup()
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByTestId("standalone-address")
     await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     await user.click(screen.getByRole("button", { name: content.continueLabel }))
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_3"))
-    act(() => {
-        contactDetailsOnReady?.()
-        billingAddressOnReady?.()
-    })
-    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
 
-    const sessionBodies = requests.filter((request) => request.url === "/api/crater/checkout/session").map((request) => JSON.parse(String(request.init?.body)) as { customerId: string })
-    assert.deepEqual(
-        sessionBodies.map((body) => body.customerId),
-        ["gid://crater/Customer/1", "gid://crater/Customer/2", "gid://crater/Customer/3"]
-    )
-    const customerCreationRequests = requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST")
-    assert.equal(customerCreationRequests.length, 1)
-    assert.equal(JSON.parse(String(customerCreationRequests[0].init?.body)).name, stripeBillingAddress.name)
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_existing_customer"))
+    assert.equal(creations, 1)
+    assert.equal(customerReads, 2)
+    assert.equal(screen.queryByRole("alert"), null)
 })
 
 test("replaces a checkout session shortly before it expires", async () => {
@@ -1117,13 +1118,13 @@ for (const [status, errorCode] of [
     })
 }
 
-for (const trigger of ["new customer", "customer selection", "session refresh"] as const) {
+for (const trigger of ["new customer", "session refresh"] as const) {
     test(`opens the error page for invalid checkout parameters during ${trigger}`, async () => {
         let sessionRequests = 0
         globalThis.fetch = (async (input, init) => {
             if (String(input) === "/api/crater/customer") {
                 const customer = { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }
-                return Response.json(init?.method === "POST" ? customer : { customers: trigger === "new customer" ? [] : [customer, { ...customer, id: "gid://crater/Customer/2" }] })
+                return Response.json(init?.method === "POST" ? customer : { customers: trigger === "new customer" ? [] : [customer] })
             }
             sessionRequests += 1
             return trigger !== "new customer" && sessionRequests === 1
@@ -1152,16 +1153,7 @@ for (const trigger of ["new customer", "customer selection", "session refresh"] 
             await user.click(screen.getByRole("button", { name: content.continueLabel }))
         } else {
             await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_initial_secret"))
-            if (trigger === "customer selection") {
-                act(() => {
-                    contactDetailsOnReady?.()
-                    billingAddressOnReady?.()
-                })
-                await waitFor(() => assert.ok(customerSelectOnValueChange))
-                act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
-            } else {
-                await user.click(screen.getByRole("button", { name: "Refresh session" }))
-            }
+            await user.click(screen.getByRole("button", { name: "Refresh session" }))
         }
         await screen.findByTestId("checkout-error-page")
         assert.equal(screen.queryByRole("alert"), null)
@@ -1213,7 +1205,6 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
 
     await waitFor(() => assert.equal(requests.length, 2))
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
-        customerId: "gid://crater/Customer/2",
         customerType: "b2b",
         deploymentType: "self_hosted",
         locale: "en",
@@ -1344,7 +1335,6 @@ test("shows only the configured error when loading customers fails", async () =>
     assert.equal(screen.queryByText("Crater rejected the customer."), null)
     assert.equal(requestCount, 1)
     assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
-    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
     assert.equal(screen.queryByText(content.customerSelectLabel), null)
     const retryButton = screen.getByRole("button", { name: errors.retry })
     await userEvent.setup().click(retryButton)
@@ -1493,7 +1483,7 @@ test("keeps a customer created while checkout parameters change without starting
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_updated_secret"))
     assert.equal(creations, 1)
     assert.equal(sessionRequests.length, 1)
-    assert.equal(sessionRequests[0].customerId, customer.id)
+    assert.equal("customerId" in sessionRequests[0], false)
     assert.equal(sessionRequests[0].plan, "max")
 })
 
@@ -1563,20 +1553,18 @@ function respondWithCustomers(customers: Array<{ customerType: string; email: st
     }) as typeof fetch
 }
 
-test("reserves the real customer select in the placeholder once existing customers are known", async () => {
+test("the placeholder reserves no customer select for the user's single customer", async () => {
     let releaseSession = () => {}
     respondWithCustomers([{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }], new Promise((resolve) => (releaseSession = resolve)))
 
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
-    const selectPlaceholder = await screen.findByTestId("checkout-customer-select-skeleton")
-    assert.ok(screen.getByTestId("checkout-form-skeleton").contains(selectPlaceholder))
-    assert.ok(selectPlaceholder.textContent?.includes(content.customerSelectLabel))
+    await screen.findByTestId("checkout-form-skeleton")
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
 
     await act(async () => releaseSession())
     await waitFor(() => assert.equal(screen.queryByTestId("checkout-form-skeleton"), null))
-    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
-    assert.ok(screen.getByText(content.customerSelectLabel))
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
 })
 
 test("keeps Stripe elements hidden behind their placeholder until they report ready", async () => {
@@ -1634,53 +1622,6 @@ test("keeps the new customer form in place while the customer and its session ar
 
     await act(async () => releaseCreation())
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_layout"))
-})
-
-test("keeps the previous customer's form on screen until the new customer's session is ready", async () => {
-    let releaseSecondSession = () => {}
-    const secondSessionGate = new Promise<void>((resolve) => (releaseSecondSession = resolve))
-    let sessionCount = 0
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input)
-        if (url === "/api/crater/customer" && init?.method !== "POST") {
-            return Response.json({
-                customers: [
-                    { customerType: "personal", email: null, id: "gid://crater/Customer/1", name: "Ada" },
-                    { customerType: "personal", email: null, id: "gid://crater/Customer/2", name: "Grace" },
-                ],
-            })
-        }
-        sessionCount += 1
-        if (sessionCount === 2) await secondSessionGate
-        return Response.json({ clientSecret: `cs_swap_${sessionCount}`, expiresAt: 1_800_000_000, id: `cs_swap_${sessionCount}` })
-    }) as typeof fetch
-
-    render(<CheckoutForm content={content} errors={errors} locale="en" />)
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_swap_1"))
-    act(() => {
-        contactDetailsOnReady?.()
-        billingAddressOnReady?.()
-    })
-
-    act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
-    // While Crater creates the new session the previous form stays, dimmed and inert, instead of a skeleton.
-    assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
-    assert.equal(screen.getAllByTestId("stripe-billing-address").length, 1)
-    assert.equal(screen.getByTestId("stripe-billing-address").closest("[aria-busy='true']")?.hasAttribute("inert"), true)
-
-    await act(async () => releaseSecondSession())
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_swap_2"))
-    // The new session loads invisibly next to the outgoing one, which is hidden from assistive technology.
-    const addresses = screen.getAllByTestId("stripe-billing-address")
-    assert.equal(addresses.length, 2)
-    assert.equal(addresses[0].closest("[aria-hidden='true']") !== null, true)
-
-    act(() => {
-        contactDetailsOnReady?.()
-        billingAddressOnReady?.()
-    })
-    await waitFor(() => assert.equal(screen.getAllByTestId("stripe-billing-address").length, 1))
-    assert.equal(screen.getByTestId("stripe-billing-address").closest("[aria-busy='true']"), null)
 })
 
 test("keeps the form on screen while a session about to expire is refreshed", async () => {

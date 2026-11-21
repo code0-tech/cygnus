@@ -39,6 +39,7 @@ test("forwards both custom quantities unchanged so Crater can check them against
                 body: JSON.stringify({
                     plan: "custom",
                     paymentPeriod: "monthly",
+                    // Stale clients may still send a customerId; Crater checks out the user's customer, so it is not forwarded.
                     customerId: "gid://crater/Customer/1",
                     deploymentType: "cloud",
                     namespaceId: "opaque-namespace",
@@ -54,7 +55,7 @@ test("forwards both custom quantities unchanged so Crater can check them against
         assert.equal(input.deploymentType, "CLOUD")
         assert.equal(input.namespaceId, "opaque-namespace")
         assert.equal(input.workflowExecutions, 100_000)
-        assert.equal(input.customerId, "gid://crater/Customer/1")
+        assert.equal("customerId" in input, false)
     })
 })
 
@@ -64,7 +65,7 @@ test("rejects malformed GraphQL quantities and oversized namespace identifiers",
             new Request("https://example.com/api/crater/checkout/session", {
                 method: "POST",
                 headers: { authorization: "Session invalid-limits-test", "content-type": "application/json" },
-                body: JSON.stringify({ plan: "custom", paymentPeriod: "monthly", customerId: "gid://crater/Customer/1", deploymentType: "cloud", workflowExecutions: 100_000, ...extra }),
+                body: JSON.stringify({ plan: "custom", paymentPeriod: "monthly", deploymentType: "cloud", workflowExecutions: 100_000, ...extra }),
             })
         )
         assert.equal(response.status, 400)
@@ -79,7 +80,7 @@ test("rejects zero and negative quantities locally for standard and custom check
                     const response = await POST(new Request("https://example.com/api/crater/checkout/session", {
                         method: "POST",
                         headers: { authorization: `Session positive_quantities_${plan}`, "content-type": "application/json" },
-                        body: JSON.stringify({ plan, customerId: "gid://crater/Customer/1", deploymentType: "cloud", paymentPeriod: "monthly", [field]: value }),
+                        body: JSON.stringify({ plan, deploymentType: "cloud", paymentPeriod: "monthly", [field]: value }),
                     }))
                     assert.equal(response.status, 400)
                     assert.deepEqual(await response.json(), { error: "aiTokens and workflowExecutions must be positive GraphQL integers when provided." })
@@ -97,18 +98,12 @@ test("checkout rejects invalid requests before calling Crater", async () => {
     const cases: { name: string; headers?: Record<string, string> | null; body: Record<string, unknown>; status: number; error: string }[] = [
         { name: "no session", headers: null, body: regular, status: 403, error: "Crater session authorization is required." },
         { name: "bearer scheme", headers: { ...session, authorization: "Bearer c_ust_example" }, body: regular, status: 401, error: "Crater session authorization is invalid." },
-        ...[undefined, "", "42", "gid://crater/License/1"].map((customerId) => ({
-            name: `customer id ${String(customerId)}`,
-            body: { ...regular, customerId },
-            status: 400,
-            error: "customerId is required and must be a valid Crater global ID.",
-        })),
         { name: "missing deployment type", body: { plan: "pro" }, status: 400, error: "deploymentType must be cloud or self_hosted for checkout." },
         { name: "unsupported locale", body: { ...regular, locale: "fr" }, status: 400, error: "locale must be a supported locale." },
         { name: "legacy configuration only", body: { customCheckoutConfigurationId: "123" }, status: 400, error: "plan is required." },
         { name: "missing plan", body: { deploymentType: "self_hosted" }, status: 400, error: "plan is required." },
-        { name: "unknown plan", body: { ...regular, plan: "unknown", customerId: "gid://crater/Customer/1" }, status: 400, error: "plan must be pro, max, or custom." },
-        { name: "missing period", body: { ...regular, paymentPeriod: undefined, customerId: "gid://crater/Customer/1" }, status: 400, error: "paymentPeriod must be monthly, quarterly, or yearly." },
+        { name: "unknown plan", body: { ...regular, plan: "unknown" }, status: 400, error: "plan must be pro, max, or custom." },
+        { name: "missing period", body: { ...regular, paymentPeriod: undefined }, status: 400, error: "paymentPeriod must be monthly, quarterly, or yearly." },
         {
             name: "retired configuration id",
             body: { ...regular, customCheckoutConfigurationId: "gid://crater/CustomCheckoutConfiguration/4" },
@@ -139,7 +134,7 @@ test("Crater decides quantity rules and customer compatibility without a CMS or 
                 new Request("https://example.com/api/crater/checkout/session", {
                     method: "POST",
                     headers: { authorization: "Session crater-domain-validation", "content-type": "application/json" },
-                    body: JSON.stringify({ customerId: "gid://crater/Customer/1", deploymentType: "cloud", paymentPeriod: "yearly", ...selection }),
+                    body: JSON.stringify({ deploymentType: "cloud", paymentPeriod: "yearly", ...selection }),
                 })
             )
             assert.equal(response.status, 422)
@@ -185,7 +180,6 @@ test("checkout forwards documented Crater domain error details", async () => {
                         "content-type": "application/json",
                     },
                     body: JSON.stringify({
-                        customerId: "gid://crater/Customer/1",
                         customerType: "b2c",
                         deploymentType: "self_hosted",
                         paymentPeriod: "monthly",
@@ -232,7 +226,6 @@ test("accepts quarterly and rejects removed weekly periods even when sent direct
                         "content-type": "application/json",
                     },
                     body: JSON.stringify({
-                        customerId: "gid://crater/Customer/1",
                         plan: "pro",
                         customerType: "b2b",
                         deploymentType: "self_hosted",
@@ -248,7 +241,6 @@ test("accepts quarterly and rejects removed weekly periods even when sent direct
                         "content-type": "application/json",
                     },
                     body: JSON.stringify({
-                        customerId: "gid://crater/Customer/1",
                         plan: "max",
                         customerType: "b2b",
                         deploymentType: "self_hosted",
@@ -261,7 +253,6 @@ test("accepts quarterly and rejects removed weekly periods even when sent direct
             assert.equal(removedWeeklyResponse.status, 400)
             assert.deepEqual(graphQLServer.requests[0].body.variables, {
                 input: {
-                    customerId: "gid://crater/Customer/1",
                     deploymentType: "SELF_HOSTED",
                     paymentPeriod: "QUARTERLY",
                     plan: "PRO",
@@ -322,7 +313,6 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                         "content-type": "application/json",
                     },
                     body: JSON.stringify({
-                        customerId: "gid://crater/Customer/1",
                         plan: "pro",
                         deploymentType: "self_hosted",
                         paymentPeriod: "monthly",
@@ -339,7 +329,6 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                         "content-type": "application/json",
                     },
                     body: JSON.stringify({
-                        customerId: "gid://crater/Customer/2",
                         plan: "max",
                         deploymentType: "cloud",
                         paymentPeriod: "monthly",
@@ -354,7 +343,6 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
                         "content-type": "application/json",
                     },
                     body: JSON.stringify({
-                        customerId: "gid://crater/Customer/3",
                         plan: "custom",
                         customerType: "b2c",
                         deploymentType: "cloud",
@@ -380,7 +368,6 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
             assert.equal(graphQLServer.requests[0].authorization, "Session regular-token")
             assert.deepEqual(graphQLServer.requests[0].body.variables, {
                 input: {
-                    customerId: "gid://crater/Customer/1",
                     deploymentType: "SELF_HOSTED",
                     paymentPeriod: "MONTHLY",
                     plan: "PRO",
@@ -390,7 +377,6 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
             assert.equal(graphQLServer.requests[1].authorization, "Session custom-token")
             assert.deepEqual(graphQLServer.requests[1].body.variables, {
                 input: {
-                    customerId: "gid://crater/Customer/2",
                     plan: "MAX",
                     deploymentType: "CLOUD",
                     paymentPeriod: "MONTHLY",
@@ -401,7 +387,6 @@ test("creates regular and custom checkout sessions with the expected Crater inpu
             assert.deepEqual(graphQLServer.requests[2].body.variables, {
                 input: {
                     aiTokens: 30_000,
-                    customerId: "gid://crater/Customer/3",
                     deploymentType: "CLOUD",
                     namespaceId: "gid://sagittarius/Namespace/1",
                     paymentPeriod: "QUARTERLY",

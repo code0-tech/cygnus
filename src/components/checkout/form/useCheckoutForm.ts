@@ -34,7 +34,7 @@ function getPreparationErrorMessage(error: unknown, errors: ErrorsContent) {
     if (!(error instanceof CheckoutSubmissionError)) return errors.paymentFallback
     if (error.status === 429) return errors.checkoutRateLimit
     if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return errors.customerTypeMismatch
-    if (error.errorCode === "INVALID_CHECKOUT_CUSTOMER") return errors.checkoutCustomer
+    if (error.errorCode === "INVALID_CHECKOUT_CUSTOMER" || error.errorCode === "CUSTOMER_ALREADY_EXISTS") return errors.checkoutCustomer
     return error.kind === "customer" ? errors.customerCreation : errors.checkoutSession
 }
 
@@ -43,7 +43,7 @@ function getOfferErrorMessage(error: unknown, errors: ErrorsContent) {
     if (error.status === 429) return errors.checkoutRateLimit
     if (error.errorCode === "QUOTE_DELIVERY_FAILED") return errors.offerDelivery
     if (error.errorCode === "CUSTOMER_TYPE_MISMATCH") return errors.customerTypeMismatch
-    if (error.errorCode === "INVALID_QUOTE_CUSTOMER") return errors.checkoutCustomer
+    if (error.errorCode === "INVALID_QUOTE_CUSTOMER" || error.errorCode === "CUSTOMER_ALREADY_EXISTS") return errors.checkoutCustomer
     return error.kind === "customer" ? errors.customerCreation : errors.offerSend
 }
 
@@ -145,15 +145,14 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
 
     const startCheckoutSessionRefresh = useCallback(
         (checkoutSearchParams: URLSearchParams) => {
-            const customerId = selectedCustomerIdRef.current
-            if (!customerId) return Promise.resolve(false)
+            if (!selectedCustomerIdRef.current) return Promise.resolve(false)
             const requestId = ++sessionRefreshRequestRef.current
             setIsRefreshingSession(true)
             setErrorMessage(null)
             setStripeSessionError(null)
 
             let request: Promise<boolean>
-            request = createCheckoutSession({ customerId, locale, searchParams: checkoutSearchParams })
+            request = createCheckoutSession({ locale, searchParams: checkoutSearchParams })
                 .then((session) => {
                     if (requestId !== sessionRefreshRequestRef.current) return false
                     setCheckoutSession(session)
@@ -276,10 +275,16 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
 
         void (async () => {
             try {
-                // The first preparation reuses the customers the session bootstrap already loaded; retries load them fresh.
+                // The first preparation reuses the customer the session bootstrap already loaded; retries load it fresh.
                 const availableCustomers = await getCheckoutCustomers(takeBootstrapCustomers?.() ?? null)
                 if (requestId !== sessionRefreshRequestRef.current) return
                 const matchingCustomers = availableCustomers.filter((candidate) => candidate.customerType === customerType)
+                // A user manages a single customer and cannot create a second one, so a customer of the other type
+                // cannot check out here at all; Crater would answer the session with CUSTOMER_TYPE_MISMATCH.
+                if (availableCustomers.length > 0 && matchingCustomers.length === 0) {
+                    clearCheckoutContactDraft()
+                    throw new CheckoutSubmissionError("session", "CUSTOMER_TYPE_MISMATCH", "The customer does not match the checkout's customer type.")
+                }
                 const restoredCustomerId = restoredContactDraft?.customerId ?? null
                 setHasExistingCustomers(matchingCustomers.length > 0)
                 const restoredCustomer = restoredCustomerId ? matchingCustomers.find((candidate) => candidate.id === restoredCustomerId) : undefined
@@ -287,7 +292,8 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                     clearCheckoutContactDraft()
                     throw new CheckoutSubmissionError("customer", "INVALID_CHECKOUT_CUSTOMER", "The selected customer is unavailable.")
                 }
-                const customer = restoredCustomer ?? (restoredContactDraft?.customerId === null ? undefined : matchingCustomers[0])
+
+                const customer = restoredCustomer ?? matchingCustomers[0]
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCustomers(matchingCustomers)
                 selectedCustomerIdRef.current = customer?.id ?? null
@@ -309,7 +315,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                     setStage("billingAddress")
                     return
                 }
-                const session = await createCheckoutSession({ customerId: customer.id, locale, searchParams: checkoutSearchParams })
+                const session = await createCheckoutSession({ locale, searchParams: checkoutSearchParams })
                 if (requestId !== sessionRefreshRequestRef.current) return
                 setCheckoutSession(session)
                 expiredRefreshAttemptsRef.current = 0
@@ -351,7 +357,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             if (!customerId) {
                 const customer = await createCheckoutCustomer({ customerType, email: stripeEmail, billingAddress: stripeBillingAddress })
                 customerId = customer.id
-                setCustomers((current) => [...current.filter((candidate) => candidate.id !== customer.id), customer])
+                setCustomers([customer])
                 setHasExistingCustomers(true)
             }
             selectedCustomerIdRef.current = customerId
@@ -371,12 +377,20 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
             // parameters changed meanwhile. Keep its ID and discard only the stale session work.
             if (requestId !== sessionRefreshRequestRef.current) return
             setStripeEmailSynced(true)
-            const session = await createCheckoutSession({ customerId, locale, searchParams: new URLSearchParams(searchParamsString) })
+            const session = await createCheckoutSession({ locale, searchParams: new URLSearchParams(searchParamsString) })
             if (requestId !== sessionRefreshRequestRef.current) return
             setCheckoutSession(session)
             setStage("payment")
         } catch (error) {
-            if (requestId === sessionRefreshRequestRef.current) handlePreparationError(error)
+            if (requestId !== sessionRefreshRequestRef.current) return
+            // The customer was created meanwhile (another tab, a lost response): prepare again, which picks it up.
+            if (error instanceof CheckoutSubmissionError && error.errorCode === "CUSTOMER_ALREADY_EXISTS") {
+                clearCheckoutContactDraft()
+                preparedSessionKeyRef.current = null
+                setPreparationAttempt((attempt) => attempt + 1)
+                return
+            }
+            handlePreparationError(error)
         } finally {
             customerCreationPendingRef.current = false
             setIsCreatingCustomer(false)
@@ -401,8 +415,8 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     const sendOffer = useCallback(
         async (email: string) => {
             try {
-                let customerId = selectedCustomerIdRef.current
-                if (!customerId) {
+                // The offer goes out for the user's customer, which has to exist first.
+                if (!selectedCustomerIdRef.current) {
                     const billingAddress = stripeBillingAddressRef.current
                     const customerEmail = stripeEmailRef.current
                     if (customerCreationPendingRef.current || !billingAddress || !stripeBillingAddressCompleteRef.current || !customerEmail || !stripeEmailCompleteRef.current) {
@@ -412,80 +426,22 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                     customerCreationPendingRef.current = true
                     try {
                         const customer = await createCheckoutCustomer({ customerType, email: customerEmail, billingAddress })
-                        customerId = customer.id
-                        setCustomers((current) => [...current.filter((candidate) => candidate.id !== customer.id), customer])
+                        setCustomers([customer])
                         setHasExistingCustomers(true)
-                        selectedCustomerIdRef.current = customerId
-                        setSelectedCustomerId(customerId)
+                        selectedCustomerIdRef.current = customer.id
+                        setSelectedCustomerId(customer.id)
                     } finally {
                         customerCreationPendingRef.current = false
                     }
                 }
 
-                await sendCheckoutOffer({ customerId, email, searchParams: new URLSearchParams(searchParamsString) })
+                await sendCheckoutOffer({ email, searchParams: new URLSearchParams(searchParamsString) })
             } catch (error) {
                 console.error("Failed to send the Crater offer:", error)
                 throw new Error(getOfferErrorMessage(error, errors))
             }
         },
         [customerType, errors, searchParamsString]
-    )
-
-    const selectCheckoutCustomer = useCallback(
-        async (customerId: string | null) => {
-            if (isLoading || isRefreshingSession) return
-
-            const requestId = ++sessionRefreshRequestRef.current
-            const checkoutSearchParams = new URLSearchParams(searchParamsString)
-            formDraftReadyRef.current = false
-            // The previous customer's form stays (dimmed) until the new session is ready; its tax does not apply anymore.
-            setTaxQuote(null)
-            setStripePricing(null)
-            setStripeBillingAddress(null, false)
-            setStripeEmail(null, false)
-            setStripeEmailSynced(false)
-            setIsRefreshingSession(true)
-            setErrorMessage(null)
-            setStripeSessionError(null)
-            setStage("billingAddress")
-
-            try {
-                const customer = customerId ? customers.find((candidate) => candidate.id === customerId) : undefined
-                if (customerId && !customer) throw new CheckoutSubmissionError("customer", "INVALID_CHECKOUT_CUSTOMER", "The selected customer is unavailable.")
-
-                selectedCustomerIdRef.current = customer?.id ?? null
-                setSelectedCustomerId(customer?.id ?? null)
-
-                saveCheckoutContactDraft({
-                    billingAddress: null,
-                    billingAddressComplete: false,
-                    customerId: customer?.id ?? null,
-                    email: null,
-                    emailComplete: false,
-                    emailSyncedToStripe: false,
-                    searchParams: checkoutSearchParams,
-                    stage: "billingAddress",
-                })
-                formDraftReadyRef.current = true
-
-                if (!customer) {
-                    setCheckoutSession(null)
-                    setStage("billingAddress")
-                    return
-                }
-                const session = await createCheckoutSession({ customerId: customer.id, locale, searchParams: checkoutSearchParams })
-                if (requestId !== sessionRefreshRequestRef.current) return
-                setCheckoutSession(session)
-                expiredRefreshAttemptsRef.current = 0
-            } catch (error) {
-                if (requestId !== sessionRefreshRequestRef.current) return
-                console.error("Failed to select the Crater checkout customer:", error)
-                handlePreparationError(error)
-            } finally {
-                if (requestId === sessionRefreshRequestRef.current) setIsRefreshingSession(false)
-            }
-        },
-        [customers, handlePreparationError, isLoading, isRefreshingSession, locale, searchParamsString, setStage]
     )
 
     useEffect(() => {
@@ -533,7 +489,6 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
         recoverCheckoutSessionLoad,
         resolvedError,
         selectedCustomerId,
-        selectCheckoutCustomer,
         sendOffer,
         sessionError,
         setStripeBillingAddress,

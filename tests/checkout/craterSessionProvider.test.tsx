@@ -277,8 +277,8 @@ test("hands the customers loaded with the checkout session check over once", asy
         const session = useCraterSession()
         React.useEffect(() => {
             if (!session.authenticated) return
-            handedOver.push(session.takeBootstrapCustomers?.()?.customers.map((customer) => customer.id) ?? null)
-            handedOver.push(session.takeBootstrapCustomers?.()?.customers.map((customer) => customer.id) ?? null)
+            handedOver.push(session.takeBootstrapCustomers?.()?.map((customer) => customer.id) ?? null)
+            handedOver.push(session.takeBootstrapCustomers?.()?.map((customer) => customer.id) ?? null)
         }, [session])
         return null
     }

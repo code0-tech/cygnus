@@ -21,7 +21,7 @@ function appendNavigationLicenses(target: LicenseDashboardLicense[], customer: C
     }
 }
 
-async function appendRemainingLicenses(client: ReturnType<typeof createApolloClient>, target: LicenseDashboardLicense[], customer: Customer, customerAfter: string | null) {
+async function appendRemainingLicenses(client: ReturnType<typeof createApolloClient>, target: LicenseDashboardLicense[], customer: Customer) {
     const seenCursors = new Set<string>()
     let pageInfo = mapPageInfo(customer.subscriptions?.pageInfo)
 
@@ -31,10 +31,10 @@ async function appendRemainingLicenses(client: ReturnType<typeof createApolloCli
 
         const result = await client.query({
             query: CUSTOMER_LICENSE_PAGE,
-            variables: { ...(customerAfter ? { customerAfter } : {}), licenseAfter: pageInfo.endCursor },
+            variables: { licenseAfter: pageInfo.endCursor },
             fetchPolicy: "no-cache",
         })
-        const nextPage = result.data?.currentUser?.customers?.nodes?.[0]
+        const nextPage = result.data?.currentUser?.customer
         if (!nextPage || nextPage.id !== customer.id) throw new Error("Crater returned an invalid customer while paginating licenses.")
 
         appendNavigationLicenses(target, nextPage)
@@ -42,57 +42,37 @@ async function appendRemainingLicenses(client: ReturnType<typeof createApolloCli
     }
 }
 
+/** Every license of the user's customer for the sidebar, plus that customer's id (`null` before customersCreate). */
 async function collectNavigationLicenses(client: ReturnType<typeof createApolloClient>) {
-    const seenCursors = new Set<string>()
     const navigationLicenses: LicenseDashboardLicense[] = []
-    const customerCursors = new Map<string, string | null>()
-    let customerAfter: string | null = null
+    const result = await client.query({ query: CUSTOMER_NAVIGATION_PAGE, fetchPolicy: "no-cache" })
+    const currentUser = result.data?.currentUser
+    if (!currentUser) return { status: "unauthenticated" as const }
 
-    while (true) {
-        const result = await client.query({
-            query: CUSTOMER_NAVIGATION_PAGE,
-            variables: { ...(customerAfter ? { customerAfter } : {}) },
-            fetchPolicy: "no-cache",
-        })
-        const currentUser = result.data?.currentUser
-        if (!currentUser) return { status: "unauthenticated" as const }
-
-        const connection = currentUser.customers
-        const edges = connection?.edges ?? []
-        for (let index = 0; index < edges.length; index += 1) {
-            const customer = edges[index]?.node
-            if (!customer?.id) continue
-
-            const cursorBeforeCustomer = index > 0 ? (edges[index - 1]?.cursor ?? null) : customerAfter
-            customerCursors.set(customer.id, cursorBeforeCustomer)
-            appendNavigationLicenses(navigationLicenses, customer)
-            await appendRemainingLicenses(client, navigationLicenses, customer, cursorBeforeCustomer)
-        }
-
-        const pageInfo = mapPageInfo(connection?.pageInfo)
-        if (!pageInfo.hasNextPage) break
-        if (!pageInfo.endCursor || seenCursors.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid customer pagination cursor.")
-        seenCursors.add(pageInfo.endCursor)
-        customerAfter = pageInfo.endCursor
+    const customer = currentUser.customer
+    if (customer?.id) {
+        appendNavigationLicenses(navigationLicenses, customer)
+        await appendRemainingLicenses(client, navigationLicenses, customer)
     }
 
     navigationLicenses.sort(byMostRecentlyUpdated)
-    return { status: "collected" as const, customerCursors, navigationLicenses }
+    return { status: "collected" as const, customerId: customer?.id ?? null, navigationLicenses }
 }
 
-async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, customerAfter: string | null, customerId: string, licenseId: string, invoiceAfter: string | null) {
+async function findLicenseCursor(client: ReturnType<typeof createApolloClient>, customerId: string, licenseId: string, invoiceAfter: string | null) {
     const seenCursors = new Set<string>()
     let licenseAfter: string | null = null
 
     while (true) {
         const result = await client.query({
             query: LICENSE_NAVIGATION_PAGE,
-            variables: { ...(customerAfter ? { customerAfter } : {}), ...(licenseAfter ? { licenseAfter } : {}), ...(invoiceAfter ? { invoiceAfter } : {}) },
+            variables: { ...(licenseAfter ? { licenseAfter } : {}), ...(invoiceAfter ? { invoiceAfter } : {}) },
             fetchPolicy: "no-cache",
         })
-        const customer = result.data?.currentUser?.customers?.nodes?.[0]
-        if (!customer) return { status: "missing" as const }
-        if (customer.id !== customerId) return { status: "missing" as const }
+        const currentUser = result.data?.currentUser
+        if (!currentUser) return { status: "unauthenticated" as const }
+        const customer = currentUser.customer
+        if (!customer || customer.id !== customerId) return { status: "missing" as const }
 
         const edges = customer.subscriptions?.edges ?? []
         const matchedSubscription = edges.find((edge) => edge?.node?.id === licenseId)?.node
@@ -112,8 +92,6 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
     const view = requestUrl.searchParams.get("view") ?? "dashboard"
     const customerId = requestUrl.searchParams.get("customerId") ?? ""
     const licenseId = requestUrl.searchParams.get("licenseId") ?? ""
-    const customerAfter = readCursor(requestUrl, "customerAfter")
-    const customerContext = readCursor(requestUrl, "customerContext")
     const licenseAfter = readCursor(requestUrl, "licenseAfter")
     const invoiceAfter = readCursor(requestUrl, "invoiceAfter")
     const includeNavigation = requestUrl.searchParams.get("includeNavigation") !== "false"
@@ -123,45 +101,40 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
     }
     if (view !== "dashboard" && !isCustomerId(customerId)) return { error: "A valid Crater customer id is required.", status: 400 }
     if (view === "license" && !isSubscriptionId(licenseId)) return { error: "A valid Crater subscription id is required.", status: 400 }
-    if (customerAfter === undefined || customerContext === undefined || licenseAfter === undefined || invoiceAfter === undefined) {
+    if (licenseAfter === undefined || invoiceAfter === undefined) {
         return { error: "The pagination cursor is invalid.", status: 400 }
     }
 
     const client = createApolloClient(sessionToken)
     let navigationLicenses: LicenseDashboardLicense[] | undefined
-    let selectedCustomerAfter = customerContext ?? null
 
     if (includeNavigation) {
         const navigationLookup = await collectNavigationLicenses(client)
         if (navigationLookup.status === "unauthenticated") return { error: "The Crater session has no authenticated user.", status: 401 }
         navigationLicenses = navigationLookup.navigationLicenses
-        if (view !== "dashboard") {
-            if (!navigationLookup.customerCursors.has(customerId)) return { error: "The requested customer was not found.", status: 404 }
-            selectedCustomerAfter = navigationLookup.customerCursors.get(customerId) ?? null
-        }
+        if (view !== "dashboard" && navigationLookup.customerId !== customerId) return { error: "The requested customer was not found.", status: 404 }
     }
 
     if (view === "dashboard") {
-        const result = await client.query({
-            query: LICENSE_DASHBOARD,
-            variables: { ...(customerAfter ? { customerAfter } : {}) },
-            fetchPolicy: "no-cache",
-        })
+        const result = await client.query({ query: LICENSE_DASHBOARD, fetchPolicy: "no-cache" })
         const currentUser = result.data?.currentUser
         if (!currentUser) return { error: "The Crater session has no authenticated user.", status: 401 }
 
+        const data = mapUserData(currentUser)
         return {
             data: {
-                ...mapUserData(currentUser),
+                ...data,
                 ...(navigationLicenses ? { navigationLicenses } : {}),
-                pagination: { customers: mapPageInfo(currentUser.customers?.pageInfo, currentUser.customers?.count) },
+
+                pagination: { customers: mapPageInfo(null, data.customers.length) },
             },
             status: 200,
         }
     }
 
     if (view === "license") {
-        const licenseLookup = await findLicenseCursor(client, selectedCustomerAfter, customerId, licenseId, invoiceAfter)
+        const licenseLookup = await findLicenseCursor(client, customerId, licenseId, invoiceAfter)
+        if (licenseLookup.status === "unauthenticated") return { error: "The Crater session has no authenticated user.", status: 401 }
         if (licenseLookup.status === "missing") return { error: "The requested license was not found.", status: 404 }
 
         const mappedCustomer = mapCustomer(licenseLookup.customer)
@@ -178,7 +151,7 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
                 licenses: [mappedLicense],
                 ...(navigationLicenses ? { navigationLicenses } : {}),
                 pagination: {
-                    invoices: mapPageInfo(licenseLookup.subscription.currentLicense?.invoices?.pageInfo, licenseLookup.subscription.currentLicense?.invoices?.count, selectedCustomerAfter),
+                    invoices: mapPageInfo(licenseLookup.subscription.currentLicense?.invoices?.pageInfo, licenseLookup.subscription.currentLicense?.invoices?.count),
                 },
             },
             status: 200,
@@ -187,10 +160,7 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
 
     const detailResult = await client.query({
         query: LICENSE_CUSTOMER_DETAIL,
-        variables: {
-            ...(selectedCustomerAfter ? { customerAfter: selectedCustomerAfter } : {}),
-            ...(licenseAfter ? { licenseAfter } : {}),
-        },
+        variables: { ...(licenseAfter ? { licenseAfter } : {}) },
         fetchPolicy: "no-cache",
     })
     const detailUser = detailResult.data?.currentUser
@@ -199,12 +169,12 @@ export async function loadLicenseDashboardData(requestUrl: URL, sessionToken: st
     const detailData = mapUserData(detailUser)
     if (detailData.customers[0]?.id !== customerId) return { error: "The requested customer was not found.", status: 404 }
 
-    const detailCustomer = detailUser.customers?.nodes?.[0]
+    const detailCustomer = detailUser.customer
     return {
         data: {
             ...detailData,
             ...(navigationLicenses ? { navigationLicenses } : {}),
-            pagination: { licenses: mapPageInfo(detailCustomer?.subscriptions?.pageInfo, detailCustomer?.subscriptions?.count, selectedCustomerAfter) },
+            pagination: { licenses: mapPageInfo(detailCustomer?.subscriptions?.pageInfo, detailCustomer?.subscriptions?.count) },
         },
         status: 200,
     }

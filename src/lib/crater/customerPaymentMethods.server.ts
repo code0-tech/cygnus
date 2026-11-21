@@ -1,19 +1,14 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson } from "@/lib/crater/api.server"
-import { locateCustomer } from "@/lib/licenses/snapshotLookup.server"
 import type { CustomersUpdateInput, Query } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
 
-// paymentMethods reads Stripe on every request, so it is only ever selected for the one customer asked for: the
-// customer is located through its id first, and a Stripe failure of another customer cannot break this one.
-const CUSTOMER_PAYMENT_METHODS: TypedDocumentNode<Pick<Query, "currentUser">, { customerAfter?: string }> = gql`
-    query CustomerPaymentMethods($customerAfter: String) {
+const CUSTOMER_PAYMENT_METHODS: TypedDocumentNode<Pick<Query, "currentUser">, Record<string, never>> = gql`
+    query CustomerPaymentMethods {
         currentUser {
-            customers(first: 1, after: $customerAfter) {
-                nodes {
-                    id
-                    paymentMethods
-                }
+            customer {
+                id
+                paymentMethods
             }
         }
     }
@@ -25,19 +20,11 @@ export async function readCustomerPaymentMethodIds(
     client: ReturnType<typeof createApolloClient>,
     customerId: string
 ): Promise<{ paymentMethodIds: string[]; response?: never } | { paymentMethodIds?: never; response: Response }> {
-    const located = await locateCustomer(client, customerId)
-    if (located.status === "unauthenticated") return unauthenticated()
-    if (located.status === "missing") return { response: craterJson({ error: "The customer was not found." }, 404) }
-
-    const result = await client.query({
-        query: CUSTOMER_PAYMENT_METHODS,
-        variables: { ...(located.customerAfter ? { customerAfter: located.customerAfter } : {}) },
-        fetchPolicy: "no-cache",
-    })
+    const result = await client.query({ query: CUSTOMER_PAYMENT_METHODS, fetchPolicy: "no-cache" })
     const user = result.data?.currentUser
     if (!user) return unauthenticated()
-    const customer = user.customers?.nodes?.[0]
-    if (customer?.id !== customerId) throw new Error("Crater returned a different customer while reading payment methods.")
+    const customer = user.customer
+    if (customer?.id !== customerId) return { response: craterJson({ error: "The customer was not found." }, 404) }
     if (!Array.isArray(customer.paymentMethods) || !customer.paymentMethods.every((id) => typeof id === "string" && id.trim().length > 0)) {
         throw new Error("Crater returned an invalid payment method list.")
     }
