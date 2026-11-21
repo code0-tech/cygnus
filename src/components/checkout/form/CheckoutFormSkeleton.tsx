@@ -21,7 +21,7 @@ const FIELD_ROW_GAP = 16
 const LABEL_WIDTHS = ["w-20", "w-28", "w-16", "w-24", "w-14"]
 
 const FIELD_INPUT_CLASS_NAME = "h-10 w-full rounded-2xl bg-white/[0.07] shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]"
-const PRIMARY_BUTTON_CLASS_NAME = "h-10 w-full rounded-2xl bg-white/10"
+const PRIMARY_BUTTON_CLASS_NAME = "h-12 lg:h-10 w-full rounded-2xl bg-white/10"
 
 function ElementSkeleton({ height }: { height: number }) {
     const rows = Math.max(1, Math.ceil((height + FIELD_ROW_GAP) / (FIELD_ROW_HEIGHT + FIELD_ROW_GAP)))
@@ -123,7 +123,7 @@ export function CheckoutFormSkeleton({ billingAddress, collectTaxId, content, cu
                     </>
                 ) : (
                     <>
-                        <span className="inline-flex items-center gap-1.5 text-sm text-tertiary">
+                        <span className="inline-flex items-center gap-1.5 text-sm text-tertiary max-lg:min-h-11">
                             <IconArrowLeft aria-hidden="true" size={16} />
                             {content.backToBillingLabel}
                         </span>

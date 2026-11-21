@@ -1,24 +1,21 @@
 "use client"
 
-import { type PaymentPeriod, PAYMENT_PERIOD_OPTIONS, type SubscriptionCustomerType } from "@/lib/subscription/types"
 import { useOptionalCheckoutFormState } from "@/components/checkout/form/CheckoutFormProvider"
 import { useCraterSession } from "@/components/checkout/session/CraterSessionProvider"
 import { CheckoutPricingOverview } from "@/components/checkout/summary/CheckoutPricingOverview"
+import { useCheckoutPricing } from "@/components/checkout/summary/useCheckoutPricing"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import { SiteDialogContent } from "@/components/ui/SiteDialog"
 import { ButtonLoader } from "@/components/ui/Loader"
 import { StableBadge } from "@/components/ui/StableBadge"
-import type { CheckoutStripePricingData, CheckoutTaxQuoteData } from "@/lib/checkout/client"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { CheckoutPromotionCodeSdk } from "@/lib/checkout/stripeCheckout"
-import { formatCurrency } from "@/lib/formatters"
-import { calculateExclusiveTaxRate, formatDiscountBadge, getMonthlyEquivalentAmount, getPaymentPeriodMonths, resolveCheckoutPricing } from "@/lib/subscription/calculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import { Alert, Button, Dialog, DialogTrigger, SegmentedControl, SegmentedControlItem, TextInput } from "@code0-tech/pictor"
 import type { StripeCheckoutSession } from "@stripe/stripe-js"
 import { IconCircleCheck } from "@tabler/icons-react"
-import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
+import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { createPortal } from "react-dom"
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 
@@ -29,18 +26,15 @@ interface CheckoutSummaryProps {
     nextSteps?: CheckoutData["nextSteps"] | null
     subscriptionConfig?: SubscriptionConfigData | null
     subscriptionPrices: SubscriptionPriceCatalog
-    stripePricing?: CheckoutStripePricingData | null
-    taxQuote?: CheckoutTaxQuoteData | null
 }
 
-export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, stripePricing, subscriptionConfig, subscriptionPrices, taxQuote }: CheckoutSummaryProps) {
-    const router = useRouter()
-    const pathname = usePathname()
-    const searchParams = useSearchParams()
+export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, subscriptionConfig, subscriptionPrices }: CheckoutSummaryProps) {
     const params = useParams<{ locale?: string }>()
+    const locale = params?.locale === "de" ? "de" : "en"
     const { stage } = useCheckoutStage()
     const checkoutFormState = useOptionalCheckoutFormState()
-    if (!content || !subscriptionConfig || !subscriptionPrices) return null
+    const pricing = useCheckoutPricing({ checkoutPackages, content, locale, subscriptionConfig, subscriptionPrices })
+    if (!content || !subscriptionConfig || !pricing) return null
 
     const nextStepsList = nextSteps
         ? [
@@ -49,148 +43,53 @@ export function CheckoutSummary({ checkoutPackages, content, errors, nextSteps, 
               { title: nextSteps.step3Title, description: nextSteps.step3Description },
           ]
         : []
-    const deployment = searchParams.get("deploymentType") ?? searchParams.get("deployment")
-    const customerType = searchParams.get("customerType")
-    const periodOptions = PAYMENT_PERIOD_OPTIONS
-    const handlePeriodChange = (period: PaymentPeriod) => {
-        const nextParams = new URLSearchParams(searchParams.toString())
-        nextParams.set("paymentPeriod", period)
-        router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false })
-    }
-    const planParam = searchParams.get("plan")
-    const paymentPeriodParam = searchParams.get("paymentPeriod")
-    const workflowExecutionsParam = searchParams.get("workflowExecutions")
-    const aiTokensParam = searchParams.get("aiTokens")
-    const { aiTokens, paymentPeriod, plan, planTitle, pricing, workflowExecutions } = resolveCheckoutPricing({
-        aiTokensParam,
-        checkoutPackages,
-        customerTypeParam: customerType,
-        deploymentTypeParam: deployment,
-        fallbackPeriodSuffix: content.pricing.perMonthSuffix,
-        paymentPeriodParam,
-        planParam,
-        subscriptionConfig,
-        subscriptionPrices,
-        workflowExecutionsParam,
-    })
-    const locale = params?.locale === "de" ? "de" : "en"
-    const monthlyPeriodSuffix = subscriptionConfig?.paymentPeriod.monthlyPeriodSuffix ?? content.pricing.perMonthSuffix
-    const paymentPeriodTotalPrice = pricing.totalPrice
-    const previewDiscountedPrice = paymentPeriodTotalPrice
-    const previewTaxPercentage = taxQuote ? calculateExclusiveTaxRate(taxQuote.amountTotal, taxQuote.taxAmountExclusive) : 0
-    const previewTaxAmount = taxQuote ? Math.round(previewDiscountedPrice * previewTaxPercentage * 100) / 100 : 0
-    const currency = stripePricing?.currency ?? "EUR"
-    const promotionDiscountAmount = stripePricing?.discountAmount ?? 0
-    const taxAmount = stripePricing?.taxAmount ?? previewTaxAmount
-    const taxAmountInclusive = stripePricing?.taxAmountInclusive ?? 0
-    const hasMixedTax = taxAmount > 0 && taxAmountInclusive > 0
-    const taxPercentage = hasMixedTax ? null : stripePricing ? calculateExclusiveTaxRate(stripePricing.totalPrice, stripePricing.taxAmount) : taxQuote ? previewTaxPercentage : null
-    const taxPercentageInclusive = stripePricing && !hasMixedTax ? calculateExclusiveTaxRate(stripePricing.totalPrice, taxAmountInclusive) : null
-    const totalPrice = stripePricing?.totalPrice ?? previewDiscountedPrice + previewTaxAmount
-    const formattedDiscountAmount = formatCurrency(promotionDiscountAmount, currency, locale)
-    const includedQuantities = plan === "custom" ? { aiTokens, workflowExecutions } : checkoutPackages.planQuantities[plan]
-    const deploymentTitle = deployment === "cloud" ? subscriptionConfig.deployment.cloud.title : deployment === "self_hosted" ? subscriptionConfig.deployment.selfHosted.title : null
-    const customerTypeTitle = customerType === "b2b" || customerType === "b2c" ? subscriptionConfig.customerType[customerType].title : null
-    const lineItemDetails = [deploymentTitle, customerTypeTitle].filter(Boolean).join(", ")
-    const lineItemLabel = lineItemDetails ? `${planTitle} (${lineItemDetails})` : planTitle
-    const periodStart = new Date()
-    const periodEnd = new Date(periodStart)
-    periodEnd.setMonth(periodEnd.getMonth() + getPaymentPeriodMonths(paymentPeriod))
-    const taxStatus = stripePricing || taxQuote ? "ready" : checkoutFormState?.checkoutSession && !checkoutFormState.stripeCheckoutReady ? "loading" : "unknown"
-    const periodDateFormatter = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-GB", { day: "numeric", month: "short", year: "numeric" })
 
     return (
         <div className="flex-[1.34]">
-            <>
-                <div className="mb-6">
-                    <p className="text-sm font-medium tracking-wide text-brand">{content.eyebrow}</p>
-                    <h2 className="mt-2 text-3xl leading-tight font-semibold text-white sm:text-4xl">{content.heading.replaceAll("{plan}", planTitle)}</h2>
-                    <p className="mt-3 text-sm leading-6 text-secondary">{content.description}</p>
-                </div>
+            {/* Compact on phones so the plan and its price are visible without scrolling. */}
+            <div className="mb-4 lg:mb-6">
+                <p className="text-sm font-medium tracking-wide text-brand">{content.eyebrow}</p>
+                <h2 className="mt-2 text-2xl leading-tight font-semibold text-white sm:text-3xl lg:text-4xl">{content.heading.replaceAll("{plan}", pricing.planTitle)}</h2>
+                <p className="mt-3 text-sm leading-6 text-secondary max-lg:hidden">{content.description}</p>
+            </div>
 
-                <SegmentedControl
-                    type="single"
-                    color="secondary"
-                    disabled={stage === "payment"}
-                    aria-label={subscriptionConfig.paymentPeriod.label}
-                    className="mb-4 grid! w-full grid-cols-3! disabled:opacity-60 data-disabled:opacity-60 [&>span]:min-w-0"
-                    value={paymentPeriod}
-                    onValueChange={(value) => {
-                        const period = periodOptions.find((period) => period === value)
-                        if (period) handlePeriodChange(period)
-                    }}
-                >
-                    {periodOptions.map((period) => {
-                        const { pricing: periodPricing } = resolveCheckoutPricing({
-                            aiTokensParam,
-                            checkoutPackages,
-                            customerTypeParam: customerType,
-                            deploymentTypeParam: deployment,
-                            fallbackPeriodSuffix: content.pricing.perMonthSuffix,
-                            paymentPeriodParam: period,
-                            planParam,
-                            subscriptionConfig,
-                            subscriptionPrices,
-                            workflowExecutionsParam,
-                        })
+            <SegmentedControl
+                type="single"
+                color="secondary"
+                disabled={stage === "payment"}
+                aria-label={subscriptionConfig.paymentPeriod.label}
+                className="mb-4 grid! w-full grid-cols-3! disabled:opacity-60 data-disabled:opacity-60 [&>span]:min-w-0"
+                value={pricing.paymentPeriod}
+                onValueChange={(value) => {
+                    const option = pricing.periodOptions.find((option) => option.period === value)
+                    if (option) pricing.setPaymentPeriod(option.period)
+                }}
+            >
+                {pricing.periodOptions.map((option) => (
+                    <SegmentedControlItem key={option.period} value={option.period} className="w-full! min-w-0! justify-start! px-3! py-2! text-left! text-xs! sm:text-sm!">
+                        <span className="flex w-full min-w-0 flex-col items-start gap-0.5">
+                            <span className="flex min-w-0 max-w-full items-center justify-start gap-2">
+                                <span className="truncate text-white">{option.label}</span>
+                                {option.discountBadge && (
+                                    <StableBadge color="info" border className="shrink-0">
+                                        {option.discountBadge}
+                                    </StableBadge>
+                                )}
+                            </span>
+                            <span className="max-w-full truncate text-xs font-normal tabular-nums text-tertiary">{option.monthlyPriceLabel}</span>
+                        </span>
+                    </SegmentedControlItem>
+                ))}
+            </SegmentedControl>
 
-                        const discountAmount = Math.max(0, periodPricing.totalBeforeDiscount - periodPricing.totalPrice)
-
-                        const discountPercentage = periodPricing.totalBeforeDiscount > 0 ? discountAmount / periodPricing.totalBeforeDiscount : 0
-
-                        const monthlyPrice = getMonthlyEquivalentAmount(Math.round(periodPricing.totalPrice * 100), period) / 100
-
-                        return (
-                            <SegmentedControlItem key={period} value={period} className="w-full! min-w-0! justify-start! px-3! py-2! text-left! text-xs! sm:text-sm!">
-                                <span className="flex w-full min-w-0 flex-col items-start gap-0.5">
-                                    <span className="flex min-w-0 max-w-full items-center justify-start gap-2">
-                                        <span className="truncate text-white">{subscriptionConfig.paymentPeriod[`${period}Text`]}</span>
-                                        {discountPercentage > 0 && (
-                                            <StableBadge color="info" border className="shrink-0">
-                                                -{formatDiscountBadge(discountPercentage, locale)}
-                                            </StableBadge>
-                                        )}
-                                    </span>
-                                    <span className="max-w-full truncate text-xs font-normal tabular-nums text-tertiary">
-                                        {formatCurrency(monthlyPrice, currency, locale)} {monthlyPeriodSuffix}
-                                    </span>
-                                </span>
-                            </SegmentedControlItem>
-                        )
-                    })}
-                </SegmentedControl>
-            </>
-
-            <CheckoutPricingOverview
-                aiTokens={includedQuantities.aiTokens}
-                billingCountry={stripePricing?.billingCountry ?? null}
-                content={content}
-                currency={currency}
-                lineItemAmount={pricing.totalPrice}
-                lineItemLabel={lineItemLabel}
-                locale={locale}
-                periodEnd={periodEnd}
-                periodStart={periodStart}
-                planDescription={subscriptionConfig.plan[plan].description}
-                planTitle={planTitle}
-                subscriptionConfig={subscriptionConfig}
-                subtotalPrice={stripePricing?.subtotalPrice ?? pricing.totalPrice}
-                taxAmount={taxAmount}
-                taxAmountInclusive={taxAmountInclusive}
-                taxLines={stripePricing?.taxLines ?? []}
-                taxPercentage={taxPercentage}
-                taxPercentageInclusive={taxPercentageInclusive}
-                taxStatus={taxStatus}
-                totalPrice={totalPrice}
-                workflowExecutions={includedQuantities.workflowExecutions}
-            />
+            <CheckoutPricingOverview {...pricing.overview} content={content} locale={locale} subscriptionConfig={subscriptionConfig} />
 
             <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm">
-                <p className="text-tertiary">{content.nextChargeText.replaceAll("{date}", periodDateFormatter.format(periodEnd))}</p>
+                <p className="text-tertiary">{pricing.nextChargeText}</p>
                 {errors && (
                     <CheckoutDiscount
                         key={checkoutFormState?.checkoutSession?.clientSecret ?? "checkout-discount"}
-                        appliedAmount={promotionDiscountAmount > 0 ? formattedDiscountAmount : null}
+                        appliedAmount={pricing.discountAmount > 0 ? pricing.formattedDiscountAmount : null}
                         appliedContainerId="checkout-applied-discount"
                         buttonLabel={content.pricing.discountButtonLabel}
                         discountSessionRequiredError={errors.discountSessionRequired}
@@ -425,7 +324,7 @@ export function CheckoutDiscount({
                         type="button"
                         disabled={isApplying || disabled}
                         onClick={() => void removeDiscount()}
-                        className="shrink-0 text-tertiary transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60"
+                        className="shrink-0 text-tertiary transition-colors hover:text-white disabled:cursor-wait disabled:opacity-60 max-lg:min-h-11"
                     >
                         ({removeLabel})
                     </button>
@@ -462,7 +361,7 @@ export function CheckoutDiscount({
                     type="submit"
                     variant="normal"
                     disabled={!sessionReady || isApplying || code.trim() === (appliedCode ?? "")}
-                    className="h-10! w-full! shrink-0 px-5! whitespace-nowrap bg-white! hover:bg-white/90! ring-1! ring-white/20! text-sm! text-primary!"
+                    className="h-12! w-full! shrink-0 px-5! whitespace-nowrap lg:h-10! bg-white! hover:bg-white/90! ring-1! ring-white/20! text-sm! text-primary!"
                 >
                     {isApplying ? <ButtonLoader label={buttonLabel} /> : buttonLabel}
                 </Button>
@@ -484,7 +383,7 @@ export function CheckoutDiscount({
                 <button
                     type="button"
                     disabled={disabled}
-                    className="shrink-0 text-sm font-medium text-secondary underline underline-offset-4 transition-colors hover:text-brand disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:text-secondary"
+                    className="shrink-0 text-sm font-medium text-secondary underline underline-offset-4 transition-colors hover:text-brand disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:text-secondary max-lg:min-h-11"
                 >
                     {promptLabel}
                 </button>

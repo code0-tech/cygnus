@@ -66,7 +66,7 @@ export function CheckoutNewCustomerForm({ onSubmit, sendOffer }: CheckoutNewCust
                     type="submit"
                     variant="normal"
                     disabled={isLoading || !stripeBillingAddressComplete || !stripeEmailComplete}
-                    className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
+                    className="h-12! w-full! whitespace-nowrap lg:h-10! bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                 >
                     {isLoading ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                 </Button>

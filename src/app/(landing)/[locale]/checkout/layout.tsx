@@ -21,7 +21,7 @@ export default async function CheckoutLayout({ children, params }: CheckoutLayou
 
     return (
         <CheckoutStageProvider>
-            <div className="flex h-screen flex-col overflow-hidden">{children}</div>
+            <div className="flex min-h-dvh flex-col">{children}</div>
         </CheckoutStageProvider>
     )
 }

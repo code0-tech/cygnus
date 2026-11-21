@@ -9,7 +9,7 @@ import { installDomTestEnvironment } from "../helpers/domTestEnvironment"
 installDomTestEnvironment()
 
 let stage = "billingAddress"
-let formState: { checkoutSession: { clientSecret: string } | null; stripeCheckoutReady: boolean } | null = null
+let formState: { checkoutSession: { clientSecret: string } | null; stripeCheckoutReady: boolean; taxQuote?: { amountTotal: number; taxAmountExclusive: number } } | null = null
 let segmentedControlProps: { disabled?: boolean } | null = null
 let pricingOverviewProps: { taxStatus?: string } | null = null
 const Passthrough = ({ children }: { children?: React.ReactNode }) => <>{children}</>
@@ -140,7 +140,7 @@ test("marks the tax as loading only while Stripe is still loading the checkout s
 })
 
 test("reports the tax as ready once Stripe pricing or a tax quote is available", () => {
-    formState = { checkoutSession: { clientSecret: "cs_test" }, stripeCheckoutReady: false }
-    renderSummary({ taxQuote: { amountTotal: 1_785, taxAmountExclusive: 285 } as React.ComponentProps<typeof CheckoutSummary>["taxQuote"] })
+    formState = { checkoutSession: { clientSecret: "cs_test" }, stripeCheckoutReady: false, taxQuote: { amountTotal: 1_785, taxAmountExclusive: 285 } }
+    renderSummary()
     assert.equal(pricingOverviewProps?.taxStatus, "ready")
 })

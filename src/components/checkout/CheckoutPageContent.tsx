@@ -1,18 +1,21 @@
 "use client"
 
 import { CheckoutForm } from "@/components/checkout/form/CheckoutForm"
-import { CheckoutFormProvider, useCheckoutFormState } from "@/components/checkout/form/CheckoutFormProvider"
+import { CheckoutFormProvider } from "@/components/checkout/form/CheckoutFormProvider"
+import { CheckoutMobileBar, CheckoutMobileBarSpacer } from "@/components/checkout/mobile/CheckoutMobileBar"
+import { CheckoutMobileSheet } from "@/components/checkout/mobile/CheckoutMobileSheet"
+import { useIsMobileCheckout } from "@/components/checkout/mobile/useMobileCheckout"
 import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
 import { CheckoutSummary } from "@/components/checkout/summary/CheckoutSummary"
+import { useCheckoutPricing } from "@/components/checkout/summary/useCheckoutPricing"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
-import { cn } from "@/lib/utils"
 import type { CheckoutData, ErrorsContent, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import type { Footer } from "@/payload-types"
 import { IconArrowRight } from "@tabler/icons-react"
-import { useEffect, useState, type ComponentProps } from "react"
+import { useCallback, useEffect, useState, type ReactNode } from "react"
 
 interface CheckoutPageContentProps {
     checkoutPackages: CheckoutPackages
@@ -27,16 +30,50 @@ interface CheckoutPageContentProps {
     summary?: CheckoutData["summary"] | null
 }
 
-function CheckoutSummaryWithTax(props: Omit<ComponentProps<typeof CheckoutSummary>, "stripePricing" | "taxQuote">) {
-    const { stripePricing, taxQuote } = useCheckoutFormState()
-    return <CheckoutSummary {...props} stripePricing={stripePricing} taxQuote={taxQuote} />
+export function CheckoutPageContent({ checkoutPackages, currentYear, errors, footer, form, locale, nextSteps, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
+    const legalFooter = <CheckoutLegalFooter className="justify-center pt-10 lg:pt-12" currentYear={currentYear} footer={footer ?? null} locale={locale} />
+    const summaryProps = { checkoutPackages, content: summary, nextSteps, subscriptionConfig, subscriptionPrices }
+
+    if (!form || !errors) {
+        return (
+            <div className="flex flex-1 flex-col">
+                <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
+                    <CheckoutSummary {...summaryProps} />
+                </div>
+                <div className="mt-auto">{legalFooter}</div>
+            </div>
+        )
+    }
+
+    return (
+        <CheckoutFormProvider content={form} errors={errors} locale={locale}>
+            <CheckoutPageLayout errors={errors} form={form} legalFooter={legalFooter} locale={locale} summaryProps={summaryProps} />
+        </CheckoutFormProvider>
+    )
 }
 
-export function CheckoutPageContent({ checkoutPackages, currentYear, errors, footer, form, locale, nextSteps, subscriptionConfig, subscriptionPrices, summary }: CheckoutPageContentProps) {
+interface CheckoutPageLayoutProps {
+    errors: ErrorsContent
+    form: CheckoutData["form"]
+    legalFooter: ReactNode
+    locale: AppLocale
+    summaryProps: Omit<React.ComponentProps<typeof CheckoutSummary>, "errors">
+}
+
+/**
+ * Two columns from `lg` up. Below it the summary is the page, a fixed bar shows the amount due today, and the form opens
+ * in a bottom sheet. The form is always mounted so the Stripe Elements load while the visitor reads the summary.
+ */
+function CheckoutPageLayout({ errors, form, legalFooter, locale, summaryProps }: CheckoutPageLayoutProps) {
     const [mobileCheckoutOpen, setMobileCheckoutOpen] = useState(false)
+    const closeMobileCheckout = useCallback(() => setMobileCheckoutOpen(false), [])
     const { hasError } = useCheckoutStage()
+    const isMobile = useIsMobileCheckout()
+    const pricing = useCheckoutPricing({ ...summaryProps, locale })
+    const pageInert = mobileCheckoutOpen && isMobile
 
     useEffect(() => {
+        // Shrinking a desktop window mid-checkout keeps the form in view instead of hiding it in a closed sheet.
         const desktopQuery = window.matchMedia("(min-width: 64rem)")
         let wasDesktop = desktopQuery.matches
         const handleLayoutChange = (event: MediaQueryListEvent) => {
@@ -50,68 +87,51 @@ export function CheckoutPageContent({ checkoutPackages, currentYear, errors, foo
     }, [])
 
     useEffect(() => {
-        if (!mobileCheckoutOpen) return
+        // The summary is hidden on errors and the message lives in the form, so it must not stay in a closed sheet.
+        if (hasError) setMobileCheckoutOpen(true)
+    }, [hasError])
 
-        const closeOnEscape = (event: KeyboardEvent) => {
-            if (event.key === "Escape") setMobileCheckoutOpen(false)
-        }
-
-        window.addEventListener("keydown", closeOnEscape)
-        return () => window.removeEventListener("keydown", closeOnEscape)
-    }, [mobileCheckoutOpen])
+    const openMobileCheckout = () => setMobileCheckoutOpen(true)
 
     return (
         <div className="flex flex-1 flex-col">
             <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-16">
-                {form && errors ? (
-                    <CheckoutFormProvider content={form} errors={errors} locale={locale}>
-                        {!hasError && (
-                            <CheckoutSummaryWithTax checkoutPackages={checkoutPackages} content={summary} errors={errors} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
-                        )}
-                        <button
-                            type="button"
-                            onClick={() => setMobileCheckoutOpen(true)}
-                            className="inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/90 px-6 text-sm font-medium text-primary outline-none transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden"
-                        >
-                            {form.continueLabel}
-                            <IconArrowRight aria-hidden="true" size={17} />
-                        </button>
-                        <div
-                            className={cn(
-                                "min-w-0 flex-[1.25] lg:relative lg:flex",
-                                "max-lg:fixed max-lg:inset-0 max-lg:z-50 max-lg:flex max-lg:items-end max-lg:justify-center",
-                                mobileCheckoutOpen ? "max-lg:visible" : "max-lg:pointer-events-none max-lg:invisible"
-                            )}
-                        >
-                            <button
-                                type="button"
-                                aria-label={form.backToBillingLabel}
-                                onClick={() => setMobileCheckoutOpen(false)}
-                                className={cn("fixed inset-0 bg-black/65 backdrop-blur-sm transition-opacity duration-300 lg:hidden", mobileCheckoutOpen ? "opacity-100" : "opacity-0")}
-                            />
-                            <div
-                                role={mobileCheckoutOpen ? "dialog" : undefined}
-                                aria-modal={mobileCheckoutOpen || undefined}
-                                aria-label={form.continueLabel}
-                                className={cn(
-                                    "pointer-events-auto relative flex max-h-[92dvh] w-full min-h-0 flex-col overflow-hidden rounded-t-2xl border-t border-white/10 bg-primary text-white shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
-                                    "lg:sticky lg:top-4 lg:max-h-none lg:flex-1 lg:self-start lg:translate-y-0 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none",
-                                    mobileCheckoutOpen ? "translate-y-0" : "translate-y-full"
-                                )}
-                            >
-                                <div aria-hidden="true" className="mx-auto my-3 h-1.5 w-12 shrink-0 rounded-full bg-white/20 lg:hidden" />
-                                <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-1 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:overflow-visible lg:p-0 lg:pt-7">
-                                    <CheckoutForm />
-                                </div>
-                            </div>
-                        </div>
-                    </CheckoutFormProvider>
-                ) : (
-                    <CheckoutSummary checkoutPackages={checkoutPackages} content={summary} nextSteps={nextSteps} subscriptionConfig={subscriptionConfig} subscriptionPrices={subscriptionPrices} />
+                {!hasError && (
+                    <div inert={pageInert || undefined} className="contents">
+                        <CheckoutSummary {...summaryProps} errors={errors} />
+                    </div>
                 )}
+                {!pricing && (
+                    <button
+                        type="button"
+                        onClick={openMobileCheckout}
+                        className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white/90 px-6 text-sm font-medium text-primary outline-none transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-white/40 lg:hidden"
+                    >
+                        {form.continueLabel}
+                        <IconArrowRight aria-hidden="true" size={17} />
+                    </button>
+                )}
+                <CheckoutMobileSheet open={mobileCheckoutOpen} onClose={closeMobileCheckout} title={pricing?.planTitle ?? form.continueLabel} closeLabel={form.closeLabel}>
+                    <CheckoutForm />
+                </CheckoutMobileSheet>
             </div>
 
-            <CheckoutLegalFooter className="mt-auto justify-center pt-10 lg:pt-12" currentYear={currentYear} footer={footer ?? null} locale={locale} />
+            <div inert={pageInert || undefined} className="mt-auto flex flex-col">
+                {legalFooter}
+                {pricing && <CheckoutMobileBarSpacer />}
+            </div>
+
+            {pricing && summaryProps.content && (
+                <CheckoutMobileBar
+                    continueLabel={form.continueLabel}
+                    hidden={mobileCheckoutOpen}
+                    includingTaxSuffix={summaryProps.content.pricing.totalIncludingTaxSuffix}
+                    locale={locale}
+                    onContinue={openMobileCheckout}
+                    pricing={pricing}
+                    totalLabel={summaryProps.content.pricing.totalDueTodayLabel}
+                />
+            )}
         </div>
     )
 }
