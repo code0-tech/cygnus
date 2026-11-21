@@ -428,7 +428,7 @@ export function CheckoutPaymentFields({
                             variant="normal"
                             disabled={!billingAddress || !email || !isBillingAddressComplete || !isContactDetailsComplete || isTaxIdIncomplete || isUpdatingBilling}
                             onClick={() => void showPayment()}
-                            className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
+                            className="h-12! w-full! whitespace-nowrap lg:h-10! bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                         >
                             {isUpdatingBilling ? <ButtonLoader label={content.processingLabel} /> : content.continueLabel}
                         </Button>
@@ -439,11 +439,12 @@ export function CheckoutPaymentFields({
             }
             payment={
                 <>
+                    {/* Desktop only: on phones the order card above the form leads back to billing. */}
                     <button
                         type="button"
                         disabled={isConfirming}
                         onClick={showBillingAddress}
-                        className="inline-flex cursor-pointer items-center gap-1.5 text-sm text-tertiary transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex cursor-pointer items-center gap-1.5 text-sm text-tertiary transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60 max-lg:hidden"
                     >
                         <IconArrowLeft aria-hidden="true" size={16} />
                         {content.backToBillingLabel}
@@ -505,7 +506,7 @@ export function CheckoutPaymentFields({
                             form={paymentFormId}
                             variant="normal"
                             disabled={isConfirming || isUpdatingBilling || !isPaymentElementReady || !isPaymentDetailsComplete || !hasRequiredConsents || isTaxIdIncomplete}
-                            className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
+                            className="h-12! w-full! whitespace-nowrap lg:h-10! bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                         >
                             {isConfirming ? <ButtonLoader label={content.processingLabel} /> : content.payNowLabel}
                         </Button>

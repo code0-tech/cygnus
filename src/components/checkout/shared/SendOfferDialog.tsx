@@ -61,7 +61,7 @@ export function SendOfferDialog({ blockedReason = null, content, emailLocked = f
             <div className="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-white/5 pt-4 text-sm">
                 <span className="min-w-0 text-secondary">{content.sendOfferPrompt}</span>
                 <DialogTrigger asChild>
-                    <Button type="button" variant="none" className="h-auto! w-auto! shrink-0 p-0! text-sm! font-medium! text-brand! shadow-none! hover:bg-transparent! hover:underline! hover:text-brand!">
+                    <Button type="button" variant="none" className="h-auto! w-auto! shrink-0 p-0! max-lg:min-h-11! text-sm! font-medium! text-brand! shadow-none! hover:bg-transparent! hover:underline! hover:text-brand!">
                         {content.sendOfferLabel}
                     </Button>
                 </DialogTrigger>
@@ -89,7 +89,7 @@ export function SendOfferDialog({ blockedReason = null, content, emailLocked = f
                                 type="submit"
                                 variant="normal"
                                 disabled={!validEmail || isSending || Boolean(blockedReason)}
-                                className="h-10! w-full! whitespace-nowrap bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
+                                className="h-12! w-full! whitespace-nowrap lg:h-10! bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90!"
                             >
                                 {isSending ? <ButtonLoader label={content.processingLabel} /> : content.sendOfferLabel}
                             </Button>

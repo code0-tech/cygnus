@@ -3119,6 +3119,10 @@ export interface Checkout {
     notChargedYetText: string;
     backToBillingLabel: string;
     /**
+     * Accessible label of the button that closes the checkout form sheet on phones.
+     */
+    closeLabel: string;
+    /**
      * Button in the selected billing address card at the top of the payment step.
      */
     billingChangeLabel: string;
@@ -3957,6 +3961,7 @@ export interface CheckoutSelect<T extends boolean = true> {
         continueLabel?: T;
         notChargedYetText?: T;
         backToBillingLabel?: T;
+        closeLabel?: T;
         billingChangeLabel?: T;
         payNowLabel?: T;
         securePaymentText?: T;

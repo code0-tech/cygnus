@@ -210,6 +210,7 @@ import * as migration_20261108_140000_license_upgrade_withdrawal_consent from '.
 import * as migration_20261112_120000_extraordinary_termination from './20261112_120000_extraordinary_termination';
 import * as migration_20261116_120000_checkout_consent_errors from './20261116_120000_checkout_consent_errors';
 import * as migration_20261118_120000_license_usage from './20261118_120000_license_usage';
+import * as migration_20261121_120000_checkout_close_label from './20261121_120000_checkout_close_label';
 
 export const migrations = [
   {
@@ -1266,5 +1267,10 @@ export const migrations = [
     up: migration_20261118_120000_license_usage.up,
     down: migration_20261118_120000_license_usage.down,
     name: '20261118_120000_license_usage',
+  },
+  {
+    up: migration_20261121_120000_checkout_close_label.up,
+    down: migration_20261121_120000_checkout_close_label.down,
+    name: '20261121_120000_checkout_close_label',
   },
 ];
