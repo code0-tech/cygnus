@@ -1,7 +1,7 @@
 "use client"
 
 import { hasCheckoutConfiguration } from "@/lib/checkout/checkoutLogin"
-import { bootstrapCheckout, restoreCraterSession, type CheckoutCustomerPage } from "@/lib/checkout/client"
+import { bootstrapCheckout, restoreCraterSession, type CheckoutCustomerData } from "@/lib/checkout/client"
 import { clearCraterUserLoginMarker, hasCraterUserLoginMarker } from "@/lib/crater/userLogin.client"
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
@@ -10,7 +10,7 @@ interface CraterSessionContextValue {
     authenticated: boolean
     error: string | null
     isLoading: boolean
-    takeBootstrapCustomers?: () => CheckoutCustomerPage | null
+    takeBootstrapCustomers?: () => CheckoutCustomerData[] | null
 }
 
 const SESSION_RECHECK_INTERVAL_MS = 60_000
@@ -23,7 +23,7 @@ const CraterSessionContext = createContext<CraterSessionContextValue>({
 
 export function CraterSessionProvider({ children, errorMessage = "An unexpected error occurred." }: { children: ReactNode; errorMessage?: string }) {
     const sessionRequestRef = useRef<Promise<"redirecting" | { guestEmail: string | null } | undefined> | null>(null)
-    const bootstrapCustomersRef = useRef<CheckoutCustomerPage | null>(null)
+    const bootstrapCustomersRef = useRef<CheckoutCustomerData[] | null>(null)
     const takeBootstrapCustomers = useCallback(() => {
         const page = bootstrapCustomersRef.current
         bootstrapCustomersRef.current = null
@@ -58,7 +58,7 @@ export function CraterSessionProvider({ children, errorMessage = "An unexpected 
             let restoredSession: { guestEmail: string | null } | null
             if (isCheckoutPage && !recheck) {
                 const bootstrap = await bootstrapCheckout()
-                bootstrapCustomersRef.current = bootstrap?.customerPage ?? null
+                bootstrapCustomersRef.current = bootstrap?.customers ?? null
                 restoredSession = bootstrap
             } else {
                 restoredSession = await restoreCraterSession()

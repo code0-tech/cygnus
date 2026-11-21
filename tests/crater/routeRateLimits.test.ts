@@ -8,6 +8,7 @@ import { POST as cancelSubscription } from "../../src/app/api/crater/subscriptio
 import { POST as previewSubscription } from "../../src/app/api/crater/subscriptions/preview/route"
 import { POST as resumeSubscription } from "../../src/app/api/crater/subscriptions/resume/route"
 import { POST as requestExtraordinaryTermination } from "../../src/app/api/crater/subscriptions/extraordinary-termination/route"
+import { withGraphQLServer } from "../helpers/graphqlTestServer"
 
 type RouteHandler = (request: Request) => Promise<Response>
 
@@ -15,7 +16,6 @@ type RouteHandler = (request: Request) => Promise<Response>
 const limitedRoutes: Array<{ name: string; envPrefix: string; handler: RouteHandler; method: string; path: string }> = [
     { name: "customer creation", envPrefix: "CRATER_CUSTOMER", handler: createCustomer, method: "POST", path: "/api/crater/customer" },
     { name: "customer update", envPrefix: "CRATER_CUSTOMER", handler: updateCustomer, method: "PATCH", path: "/api/crater/customer" },
-    { name: "payment method setup", envPrefix: "CRATER_PAYMENT_METHOD_SETUP", handler: createPaymentMethodSetup, method: "POST", path: "/api/crater/customer/payment-method-setup" },
     { name: "subscription update", envPrefix: "CRATER_SUBSCRIPTION", handler: updateSubscription, method: "PATCH", path: "/api/crater/subscriptions" },
     { name: "subscription cancellation", envPrefix: "CRATER_SUBSCRIPTION", handler: cancelSubscription, method: "POST", path: "/api/crater/subscriptions/cancel" },
     { name: "subscription resumption", envPrefix: "CRATER_SUBSCRIPTION", handler: resumeSubscription, method: "POST", path: "/api/crater/subscriptions/resume" },
@@ -84,3 +84,27 @@ for (const route of limitedRoutes) {
         })
     })
 }
+
+// The setup takes no input Crater could refuse up front (it resolves the user's customer), so its first request reaches
+// Crater and the budget is checked on the requests after it.
+test("payment method setup is limited per address and per session", async () => {
+    const route = { method: "POST", path: "/api/crater/customer/payment-method-setup" } as (typeof limitedRoutes)[number]
+    const setupCreated = { data: { customerPaymentMethodSetupCreate: { errors: [], session: { clientSecret: "seti_secret" } } } }
+    await withRateLimitEnvironment("CRATER_PAYMENT_METHOD_SETUP", async () => {
+        await withGraphQLServer([setupCreated, setupCreated], async (server) => {
+            const sessionToken = "route-limit-payment-method-setup"
+            const address = nextAddress()
+
+            assert.equal((await createPaymentMethodSetup(routeRequest(route, { address }))).status, 403)
+            assert.equal((await createPaymentMethodSetup(routeRequest(route, { address, sessionToken }))).status, 201)
+
+            const sameAddress = await createPaymentMethodSetup(routeRequest(route, { address, sessionToken: `${sessionToken}-other` }))
+            assert.equal(sameAddress.status, 429)
+            assert.equal(sameAddress.headers.get("retry-after"), "90")
+            assert.equal((await createPaymentMethodSetup(routeRequest(route, { address: nextAddress(), sessionToken }))).status, 429)
+
+            assert.equal((await createPaymentMethodSetup(routeRequest(route, { address: nextAddress(), sessionToken: `${sessionToken}-fresh` }))).status, 201)
+            assert.equal(server.requests.length, 2)
+        })
+    })
+})

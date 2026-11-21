@@ -3244,6 +3244,15 @@ export interface License {
     aiTokensLabel: string;
     editionLabel: string;
     nextBillingDateLabel: string;
+    usageLabel: string;
+    usageDescription: string;
+    usageOfLabel: string;
+    usageRemainingLabel: string;
+    usageUnlimitedLabel: string;
+    usageExceededLabel: string;
+    usageResetsAtLabel: string;
+    usageUpdatedAtLabel: string;
+    usageUnavailableDescription: string;
   };
   values: {
     customerTypes: {
@@ -3539,6 +3548,10 @@ export interface Error {
   billingAddressUpdate: string;
   emailUpdate: string;
   paymentConfirmation: string;
+  checkoutConsentMissing: string;
+  checkoutConsentRecord: string;
+  checkoutConsentSession: string;
+  checkoutRestart: string;
   discountSessionRequired: string;
   discountValidation: string;
   offerSend: string;
@@ -4048,6 +4061,15 @@ export interface LicensesSelect<T extends boolean = true> {
         aiTokensLabel?: T;
         editionLabel?: T;
         nextBillingDateLabel?: T;
+        usageLabel?: T;
+        usageDescription?: T;
+        usageOfLabel?: T;
+        usageRemainingLabel?: T;
+        usageUnlimitedLabel?: T;
+        usageExceededLabel?: T;
+        usageResetsAtLabel?: T;
+        usageUpdatedAtLabel?: T;
+        usageUnavailableDescription?: T;
       };
   values?:
     | T
@@ -4382,6 +4404,10 @@ export interface ErrorsSelect<T extends boolean = true> {
   billingAddressUpdate?: T;
   emailUpdate?: T;
   paymentConfirmation?: T;
+  checkoutConsentMissing?: T;
+  checkoutConsentRecord?: T;
+  checkoutConsentSession?: T;
+  checkoutRestart?: T;
   discountSessionRequired?: T;
   discountValidation?: T;
   offerSend?: T;

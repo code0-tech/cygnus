@@ -14,15 +14,10 @@ function previewRequest(params: Record<string, string> = { customerId: CUSTOMER_
     return new Request(`https://example.com/api/crater/invoices/preview?${new URLSearchParams(params)}`, { headers })
 }
 
-const customerPage = {
-    data: { currentUser: { customers: { edges: [{ cursor: "customer-1", node: { id: CUSTOMER_ID } }], pageInfo: { endCursor: "customer-1", hasNextPage: false } } } },
-}
 const subscriptionPage = {
     data: {
         currentUser: {
-            customers: {
-                nodes: [{ id: CUSTOMER_ID, subscriptions: { edges: [{ cursor: "subscription-1", node: { id: SUBSCRIPTION_ID } }], pageInfo: { endCursor: "subscription-1", hasNextPage: false } } }],
-            },
+            customer: { id: CUSTOMER_ID, subscriptions: { edges: [{ cursor: "subscription-1", node: { id: SUBSCRIPTION_ID } }], pageInfo: { endCursor: "subscription-1", hasNextPage: false } } },
         },
     },
 }
@@ -30,13 +25,9 @@ function invoicePage(invoices: Array<{ id: string; stripePdfUrl: string | null }
     return {
         data: {
             currentUser: {
-                customers: {
-                    nodes: [
-                        {
-                            id: CUSTOMER_ID,
-                            subscriptions: { nodes: [{ id: SUBSCRIPTION_ID, currentLicense: { invoices: { nodes: invoices, pageInfo: { endCursor: null, hasNextPage: false } } } }] },
-                        },
-                    ],
+                customer: {
+                    id: CUSTOMER_ID,
+                    subscriptions: { nodes: [{ id: SUBSCRIPTION_ID, currentLicense: { invoices: { nodes: invoices, pageInfo: { endCursor: null, hasNextPage: false } } } }] },
                 },
             },
         },
@@ -80,7 +71,6 @@ test("invoice preview loads the PDF URL Crater returns for the session's own inv
 
     await withGraphQLServer(
         [
-            customerPage,
             subscriptionPage,
             invoicePage([
                 { id: "gid://crater/Invoice/22", stripePdfUrl: null },
@@ -100,7 +90,6 @@ test("invoice preview loads the PDF URL Crater returns for the session's own inv
             assert.deepEqual(
                 graphQLServer.requests.map((request) => [request.body.operationName, request.authorization]),
                 [
-                    ["LicenseSnapshotCustomer", "Session c_ust_example"],
                     ["InvoiceSubscriptionPosition", "Session c_ust_example"],
                     ["InvoicePdfUrl", "Session c_ust_example"],
                 ]
@@ -112,7 +101,7 @@ test("invoice preview loads the PDF URL Crater returns for the session's own inv
 test("invoice preview refuses an invoice that the session cannot reach", async (context) => {
     const requested = mockStripe(context, () => new Response(pdf))
 
-    await withGraphQLServer([customerPage, subscriptionPage, invoicePage([{ id: "gid://crater/Invoice/22", stripePdfUrl: invoiceUrl }])], async () => {
+    await withGraphQLServer([subscriptionPage, invoicePage([{ id: "gid://crater/Invoice/22", stripePdfUrl: invoiceUrl }])], async () => {
         const response = await previewInvoice(previewRequest())
 
         assert.equal(response.status, 404)
@@ -138,7 +127,7 @@ test("invoice preview refuses a customer outside the session", async (context) =
 test("invoice preview does not fetch a PDF URL outside Stripe's invoice host", async (context) => {
     const requested = mockStripe(context, () => new Response(pdf))
 
-    await withGraphQLServer([customerPage, subscriptionPage, invoicePage([{ id: INVOICE_ID, stripePdfUrl: "https://example.com/invoice/1/pdf" }])], async () => {
+    await withGraphQLServer([subscriptionPage, invoicePage([{ id: INVOICE_ID, stripePdfUrl: "https://example.com/invoice/1/pdf" }])], async () => {
         const originalError = console.error
         console.error = () => {}
         try {
@@ -158,7 +147,7 @@ test("invoice preview follows redirects only within stripe.com", async (context)
         throw new Error(`Unexpected request to ${url}`)
     })
 
-    await withGraphQLServer([customerPage, subscriptionPage, invoicePage([{ id: INVOICE_ID, stripePdfUrl: invoiceUrl }])], async () => {
+    await withGraphQLServer([subscriptionPage, invoicePage([{ id: INVOICE_ID, stripePdfUrl: invoiceUrl }])], async () => {
         const response = await previewInvoice(previewRequest())
 
         assert.equal(response.status, 502)
@@ -182,11 +171,20 @@ test("invoice preview stops reading a PDF without content-length once it exceeds
             )
     )
 
-    await withGraphQLServer([customerPage, subscriptionPage, invoicePage([{ id: INVOICE_ID, stripePdfUrl: invoiceUrl }])], async () => {
+    await withGraphQLServer([subscriptionPage, invoicePage([{ id: INVOICE_ID, stripePdfUrl: invoiceUrl }])], async () => {
         const response = await previewInvoice(previewRequest())
 
         assert.equal(response.status, 502)
         assert.deepEqual(await response.json(), { error: "The invoice PDF is too large." })
         assert.ok(pulledChunks <= 30, `read ${pulledChunks} MiB of an endless body`)
+    })
+})
+
+test("invoice preview refuses an invoice of a customer the user does not manage", async () => {
+    await withGraphQLServer([subscriptionPage], async (graphQLServer) => {
+        const response = await previewInvoice(previewRequest({ customerId: "gid://crater/Customer/8", subscriptionId: SUBSCRIPTION_ID, invoiceId: INVOICE_ID }))
+
+        assert.equal(response.status, 404)
+        assert.equal(graphQLServer.requests.length, 1)
     })
 })

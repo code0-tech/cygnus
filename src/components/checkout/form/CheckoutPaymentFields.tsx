@@ -1,7 +1,7 @@
 "use client"
 
 import { getStripePricingFromSession, getTaxQuoteFromSession, type CheckoutTaxIdDraft } from "@/lib/checkout/stripeCheckout"
-import { verifyCheckoutConsents } from "@/lib/checkout/client"
+import { CheckoutSubmissionError, recordCheckoutConsent } from "@/lib/checkout/client"
 import { AcceptTermsCheckbox } from "@/components/forms/AcceptTermsCheckbox"
 import { useCheckoutStage } from "@/components/checkout/state/CheckoutStageProvider"
 import { ButtonLoader } from "@/components/ui/Loader"
@@ -28,16 +28,16 @@ function isInactiveCheckoutSessionError(message: string) {
     )
 }
 
+type ConsentHighlights = { terms: boolean; withdrawal: boolean }
+const NO_CONSENT_HIGHLIGHTS: ConsentHighlights = { terms: false, withdrawal: false }
+
 export function CheckoutPaymentFields({
     billingAddress,
     billingAddressComplete,
     collectTaxId,
     content,
     customerEmail,
-    customerId,
     errors,
-    customerSelect,
-    customerSelectSkeleton,
     email,
     emailComplete,
     emailSyncedToStripe,
@@ -49,14 +49,16 @@ export function CheckoutPaymentFields({
     onTaxQuoteChange,
     onPaymentConfirmationChange,
     onPricingChange,
+    onRestartCheckout,
     onSendOffer,
     onStripeCheckoutChange,
     onSessionExpired,
     onSessionLoadError,
     onSessionLoadErrorChange,
     onSessionReady,
+    sessionId,
     sessionKey,
-}: Omit<CheckoutPaymentFormProps, "session"> & { sessionKey: string }) {
+}: Omit<CheckoutPaymentFormProps, "session"> & { sessionId: string | null; sessionKey: string }) {
     const checkoutState = useCheckoutElements()
     const { stage: activeStep, setStage } = useCheckoutStage()
     const params = useParams<{ locale?: string }>()
@@ -67,6 +69,10 @@ export function CheckoutPaymentFields({
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [isUpdatingBilling, setIsUpdatingBilling] = useState(false)
     const [isConfirming, setIsConfirming] = useState(false)
+    // State updates are not synchronous, so a double click could pass an `isConfirming` check twice.
+    const isConfirmingRef = useRef(false)
+    const [consentHighlights, setConsentHighlights] = useState<ConsentHighlights>(NO_CONSENT_HIGHLIGHTS)
+    const [canRestartCheckout, setCanRestartCheckout] = useState(false)
     const [acceptedTerms, setAcceptedTerms] = useState(false)
     const [acceptedWithdrawalConsent, setAcceptedWithdrawalConsent] = useState(false)
     const requiresWithdrawalConsent = !isBusinessCustomer
@@ -245,27 +251,71 @@ export function CheckoutPaymentFields({
         void updateCheckoutBilling(false)
     }, [activeStep, billingAddress, checkoutState.type, email, isBillingAddressComplete, isContactDetailsComplete, updateCheckoutBilling])
 
+    const stopConfirming = () => {
+        isConfirmingRef.current = false
+        setIsConfirming(false)
+        onPaymentConfirmationChange(false)
+    }
+
+    const showConsentError = (error: unknown) => {
+        const errorCode = error instanceof CheckoutSubmissionError ? error.errorCode : null
+        if (errorCode === "MISSING_CHECKOUT_CONSENT") {
+            // Crater decides what this customer must consent to. Point at what is unticked, or at every shown consent
+            // when the form considered them complete.
+            const unticked = { terms: !acceptedTerms, withdrawal: requiresWithdrawalConsent && !acceptedWithdrawalConsent }
+            setConsentHighlights(unticked.terms || unticked.withdrawal ? unticked : { terms: true, withdrawal: requiresWithdrawalConsent })
+            setErrorMessage(errors.checkoutConsentMissing)
+            return
+        }
+        if (errorCode === "INVALID_CHECKOUT_CONSENT_SESSION") {
+            setErrorMessage(errors.checkoutConsentSession)
+            setCanRestartCheckout(true)
+            return
+        }
+        if (error instanceof CheckoutSubmissionError && error.status === 429) {
+            setErrorMessage(errors.checkoutRateLimit)
+            return
+        }
+        console.error("Failed to record the checkout consents:", error instanceof CheckoutSubmissionError ? (error.errorCode ?? error.status) : error)
+        setErrorMessage(errors.checkoutConsentRecord)
+    }
+
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
-        if (checkoutState.type !== "success" || isConfirming || !isPaymentElementReady || !hasRequiredConsents || isTaxIdIncomplete) return
+        if (checkoutState.type !== "success" || isConfirmingRef.current || !isPaymentElementReady || !hasRequiredConsents || isTaxIdIncomplete) return
 
+        isConfirmingRef.current = true
         setIsConfirming(true)
         onPaymentConfirmationChange(true)
         setErrorMessage(null)
+        setConsentHighlights(NO_CONSENT_HIGHLIGHTS)
+        setCanRestartCheckout(false)
+        if (!billingAddress) {
+            stopConfirming()
+            setErrorMessage(errors.billingAddressUpdate)
+            return
+        }
+        if (!sessionId) {
+            stopConfirming()
+            setErrorMessage(errors.checkoutConsentSession)
+            setCanRestartCheckout(true)
+            return
+        }
+
+        // The consent must be stored for this session before Stripe confirms; Crater refunds a checkout without one.
         try {
-            if (!billingAddress) {
-                setIsConfirming(false)
-                onPaymentConfirmationChange(false)
-                setErrorMessage(errors.billingAddressUpdate)
-                return
-            }
-            if (!customerId) throw new Error("The checkout has no customer to verify the consents for.")
-            await verifyCheckoutConsents({ customerId, consents: { terms: acceptedTerms, withdrawal: requiresWithdrawalConsent && acceptedWithdrawalConsent } })
+            await recordCheckoutConsent({ sessionId, consents: { terms: acceptedTerms, ...(requiresWithdrawalConsent ? { withdrawal: acceptedWithdrawalConsent } : {}) } })
+        } catch (error) {
+            stopConfirming()
+            showConsentError(error)
+            return
+        }
+
+        try {
             const result = await checkoutState.checkout.confirm({ redirect: "always" })
 
             if (result.type === "error") {
-                setIsConfirming(false)
-                onPaymentConfirmationChange(false)
+                stopConfirming()
                 if (isInactiveCheckoutSessionError(result.error.message)) {
                     await onSessionExpired()
                     return
@@ -274,8 +324,7 @@ export function CheckoutPaymentFields({
             }
         } catch (error) {
             const message = error instanceof Error ? error.message : ""
-            setIsConfirming(false)
-            onPaymentConfirmationChange(false)
+            stopConfirming()
             if (isInactiveCheckoutSessionError(message)) {
                 await onSessionExpired()
                 return
@@ -285,6 +334,21 @@ export function CheckoutPaymentFields({
         }
     }
 
+    const restartCheckout = () => {
+        setCanRestartCheckout(false)
+        setErrorMessage(null)
+        void onRestartCheckout()
+    }
+
+    const setTermsConsent = useCallback((accepted: boolean) => {
+        setAcceptedTerms(accepted)
+        setConsentHighlights((highlights) => ({ ...highlights, terms: false }))
+    }, [])
+    const setWithdrawalConsent = useCallback((accepted: boolean) => {
+        setAcceptedWithdrawalConsent(accepted)
+        setConsentHighlights((highlights) => ({ ...highlights, withdrawal: false }))
+    }, [])
+
     // A load error keeps the placeholder too: the session is recovered or replaced by an error message above.
     if (checkoutState.type !== "success") {
         return (
@@ -293,7 +357,6 @@ export function CheckoutPaymentFields({
                 collectTaxId={collectTaxId}
                 content={content}
                 customerEmail={customerEmail}
-                customerSelect={customerSelectSkeleton}
                 isBusinessCustomer={isBusinessCustomer}
                 stage={activeStep}
             />
@@ -307,7 +370,6 @@ export function CheckoutPaymentFields({
                 <>
                     <section className="w-full space-y-4">
                         <h3 className="text-lg text-white">{content.contactHeading}</h3>
-                        {customerSelect}
                         {customerEmail ? (
                             <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]! [&_.input-wrapper:hover]:bg-[#17151e]!">
                                 <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>
@@ -411,11 +473,33 @@ export function CheckoutPaymentFields({
                         </StripeElementSlot>
                     </form>
 
-                    {errorMessage && <Alert color="error">{errorMessage}</Alert>}
+                    {errorMessage && (
+                        <Alert color="error">
+                            <div className="space-y-2">
+                                <p>{errorMessage}</p>
+                                {canRestartCheckout && (
+                                    <button
+                                        type="button"
+                                        disabled={isConfirming}
+                                        onClick={restartCheckout}
+                                        className="cursor-pointer font-medium text-white underline underline-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                        {errors.checkoutRestart}
+                                    </button>
+                                )}
+                            </div>
+                        </Alert>
+                    )}
 
                     <div className="space-y-3">
-                        <AcceptTermsCheckbox locale={locale} initialValue={false} formValidation={{ setValue: setAcceptedTerms, valid: true }} />
-                        {requiresWithdrawalConsent && <WithdrawalConsentCheckbox text={content.withdrawalConsentText} formValidation={{ setValue: setAcceptedWithdrawalConsent, valid: true }} />}
+                        <AcceptTermsCheckbox locale={locale} initialValue={false} disabled={isConfirming} formValidation={{ setValue: setTermsConsent, valid: !consentHighlights.terms }} />
+                        {requiresWithdrawalConsent && (
+                            <WithdrawalConsentCheckbox
+                                text={content.withdrawalConsentText}
+                                disabled={isConfirming}
+                                formValidation={{ setValue: setWithdrawalConsent, valid: !consentHighlights.withdrawal }}
+                            />
+                        )}
                         <Button
                             type="submit"
                             form={paymentFormId}

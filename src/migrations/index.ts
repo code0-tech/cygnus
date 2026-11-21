@@ -208,6 +208,8 @@ import * as migration_20261108_120000_checkout_withdrawal_consent from './202611
 import * as migration_20261108_130000_remove_unused_global_fields from './20261108_130000_remove_unused_global_fields';
 import * as migration_20261108_140000_license_upgrade_withdrawal_consent from './20261108_140000_license_upgrade_withdrawal_consent';
 import * as migration_20261112_120000_extraordinary_termination from './20261112_120000_extraordinary_termination';
+import * as migration_20261116_120000_checkout_consent_errors from './20261116_120000_checkout_consent_errors';
+import * as migration_20261118_120000_license_usage from './20261118_120000_license_usage';
 
 export const migrations = [
   {
@@ -1254,5 +1256,15 @@ export const migrations = [
     up: migration_20261112_120000_extraordinary_termination.up,
     down: migration_20261112_120000_extraordinary_termination.down,
     name: '20261112_120000_extraordinary_termination',
+  },
+  {
+    up: migration_20261116_120000_checkout_consent_errors.up,
+    down: migration_20261116_120000_checkout_consent_errors.down,
+    name: '20261116_120000_checkout_consent_errors',
+  },
+  {
+    up: migration_20261118_120000_license_usage.up,
+    down: migration_20261118_120000_license_usage.down,
+    name: '20261118_120000_license_usage',
   },
 ];

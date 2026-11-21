@@ -68,7 +68,6 @@ test("payment method setup requires a Crater session", async () => {
 
 test("customer payment methods carry the display details Crater resolves for every id", async () => {
     await withGraphQLServer([
-        customerIdsPage(["gid://crater/Customer/1"]),
         paymentMethodsPage(["pm_card", "pm_unavailable"]),
         { data: { paymentMethod: { brand: "visa", expiresMonth: 12, expiresYear: 2030, last4: "4242", type: "card" } } },
         { data: { paymentMethod: null } },
@@ -89,15 +88,14 @@ test("customer payment methods carry the display details Crater resolves for eve
         assert.equal(response.headers.get("cache-control"), "no-store")
         assert.deepEqual(
             graphQLServer.requests.map((request) => request.body.operationName),
-            ["LicenseSnapshotCustomer", "CustomerPaymentMethods", "CustomerPaymentMethod", "CustomerPaymentMethod"]
+            ["CustomerPaymentMethods", "CustomerPaymentMethod", "CustomerPaymentMethod"]
         )
-        // Payment methods read Stripe, so the id lookup must not select them for every customer.
-        assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /paymentMethods/)
+        assert.match(graphQLServer.requests[0].body.query ?? "", /customer \{/)
         assert.deepEqual(
-            graphQLServer.requests.slice(2).map((request) => request.body.variables),
+            graphQLServer.requests.slice(1).map((request) => request.body.variables),
             [{ paymentMethodId: "pm_card" }, { paymentMethodId: "pm_unavailable" }]
         )
-        for (const request of graphQLServer.requests.slice(2)) {
+        for (const request of graphQLServer.requests.slice(1)) {
             assert.match(request.body.query ?? "", /paymentMethod\(paymentMethodId:/)
             assert.doesNotMatch(request.body.query ?? "", /customerPaymentMethod\(/)
         }
@@ -105,7 +103,7 @@ test("customer payment methods carry the display details Crater resolves for eve
 })
 
 
-test("creates a Stripe payment method SetupIntent for the selected customer", async () => {
+test("creates a Stripe payment method SetupIntent for the user's customer without naming it", async () => {
     await withGraphQLServer([
         {
             data: {
@@ -120,7 +118,7 @@ test("creates a Stripe payment method SetupIntent for the selected customer", as
             new Request("https://example.com/api/crater/customer/payment-method-setup", {
                 method: "POST",
                 headers: sessionHeaders,
-                body: JSON.stringify({ customerId: "gid://crater/Customer/1" }),
+                body: JSON.stringify({}),
             })
         )
 
@@ -128,7 +126,7 @@ test("creates a Stripe payment method SetupIntent for the selected customer", as
         assert.deepEqual(await response.json(), { clientSecret: "seti_test_secret_test" })
         assert.equal(graphQLServer.requests[0].body.operationName, "CustomerPaymentMethodSetupCreate")
         assert.deepEqual(graphQLServer.requests[0].body.variables, {
-            input: { customerId: "gid://crater/Customer/1" },
+            input: {},
         })
     })
 })
@@ -149,7 +147,7 @@ test("surfaces Crater payment method setup domain errors", async () => {
             new Request("https://example.com/api/crater/customer/payment-method-setup", {
                 method: "POST",
                 headers: sessionHeaders,
-                body: JSON.stringify({ customerId: "gid://crater/Customer/1" }),
+                body: JSON.stringify({}),
             })
         )
 
@@ -168,19 +166,15 @@ test("lists the authenticated user's checkout customers", async () => {
         {
             data: {
                 currentUser: {
-                    customers: {
-                        nodes: [
-                            {
-                                address: null,
-                                createdAt: "2026-08-12T12:00:00Z",
-                                customerType: "PERSONAL",
-                                email: "ada@example.com",
-                                id: "gid://crater/Customer/1",
-                                name: "Ada Lovelace",
-                                phone: null,
-                                updatedAt: "2026-08-12T12:00:00Z",
-                            },
-                        ],
+                    customer: {
+                        address: null,
+                        createdAt: "2026-08-12T12:00:00Z",
+                        customerType: "PERSONAL",
+                        email: "ada@example.com",
+                        id: "gid://crater/Customer/1",
+                        name: "Ada Lovelace",
+                        phone: null,
+                        updatedAt: "2026-08-12T12:00:00Z",
                     },
                 },
             },
@@ -206,40 +200,37 @@ test("lists the authenticated user's checkout customers", async () => {
                     updatedAt: "2026-08-12T12:00:00Z",
                 },
             ],
-            pageInfo: { endCursor: null, hasNextPage: false },
         })
         assert.equal(graphQLServer.requests[0].authorization, "Session customer-list-token")
-        assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutCustomers")
-        assert.match(graphQLServer.requests[0].body.query ?? "", /customers\(after: \$after, first: 50\)/)
+        assert.equal(graphQLServer.requests[0].body.operationName, "CheckoutCustomer")
+        assert.match(graphQLServer.requests[0].body.query ?? "", /customer \{/)
+        assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /customers/)
     })
 })
 
 
-test("paginates checkout customers with Crater's cursor", async () => {
-    await withGraphQLServer([
-        {
-            data: {
-                currentUser: {
-                    customers: {
-                        nodes: [{ customerType: "BUSINESS", id: "gid://crater/Customer/51" }],
-                        pageInfo: { endCursor: "customer-100", hasNextPage: true },
-                    },
-                },
-            },
-        },
-    ], async (graphQLServer) => {
-        const response = await listCustomers(
-            new Request("https://example.com/api/crater/customer?after=customer-50", {
-                headers: sessionHeaders,
+test("lists no customer before customersCreate has run", async () => {
+    await withGraphQLServer([{ data: { currentUser: { customer: null } } }], async () => {
+        const response = await listCustomers(new Request("https://example.com/api/crater/customer", { headers: sessionHeaders }))
+
+        assert.equal(response.status, 200)
+        assert.deepEqual(await response.json(), { customers: [] })
+    })
+})
+
+
+test("customer creation keeps Crater's CUSTOMER_ALREADY_EXISTS for a user that already manages one", async () => {
+    await withGraphQLServer([{ data: { customersCreate: { customer: null, errors: [{ errorCode: "CUSTOMER_ALREADY_EXISTS", details: [] }] } } }], async () => {
+        const response = await createOrGetCustomer(
+            new Request("https://example.com/api/crater/customer", {
+                method: "POST",
+                headers: { ...sessionHeaders, "content-type": "application/json" },
+                body: JSON.stringify({ customerType: "personal", name: "Ada", email: "ada@example.com", address: FULL_ADDRESS }),
             })
         )
 
-        assert.equal(response.status, 200)
-        assert.deepEqual(graphQLServer.requests[0].body.variables, { after: "customer-50" })
-        assert.deepEqual(await response.json(), {
-            customers: [{ customerType: "business", id: "gid://crater/Customer/51" }],
-            pageInfo: { endCursor: "customer-100", hasNextPage: true },
-        })
+        assert.equal(response.status, 422)
+        assert.equal((await response.json()).errorCode, "CUSTOMER_ALREADY_EXISTS")
     })
 })
 
@@ -511,28 +502,21 @@ function removalRequest(body: Record<string, unknown> = {}) {
     })
 }
 
-function customerIdsPage(ids: string[], pageInfo: { endCursor: string | null; hasNextPage: boolean } = { endCursor: null, hasNextPage: false }) {
-    return { data: { currentUser: { customers: { edges: ids.map((id) => ({ cursor: `cursor-${id}`, node: { id } })), pageInfo } } } }
-}
-
 function paymentMethodsPage(paymentMethods: unknown, id = "gid://crater/Customer/1") {
-    return { data: { currentUser: { customers: { nodes: [{ id, paymentMethods }] } } } }
+    return { data: { currentUser: { customer: { id, paymentMethods } } } }
 }
-
-const locatedCustomer = customerIdsPage(["gid://crater/Customer/1"])
 
 const updatedCustomerResponse = { data: { customersUpdate: { errors: [], customer: { id: "gid://crater/Customer/1", customerType: "PERSONAL" } } } }
 
 test("removal preserves cards added since the browser loaded its payment methods", async () => {
     await withGraphQLServer([
-        locatedCustomer,
         paymentMethodsPage(["pm_remove", "pm_keep", "pm_added_in_other_tab"]),
         updatedCustomerResponse,
     ], async (server) => {
         const response = await updateCustomer(removalRequest())
         assert.equal(response.status, 200)
-        assert.deepEqual(server.requests.map(({ body }) => body.operationName), ["LicenseSnapshotCustomer", "CustomerPaymentMethods", "CustomersUpdate"])
-        assert.deepEqual(server.requests[2].body.variables, {
+        assert.deepEqual(server.requests.map(({ body }) => body.operationName), ["CustomerPaymentMethods", "CustomersUpdate"])
+        assert.deepEqual(server.requests[1].body.variables, {
             input: { id: "gid://crater/Customer/1", paymentMethods: ["pm_keep", "pm_added_in_other_tab"] },
         })
         for (const request of server.requests) assert.equal(request.authorization, sessionHeaders.authorization)
@@ -552,46 +536,35 @@ test("rejects stale keep lists even when combined with other customer changes", 
     })
 })
 
-test("removal follows customer pagination and reads payment methods for that customer only", async () => {
-    await withGraphQLServer([
-        customerIdsPage(["gid://crater/Customer/8"], { endCursor: "next-customer", hasNextPage: true }),
-        customerIdsPage(["gid://crater/Customer/9", "gid://crater/Customer/1"]),
-        paymentMethodsPage(["pm_remove", "pm_added"]),
-        updatedCustomerResponse,
-    ], async (server) => {
-        assert.equal((await updateCustomer(removalRequest())).status, 200)
-        assert.deepEqual(server.requests[1].body.variables, { customerAfter: "next-customer" })
-        // The cursor of the customer before it selects exactly this customer with first: 1.
-        assert.deepEqual(server.requests[2].body.variables, { customerAfter: "cursor-gid://crater/Customer/9" })
-        assert.match(server.requests[2].body.query ?? "", /customers\(first: 1/)
-        assert.deepEqual(server.requests[3].body.variables, { input: { id: "gid://crater/Customer/1", paymentMethods: ["pm_added"] } })
+test("removal only touches the user's own customer", async () => {
+    await withGraphQLServer([paymentMethodsPage(["pm_remove", "pm_added"], "gid://crater/Customer/9")], async (server) => {
+        assert.equal((await updateCustomer(removalRequest())).status, 404)
+        assert.equal(server.requests.length, 1)
     })
 })
 
 test("an already removed method omits reconciliation and preserves other customer changes", async () => {
-    await withGraphQLServer([locatedCustomer, paymentMethodsPage(["pm_added"]), updatedCustomerResponse], async (server) => {
+    await withGraphQLServer([paymentMethodsPage(["pm_added"]), updatedCustomerResponse], async (server) => {
         assert.equal((await updateCustomer(removalRequest({ name: "Changed" }))).status, 200)
-        assert.deepEqual(server.requests[2].body.variables, { input: { id: "gid://crater/Customer/1", name: "Changed" } })
+        assert.deepEqual(server.requests[1].body.variables, { input: { id: "gid://crater/Customer/1", name: "Changed" } })
     })
 })
 
 test("removing the last attached method sends an intentional empty keep list", async () => {
-    await withGraphQLServer([locatedCustomer, paymentMethodsPage(["pm_remove"]), updatedCustomerResponse], async (server) => {
+    await withGraphQLServer([paymentMethodsPage(["pm_remove"]), updatedCustomerResponse], async (server) => {
         assert.equal((await updateCustomer(removalRequest())).status, 200)
-        assert.deepEqual(server.requests[2].body.variables, { input: { id: "gid://crater/Customer/1", paymentMethods: [] } })
+        assert.deepEqual(server.requests[1].body.variables, { input: { id: "gid://crater/Customer/1", paymentMethods: [] } })
     })
 })
 
 test("failed or incomplete fresh reads never reach the destructive mutation", async () => {
     const scenarios: Array<{ responses: unknown[]; status: number }> = [
-        { responses: [locatedCustomer, { errors: [{ message: "Payment methods unavailable", extensions: { errorCode: "PAYMENT_METHOD_UNAVAILABLE" } }] }], status: 503 },
-        { responses: [locatedCustomer, paymentMethodsPage(null)], status: 502 },
-        { responses: [locatedCustomer, paymentMethodsPage(["pm_remove", null])], status: 502 },
-        { responses: [locatedCustomer, paymentMethodsPage(["pm_remove"], "gid://crater/Customer/2")], status: 502 },
-        { responses: [locatedCustomer, { data: { currentUser: null } }], status: 401 },
+        { responses: [{ errors: [{ message: "Payment methods unavailable", extensions: { errorCode: "PAYMENT_METHOD_UNAVAILABLE" } }] }], status: 503 },
+        { responses: [paymentMethodsPage(null)], status: 502 },
+        { responses: [paymentMethodsPage(["pm_remove", null])], status: 502 },
+        { responses: [paymentMethodsPage(["pm_remove"], "gid://crater/Customer/2")], status: 404 },
         { responses: [{ data: { currentUser: null } }], status: 401 },
-        { responses: [customerIdsPage([])], status: 404 },
-        { responses: [customerIdsPage([], { hasNextPage: true, endCursor: null })], status: 502 },
+        { responses: [{ data: { currentUser: { customer: null } } }], status: 404 },
     ]
     for (const { responses, status } of scenarios) {
         const expectedRequests = responses.length
@@ -605,7 +578,6 @@ test("failed or incomplete fresh reads never reach the destructive mutation", as
 
 test("removal retains Crater's payment-method-in-use error", async () => {
     await withGraphQLServer([
-        locatedCustomer,
         paymentMethodsPage(["pm_remove", "pm_keep"]),
         { data: { customersUpdate: { customer: null, errors: [{ errorCode: "PAYMENT_METHOD_IN_USE" }] } } },
     ], async () => {
@@ -629,7 +601,7 @@ test("keeps Crater's execution error code and marks unavailable upstreams as ret
         { errorCode: "PAYMENT_METHOD_UNAVAILABLE", status: 503 },
         { errorCode: "INVALID_CUSTOMER", status: 502 },
     ]) {
-        await withGraphQLServer([locatedCustomer, executionError(errorCode)], async () => {
+        await withGraphQLServer([executionError(errorCode)], async () => {
             const response = await getCustomerPaymentMethods(
                 new Request("https://example.com/api/crater/customer/payment-methods?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1", { headers: sessionHeaders })
             )
@@ -641,8 +613,8 @@ test("keeps Crater's execution error code and marks unavailable upstreams as ret
 
 test("tax ID updates forward a complete pair, an explicit removal, or nothing", async () => {
     const scenarios: Array<{ body: Record<string, unknown>; input: Record<string, unknown> }> = [
-        { body: { taxId: { taxIdType: " eu_vat ", taxIdValue: " DE123456789 " } }, input: { taxId: { taxIdType: "eu_vat", taxIdValue: "DE123456789" } } },
-        { body: { taxId: null }, input: { taxId: null } },
+        { body: { taxId: { taxIdType: " eu_vat ", taxIdValue: " DE123456789 " } }, input: { taxIdType: "eu_vat", taxIdValue: "DE123456789" } },
+        { body: { taxId: null }, input: { taxIdType: null, taxIdValue: null } },
         { body: { name: "Changed" }, input: { name: "Changed" } },
     ]
     for (const { body, input } of scenarios) {

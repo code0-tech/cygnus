@@ -11,6 +11,7 @@ import { LicenseDataTableSkeleton } from "@/components/licenses/table/LicenseDat
 import { LICENSE_DATA_TABLE_PAGE_SIZE, LicenseDataTablePagination } from "@/components/licenses/table/LicenseDataTablePagination"
 import { LicenseAlert } from "@/components/licenses/shared/LicenseAlert"
 import { LicenseStatusDot } from "@/components/licenses/shared/LicenseStatusDot"
+import { LicenseUsageCard } from "@/components/licenses/shared/LicenseUsageCard"
 import type { ErrorsContent, LicenseContent, SubscriptionConfigData } from "@/lib/cms"
 import { formatMinorCurrency } from "@/lib/formatters"
 import type { AppLocale } from "@/lib/i18n"
@@ -260,6 +261,12 @@ export function LicenseDetailPage({ content, errors, customerId, licenseId, loca
                     </>
                 ) : null}
             </section>
+            {license?.usage && license.usage.availability !== "unsupported" ? (
+                <>
+                    <Spacing spacing="xl" />
+                    <LicenseUsageCard content={content.dashboard} locale={locale} usage={license.usage} />
+                </>
+            ) : null}
             <Spacing spacing="xl" />
             <section aria-labelledby="license-invoices-heading">
                 <Flex align="center" justify="space-between" style={{ gap: "0.5rem" }}>

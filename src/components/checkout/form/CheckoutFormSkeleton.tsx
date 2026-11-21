@@ -75,7 +75,6 @@ interface CheckoutFormSkeletonProps {
     collectTaxId: boolean
     content: CheckoutData["form"]
     customerEmail?: string | null
-    customerSelect?: ReactNode
     isBusinessCustomer: boolean
     stage: CheckoutStage
 }
@@ -84,7 +83,7 @@ interface CheckoutFormSkeletonProps {
  * Placeholder with the exact structure of the checkout step it stands in for: headings, texts and static controls are
  * the real ones, only the Stripe elements are replaced by blocks of their remembered height.
  */
-export function CheckoutFormSkeleton({ billingAddress, collectTaxId, content, customerEmail, customerSelect, isBusinessCustomer, stage }: CheckoutFormSkeletonProps) {
+export function CheckoutFormSkeleton({ billingAddress, collectTaxId, content, customerEmail, isBusinessCustomer, stage }: CheckoutFormSkeletonProps) {
     const params = useParams<{ locale?: string }>()
     const locale = params?.locale === "de" ? "de" : "en"
 
@@ -96,7 +95,6 @@ export function CheckoutFormSkeleton({ billingAddress, collectTaxId, content, cu
                     <>
                         <section className="w-full space-y-4">
                             <h3 className="text-lg text-white">{content.contactHeading}</h3>
-                            {customerSelect}
                             {customerEmail ? (
                                 <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]!">
                                     <CheckoutFieldLabel>{content.emailLabel}</CheckoutFieldLabel>

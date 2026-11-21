@@ -67,11 +67,13 @@ interface LicenseCustomerPageProps {
     content: LicenseContent
     customerId: string
     locale: AppLocale
+    loading?: boolean
 }
 
-export function LicenseCustomerPage({ content, customerId, locale }: LicenseCustomerPageProps) {
+export function LicenseCustomerPage({ content, customerId, locale, loading = false }: LicenseCustomerPageProps) {
     const router = useRouter()
-    const { customers, isLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
+    const { customers, isLoading: isDataLoading, licenses, loadMore, loadingMore, pagination } = useLicenseData()
+    const isLoading = isDataLoading || loading
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const customer = customers.find((candidate) => candidate.id === resolvedCustomerId)
     const customerLicenses = licenses.filter((license) => license.customerId === resolvedCustomerId)
@@ -106,7 +108,6 @@ export function LicenseCustomerPage({ content, customerId, locale }: LicenseCust
     return (
         <div>
             <section aria-label={content.dashboard.customerLabel}>
-
                 <Card color="secondary" className="overflow-hidden p-0!">
                     {customer ? (
                         <div className="grid sm:grid-cols-2 xl:grid-cols-3">

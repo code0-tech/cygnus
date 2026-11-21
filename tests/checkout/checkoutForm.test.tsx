@@ -75,6 +75,8 @@ let checkoutStages: string[] = []
 let checkoutStage = "billingAddress"
 const checkoutStageListeners = new Set<() => void>()
 let stripeConfirmCalls = 0
+// Consent requests and Stripe confirmations in the order they happened.
+let checkoutEvents: string[] = []
 let stripeConfirmErrorMessage: string | null = null
 let stripeCheckoutLoadErrorMessage: string | null = null
 let stripeConfirmOptions: unknown[] = []
@@ -276,6 +278,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
                           email: null,
                           confirm: async (options: unknown) => {
                               stripeConfirmCalls += 1
+                              checkoutEvents.push("confirm")
                               stripeConfirmOptions.push(options)
                               if (stripeConfirmErrorMessage) return { type: "error", error: { message: stripeConfirmErrorMessage } }
                               return { type: "success", session: {} }
@@ -302,7 +305,7 @@ mock.module("@stripe/react-stripe-js/checkout", {
     },
 })
 
-const { act, cleanup, render: renderComponent, screen, waitFor } = await import("@testing-library/react")
+const { act, cleanup, fireEvent, render: renderComponent, screen, waitFor } = await import("@testing-library/react")
 const { StripeProvider } = await import("../../src/components/providers/StripeProvider")
 function render(ui: React.ReactNode) {
     return renderComponent(ui, { wrapper: ({ children }) => <StripeProvider locale="en" publicKey="pk_test_example">{children}</StripeProvider> })
@@ -352,6 +355,7 @@ afterEach(() => {
     checkoutStages = []
     checkoutStage = "billingAddress"
     stripeConfirmCalls = 0
+    checkoutEvents = []
     stripeConfirmErrorMessage = null
     stripeCheckoutLoadErrorMessage = null
     window.sessionStorage.removeItem("code0.checkout.sessionLoadRecovery")
@@ -378,6 +382,10 @@ const errors = {
     billingAddressUpdate: "Billing address update failed",
     emailUpdate: "Email update failed",
     paymentConfirmation: "Payment confirmation failed",
+    checkoutConsentMissing: "Please confirm the highlighted consents",
+    checkoutConsentRecord: "Consent could not be saved",
+    checkoutConsentSession: "This checkout can no longer be completed",
+    checkoutRestart: "Restart checkout",
     discountSessionRequired: "Discount session required",
     discountValidation: "Discount validation failed",
     paymentFallback: "Checkout failed",
@@ -577,7 +585,11 @@ test("creates a customer with contact details only when continuing to payment", 
     globalThis.fetch = (async (input, init) => {
         requests.push({ init, url: String(input) })
         if (String(input) === "/api/crater/checkout/consent") {
-            return new Response(JSON.stringify(consentStatus === 200 ? { accepted: true } : { error: "The required consents were not given.", errorCode: "MISSING_CONSENT" }), { status: consentStatus })
+            checkoutEvents.push("consent")
+            return new Response(
+                JSON.stringify(consentStatus === 200 ? { recorded: true } : { error: "Crater did not record the checkout consents.", errorCode: "MISSING_CHECKOUT_CONSENT", details: [] }),
+                { status: consentStatus }
+            )
         }
         const body =
             String(input) === "/api/crater/customer"
@@ -610,7 +622,8 @@ test("creates a customer with contact details only when continuing to payment", 
         email: "ada@example.com",
         address: { city: "Berlin", country: "DE", line1: stripeBillingAddress.address.line1, line2: null, postalCode: "10115", state: "Berlin" },
     })
-    assert.equal(JSON.parse(String(requests[2].init?.body)).customerId, "gid://crater/Customer/1")
+    // Crater checks out the user's single customer; the session request names none.
+    assert.equal("customerId" in JSON.parse(String(requests[2].init?.body)), false)
     assert.deepEqual(stripeEmailUpdates, [])
     assert.equal(checkoutStage, "payment")
     await waitFor(() => assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress]))
@@ -627,18 +640,18 @@ test("creates a customer with contact details only when continuing to payment", 
     assert.equal((screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement).disabled, false)
     await user.click(screen.getByRole("button", { name: content.backToBillingLabel }))
     act(() => billingAddressOnReady?.())
-    await screen.findByText(content.customerSelectLabel)
-    assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, "ada@example.com")
-    assert.ok(screen.getByText("Ada Lovelace"))
+    await waitFor(() => assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, "ada@example.com"))
+    // A user manages a single customer, so there is no customer to choose and no second one to create.
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
     assert.equal(requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST").length, 1)
     await user.click(screen.getByRole("button", { name: content.continueLabel }))
     await screen.findByRole("button", { name: content.payNowLabel })
     act(() => paymentElementOnReady?.())
     act(() => paymentElementOnChange?.({ complete: true }))
-    // A refused consent check stops the payment before Stripe is asked to confirm it.
-    consentStatus = 400
+    // A consent Crater refuses to record stops the payment before Stripe is asked to confirm it.
+    consentStatus = 422
     await user.click(screen.getByRole("button", { name: content.payNowLabel }))
-    await screen.findByText(errors.paymentConfirmation)
+    await screen.findByText(errors.checkoutConsentMissing)
     assert.equal(stripeConfirmCalls, 0)
     consentStatus = 200
     stripeConfirmErrorMessage = "Your payment could not be confirmed."
@@ -652,87 +665,243 @@ test("creates a customer with contact details only when continuing to payment", 
     const consentRequests = requests.filter((request) => request.url === "/api/crater/checkout/consent")
     assert.equal(consentRequests.length, 3)
     for (const request of consentRequests) {
-        assert.deepEqual(JSON.parse(String(request.init?.body)), { customerId: "gid://crater/Customer/1", consents: { terms: true, withdrawal: true } })
+        assert.deepEqual(JSON.parse(String(request.init?.body)), { sessionId: "cs_test", consents: { terms: true, withdrawal: true } })
     }
+    // Every confirmation directly follows a recorded consent.
+    assert.deepEqual(checkoutEvents, ["consent", "consent", "confirm", "consent", "confirm"])
 })
 
-test("recreates the checkout session for a selected or newly created customer", async () => {
-    const requests: Array<{ init?: RequestInit; url: string }> = []
-    let sessionCount = 0
+type ConsentResponder = (body: { sessionId: string; consents: Record<string, unknown> }) => Response | Promise<Response>
+
+/** Restores a checkout on the payment step for a personal or business customer with a payment element that is ready. */
+async function renderPaymentStep({ customerType, onConsent }: { customerType: "business" | "personal"; onConsent: ConsentResponder }) {
+    checkoutSearchParams.set("customerType", customerType === "business" ? "b2b" : "b2c")
+    saveCheckoutContactDraft({
+        billingAddress: stripeBillingAddress,
+        customerId: "gid://crater/Customer/7",
+        email: "ada@example.com",
+        emailSyncedToStripe: true,
+        searchParams: checkoutSearchParams,
+        stage: "payment",
+    })
+    const consentBodies: Array<{ sessionId: string; consents: Record<string, unknown> }> = []
+    const sessionRequests: string[] = []
     globalThis.fetch = (async (input, init) => {
         const url = String(input)
-        requests.push({ init, url })
-
-        if (url === "/api/crater/customer" && init?.method !== "POST") {
-            return new Response(
-                JSON.stringify({
-                    customers: [
-                        { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" },
-                        { customerType: "personal", email: "grace@example.com", id: "gid://crater/Customer/2", name: "Grace" },
-                    ],
-                }),
-                { status: 200, headers: { "content-type": "application/json" } }
-            )
+        if (url === "/api/crater/checkout/consent") {
+            checkoutEvents.push("consent")
+            const body = JSON.parse(String(init?.body))
+            consentBodies.push(body)
+            return onConsent(body)
         }
-
         if (url === "/api/crater/customer") {
-            return new Response(JSON.stringify({ customerType: "personal", email: null, id: "gid://crater/Customer/3", name: null }), {
-                status: 201,
-                headers: { "content-type": "application/json" },
-            })
+            return Response.json({ customers: [{ customerType, email: "ada@example.com", id: "gid://crater/Customer/7", name: "Ada" }] })
         }
-
-        sessionCount += 1
-        return new Response(JSON.stringify({ clientSecret: `cs_customer_${sessionCount}`, expiresAt: 1_800_000_000, id: `cs_customer_${sessionCount}` }), {
-            status: 200,
-            headers: { "content-type": "application/json" },
-        })
+        sessionRequests.push(url)
+        const suffix = sessionRequests.length === 1 ? "" : `_${sessionRequests.length}`
+        return Response.json({ clientSecret: `cs_test_consent_secret${suffix}`, expiresAt: 1_800_000_000, id: `cs_test_consent${suffix}` })
     }) as typeof fetch
 
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
-    // Until Crater has answered it is unknown whether there are customers, so the placeholder reserves no select yet.
-    assert.ok(screen.getByTestId("checkout-form-skeleton"))
-    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_1"))
+    await screen.findByTestId("stripe-payment")
+    await waitFor(() => assert.deepEqual(stripeBillingAddressUpdates, [stripeBillingAddress]))
+    act(() => paymentElementOnReady?.())
+    act(() => paymentElementOnChange?.({ complete: true }))
+    const payButton = () => screen.getByRole("button", { name: content.payNowLabel }) as HTMLButtonElement
+    return { consentBodies, payButton, sessionRequests, user: userEvent.setup() }
+}
+
+const recordedConsent = () => Response.json({ recorded: true })
+
+test("records the consent for the current checkout session before confirming the payment", async () => {
+    const { consentBodies, payButton, user } = await renderPaymentStep({ customerType: "personal", onConsent: recordedConsent })
+    // Personal customers see and need the withdrawal consent.
+    const withdrawal = screen.getByRole("checkbox", { name: content.withdrawalConsentText })
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    assert.equal(payButton().disabled, true)
+    await user.click(withdrawal)
+    assert.equal(payButton().disabled, false)
+
+    await user.click(payButton())
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.deepEqual(consentBodies, [{ sessionId: "cs_test_consent", consents: { terms: true, withdrawal: true } }])
+    assert.deepEqual(checkoutEvents, ["consent", "confirm"])
+    assert.deepEqual(stripeConfirmOptions, [{ redirect: "always" }])
+})
+
+test("business customers record the terms alone and see no withdrawal consent", async () => {
+    const { consentBodies, payButton, user } = await renderPaymentStep({ customerType: "business", onConsent: recordedConsent })
+    assert.equal(screen.queryByRole("checkbox", { name: content.withdrawalConsentText }), null)
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    await user.click(payButton())
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.deepEqual(consentBodies, [{ sessionId: "cs_test_consent", consents: { terms: true } }])
+})
+
+test("highlights the consents when Crater reports one missing and never confirms", async () => {
+    const { payButton, user } = await renderPaymentStep({
+        customerType: "personal",
+        onConsent: () => Response.json({ error: "Crater did not record the checkout consents.", errorCode: "MISSING_CHECKOUT_CONSENT", details: [] }, { status: 422 }),
+    })
+    const terms = screen.getByRole("checkbox", { name: /Terms and Conditions/ })
+    const withdrawal = screen.getByRole("checkbox", { name: content.withdrawalConsentText })
+    await user.click(terms)
+    await user.click(withdrawal)
+    await user.click(payButton())
+
+    await screen.findByText(errors.checkoutConsentMissing)
+    assert.equal(stripeConfirmCalls, 0)
+    assert.ok(terms.closest(".input--not-valid"))
+    assert.ok(withdrawal.closest(".input--not-valid"))
+    // Touching a highlighted consent clears its highlight.
+    await user.click(withdrawal)
+    assert.equal(withdrawal.closest(".input--not-valid"), null)
+    assert.ok(terms.closest(".input--not-valid"))
+})
+
+test("offers to restart the checkout when Crater refuses the session and never confirms", async () => {
+    const { payButton, sessionRequests, user } = await renderPaymentStep({
+        customerType: "business",
+        onConsent: () => Response.json({ error: "Crater did not record the checkout consents.", errorCode: "INVALID_CHECKOUT_CONSENT_SESSION", details: [] }, { status: 422 }),
+    })
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    await user.click(payButton())
+
+    await screen.findByText(errors.checkoutConsentSession)
+    assert.equal(stripeConfirmCalls, 0)
+    assert.deepEqual(sessionRequests, ["/api/crater/checkout/session"])
+    // Restarting creates a fresh Checkout Session instead of retrying the one Crater refused.
+    await user.click(screen.getByRole("button", { name: errors.checkoutRestart }))
+    await waitFor(() => assert.deepEqual(sessionRequests, ["/api/crater/checkout/session", "/api/crater/checkout/session"]))
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_test_consent_secret_2"))
+    assert.equal(screen.queryByText(errors.checkoutConsentSession), null)
+    assert.equal(stripeConfirmCalls, 0)
+})
+
+test("a network error while recording the consent never confirms and can be retried", async () => {
+    let failNext = true
+    const { payButton, user } = await renderPaymentStep({
+        customerType: "business",
+        onConsent: () => {
+            if (!failNext) return recordedConsent()
+            failNext = false
+            throw new TypeError("Failed to fetch")
+        },
+    })
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    await user.click(payButton())
+
+    await screen.findByText(errors.checkoutConsentRecord)
+    assert.equal(stripeConfirmCalls, 0)
+    assert.equal(payButton().disabled, false)
+    await user.click(payButton())
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.deepEqual(checkoutEvents, ["consent", "consent", "confirm"])
+})
+
+test("a double submit records the consent and confirms only once, with the pay button disabled meanwhile", async () => {
+    let releaseConsent = () => {}
+    const consentGate = new Promise<void>((resolve) => (releaseConsent = resolve))
+    const { payButton, user } = await renderPaymentStep({
+        customerType: "business",
+        onConsent: async () => {
+            await consentGate
+            return recordedConsent()
+        },
+    })
+    await user.click(screen.getByRole("checkbox", { name: /Terms and Conditions/ }))
+    // The label turns into the loader while confirming, so keep the element itself.
+    const button = payButton()
+    const form = screen.getByTestId("stripe-payment").closest("form")!
+    act(() => {
+        fireEvent.submit(form)
+        fireEvent.submit(form)
+    })
+    await waitFor(() => assert.equal(button.disabled, true))
+    await user.dblClick(button)
+    assert.equal(stripeConfirmCalls, 0)
+    await act(async () => releaseConsent())
+    await waitFor(() => assert.equal(stripeConfirmCalls, 1))
+    assert.deepEqual(checkoutEvents, ["consent", "confirm"])
+})
+
+test("uses the user's single customer without offering a customer choice", async () => {
+    const requests: Array<{ init?: RequestInit; url: string }> = []
+    globalThis.fetch = (async (input, init) => {
+        const url = String(input)
+        requests.push({ init, url })
+        if (url === "/api/crater/customer") {
+            return Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
+        }
+        return Response.json({ clientSecret: "cs_single_customer", expiresAt: 1_800_000_000, id: "cs_single_customer" })
+    }) as typeof fetch
+
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_single_customer"))
     act(() => {
         contactDetailsOnReady?.()
         billingAddressOnReady?.()
     })
-    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
-    assert.ok(screen.getByText(content.customerSelectLabel))
-    assert.equal(screen.getAllByText(content.newCustomerLabel).length, 1)
 
-    act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_2"))
-    act(() => {
-        contactDetailsOnReady?.()
-        billingAddressOnReady?.()
-    })
-    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
+    assert.equal(screen.queryByText(content.newCustomerLabel), null)
+    assert.equal(customerSelectOnValueChange, null)
+    assert.equal((screen.getByRole("textbox", { name: content.emailLabel }) as HTMLInputElement).value, "ada@example.com")
+    assert.deepEqual(
+        requests.map(({ url, init }) => [url, init?.method ?? "GET"]),
+        [
+            ["/api/crater/customer", "GET"],
+            ["/api/crater/checkout/session", "POST"],
+        ]
+    )
+})
 
-    act(() => customerSelectOnValueChange?.("new"))
-    await screen.findByTestId("standalone-address")
-    assert.equal(sessionCount, 2)
-    assert.equal(requests.filter((request) => request.init?.method === "POST" && request.url === "/api/crater/customer").length, 0)
+test("a customer of the other type cannot check out and is not offered a second customer", async () => {
+    checkoutSearchParams.set("customerType", "b2b")
+    const requests: string[] = []
+    globalThis.fetch = (async (input) => {
+        requests.push(String(input))
+        return Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
+    }) as typeof fetch
+
+    render(
+        <CheckoutErrorBoundary>
+            <CheckoutForm content={content} errors={errors} locale="en" />
+        </CheckoutErrorBoundary>
+    )
+    await screen.findByTestId("checkout-error-page")
+    assert.deepEqual(requests, ["/api/crater/customer"])
+    assert.equal(screen.queryByTestId("standalone-address"), null)
+})
+
+test("a customer created meanwhile in another tab is picked up instead of failing the checkout", async () => {
+    const customer = { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/5", name: "Ada" }
+    let customerReads = 0
+    let creations = 0
+    globalThis.fetch = (async (input, init) => {
+        const url = String(input)
+        if (url === "/api/crater/customer" && init?.method === "POST") {
+            creations += 1
+            return Response.json({ error: "Crater could not create the customer.", errorCode: "CUSTOMER_ALREADY_EXISTS", details: [] }, { status: 422 })
+        }
+        if (url === "/api/crater/customer") {
+            customerReads += 1
+            return Response.json({ customers: customerReads === 1 ? [] : [customer] })
+        }
+        return Response.json({ clientSecret: "cs_existing_customer", expiresAt: 1_800_000_000, id: "cs_existing_customer" })
+    }) as typeof fetch
+
     const user = userEvent.setup()
+    render(<CheckoutForm content={content} errors={errors} locale="en" />)
+    await screen.findByTestId("standalone-address")
     await user.type(screen.getByRole("textbox", { name: content.emailLabel }), "ada@example.com")
     act(() => billingAddressOnChange?.({ complete: true, value: stripeBillingAddress }))
     await user.click(screen.getByRole("button", { name: content.continueLabel }))
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_customer_3"))
-    act(() => {
-        contactDetailsOnReady?.()
-        billingAddressOnReady?.()
-    })
-    await waitFor(() => assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null))
 
-    const sessionBodies = requests.filter((request) => request.url === "/api/crater/checkout/session").map((request) => JSON.parse(String(request.init?.body)) as { customerId: string })
-    assert.deepEqual(
-        sessionBodies.map((body) => body.customerId),
-        ["gid://crater/Customer/1", "gid://crater/Customer/2", "gid://crater/Customer/3"]
-    )
-    const customerCreationRequests = requests.filter((request) => request.url === "/api/crater/customer" && request.init?.method === "POST")
-    assert.equal(customerCreationRequests.length, 1)
-    assert.equal(JSON.parse(String(customerCreationRequests[0].init?.body)).name, stripeBillingAddress.name)
+    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_existing_customer"))
+    assert.equal(creations, 1)
+    assert.equal(customerReads, 2)
+    assert.equal(screen.queryByRole("alert"), null)
 })
 
 test("replaces a checkout session shortly before it expires", async () => {
@@ -949,13 +1118,13 @@ for (const [status, errorCode] of [
     })
 }
 
-for (const trigger of ["new customer", "customer selection", "session refresh"] as const) {
+for (const trigger of ["new customer", "session refresh"] as const) {
     test(`opens the error page for invalid checkout parameters during ${trigger}`, async () => {
         let sessionRequests = 0
         globalThis.fetch = (async (input, init) => {
             if (String(input) === "/api/crater/customer") {
                 const customer = { customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }
-                return Response.json(init?.method === "POST" ? customer : { customers: trigger === "new customer" ? [] : [customer, { ...customer, id: "gid://crater/Customer/2" }] })
+                return Response.json(init?.method === "POST" ? customer : { customers: trigger === "new customer" ? [] : [customer] })
             }
             sessionRequests += 1
             return trigger !== "new customer" && sessionRequests === 1
@@ -984,16 +1153,7 @@ for (const trigger of ["new customer", "customer selection", "session refresh"] 
             await user.click(screen.getByRole("button", { name: content.continueLabel }))
         } else {
             await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_initial_secret"))
-            if (trigger === "customer selection") {
-                act(() => {
-                    contactDetailsOnReady?.()
-                    billingAddressOnReady?.()
-                })
-                await waitFor(() => assert.ok(customerSelectOnValueChange))
-                act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
-            } else {
-                await user.click(screen.getByRole("button", { name: "Refresh session" }))
-            }
+            await user.click(screen.getByRole("button", { name: "Refresh session" }))
         }
         await screen.findByTestId("checkout-error-page")
         assert.equal(screen.queryByRole("alert"), null)
@@ -1045,7 +1205,6 @@ test("renders Stripe's Tax ID Element for a business customer", async () => {
 
     await waitFor(() => assert.equal(requests.length, 2))
     assert.deepEqual(JSON.parse(String(requests[1].init?.body)), {
-        customerId: "gid://crater/Customer/2",
         customerType: "b2b",
         deploymentType: "self_hosted",
         locale: "en",
@@ -1176,7 +1335,6 @@ test("shows only the configured error when loading customers fails", async () =>
     assert.equal(screen.queryByText("Crater rejected the customer."), null)
     assert.equal(requestCount, 1)
     assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
-    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
     assert.equal(screen.queryByText(content.customerSelectLabel), null)
     const retryButton = screen.getByRole("button", { name: errors.retry })
     await userEvent.setup().click(retryButton)
@@ -1325,7 +1483,7 @@ test("keeps a customer created while checkout parameters change without starting
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_updated_secret"))
     assert.equal(creations, 1)
     assert.equal(sessionRequests.length, 1)
-    assert.equal(sessionRequests[0].customerId, customer.id)
+    assert.equal("customerId" in sessionRequests[0], false)
     assert.equal(sessionRequests[0].plan, "max")
 })
 
@@ -1395,20 +1553,18 @@ function respondWithCustomers(customers: Array<{ customerType: string; email: st
     }) as typeof fetch
 }
 
-test("reserves the real customer select in the placeholder once existing customers are known", async () => {
+test("the placeholder reserves no customer select for the user's single customer", async () => {
     let releaseSession = () => {}
     respondWithCustomers([{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }], new Promise((resolve) => (releaseSession = resolve)))
 
     render(<CheckoutForm content={content} errors={errors} locale="en" />)
 
-    const selectPlaceholder = await screen.findByTestId("checkout-customer-select-skeleton")
-    assert.ok(screen.getByTestId("checkout-form-skeleton").contains(selectPlaceholder))
-    assert.ok(selectPlaceholder.textContent?.includes(content.customerSelectLabel))
+    await screen.findByTestId("checkout-form-skeleton")
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
 
     await act(async () => releaseSession())
     await waitFor(() => assert.equal(screen.queryByTestId("checkout-form-skeleton"), null))
-    assert.equal(screen.queryByTestId("checkout-customer-select-skeleton"), null)
-    assert.ok(screen.getByText(content.customerSelectLabel))
+    assert.equal(screen.queryByText(content.customerSelectLabel), null)
 })
 
 test("keeps Stripe elements hidden behind their placeholder until they report ready", async () => {
@@ -1466,53 +1622,6 @@ test("keeps the new customer form in place while the customer and its session ar
 
     await act(async () => releaseCreation())
     await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_layout"))
-})
-
-test("keeps the previous customer's form on screen until the new customer's session is ready", async () => {
-    let releaseSecondSession = () => {}
-    const secondSessionGate = new Promise<void>((resolve) => (releaseSecondSession = resolve))
-    let sessionCount = 0
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input)
-        if (url === "/api/crater/customer" && init?.method !== "POST") {
-            return Response.json({
-                customers: [
-                    { customerType: "personal", email: null, id: "gid://crater/Customer/1", name: "Ada" },
-                    { customerType: "personal", email: null, id: "gid://crater/Customer/2", name: "Grace" },
-                ],
-            })
-        }
-        sessionCount += 1
-        if (sessionCount === 2) await secondSessionGate
-        return Response.json({ clientSecret: `cs_swap_${sessionCount}`, expiresAt: 1_800_000_000, id: `cs_swap_${sessionCount}` })
-    }) as typeof fetch
-
-    render(<CheckoutForm content={content} errors={errors} locale="en" />)
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_swap_1"))
-    act(() => {
-        contactDetailsOnReady?.()
-        billingAddressOnReady?.()
-    })
-
-    act(() => customerSelectOnValueChange?.("gid://crater/Customer/2"))
-    // While Crater creates the new session the previous form stays, dimmed and inert, instead of a skeleton.
-    assert.equal(screen.queryByTestId("checkout-form-skeleton"), null)
-    assert.equal(screen.getAllByTestId("stripe-billing-address").length, 1)
-    assert.equal(screen.getByTestId("stripe-billing-address").closest("[aria-busy='true']")?.hasAttribute("inert"), true)
-
-    await act(async () => releaseSecondSession())
-    await waitFor(() => assert.equal(checkoutProviderOptions?.clientSecret, "cs_swap_2"))
-    // The new session loads invisibly next to the outgoing one, which is hidden from assistive technology.
-    const addresses = screen.getAllByTestId("stripe-billing-address")
-    assert.equal(addresses.length, 2)
-    assert.equal(addresses[0].closest("[aria-hidden='true']") !== null, true)
-
-    act(() => {
-        contactDetailsOnReady?.()
-        billingAddressOnReady?.()
-    })
-    await waitFor(() => assert.equal(screen.getAllByTestId("stripe-billing-address").length, 1))
-    assert.equal(screen.getByTestId("stripe-billing-address").closest("[aria-busy='true']"), null)
 })
 
 test("keeps the form on screen while a session about to expire is refreshed", async () => {

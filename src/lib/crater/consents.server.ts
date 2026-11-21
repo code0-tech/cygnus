@@ -4,18 +4,18 @@ import type { CraterCustomerType } from "@/lib/crater/values"
 
 export type RequiredConsent = "terms" | "withdrawal"
 
-export const MISSING_CONSENT_ERROR_CODE = "MISSING_CONSENT"
+const MISSING_CONSENT_ERROR_CODE = "MISSING_CONSENT"
 
 /**
  * Every customer accepts the terms; personal customers additionally request the immediate start that waives their
  * right of withdrawal. A customer whose type Crater does not report is treated as personal, so nothing is skipped.
  */
-export function requiredConsents(customerType: CraterCustomerType | undefined): RequiredConsent[] {
+function requiredConsents(customerType: CraterCustomerType | undefined): RequiredConsent[] {
     return customerType === "business" ? ["terms"] : ["terms", "withdrawal"]
 }
 
 /** The consents `body.consents` does not grant. Only a literal `true` counts as given. */
-export function missingConsents(body: JsonObject | null, customerType: CraterCustomerType | undefined): RequiredConsent[] {
+function missingConsents(body: JsonObject | null, customerType: CraterCustomerType | undefined): RequiredConsent[] {
     const consents = body?.consents && typeof body.consents === "object" && !Array.isArray(body.consents) ? (body.consents as JsonObject) : null
     return requiredConsents(customerType).filter((consent) => consents?.[consent] !== true)
 }

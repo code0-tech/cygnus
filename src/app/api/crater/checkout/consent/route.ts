@@ -1,24 +1,58 @@
-import { craterJson, withCraterSession } from "@/lib/crater/api.server"
-import { consentRejection } from "@/lib/crater/consents.server"
-import { findCustomerType } from "@/lib/crater/customer/customerList.server"
-import { isCustomerId, optionalString, readJsonObject } from "@/lib/crater/request"
+import { CRATER_ERROR_FIELDS, craterJson, runCraterResourceMutation, withCraterSession } from "@/lib/crater/api.server"
+import { optionalString, readJsonObject } from "@/lib/crater/request"
+import { parseCheckoutSessionId } from "@/lib/crater/values"
+import type { Mutation, MutationCheckoutRecordConsentArgs } from "@code0-tech/crater-graphql-types"
+import { gql, type TypedDocumentNode } from "@apollo/client"
 
 export const runtime = "nodejs"
 
+type CheckoutRecordConsentData = Pick<Mutation, "checkoutRecordConsent">
+
+const MAX_TERMS_VERSION_LENGTH = 100
+
+const CHECKOUT_RECORD_CONSENT: TypedDocumentNode<CheckoutRecordConsentData, MutationCheckoutRecordConsentArgs> = gql`
+    ${CRATER_ERROR_FIELDS}
+    mutation CheckoutRecordConsent($input: CheckoutRecordConsentInput!) {
+        checkoutRecordConsent(input: $input) {
+            consent {
+                stripeCheckoutSessionId
+            }
+            errors {
+                ...CraterErrorFields
+            }
+        }
+    }
+`
+
 /**
- * Called when the user presses pay, before the browser confirms the Stripe Checkout Session. The customer type comes
- * from Crater, so the client cannot skip the withdrawal consent by claiming to be a business.
+ * Called when the user presses pay, before the browser confirms the Stripe Checkout Session. A thin proxy to Crater's
+ * `checkoutRecordConsent`: Crater decides which consents the session's customer needs and stores them for exactly that
+ * session, so nothing is validated here beyond the request shape. The browser only confirms after a 200.
  */
-export const POST = withCraterSession({ log: "Crater checkout consent error", error: "Could not verify the checkout consents.", rateLimit: "checkout" }, async (request, token) => {
+export const POST = withCraterSession({ log: "Crater checkout consent error", error: "Could not record the checkout consents.", rateLimit: "checkout" }, async (request, token) => {
     const body = await readJsonObject(request)
-    const customerId = optionalString(body?.customerId)
-    if (!body || !customerId || !isCustomerId(customerId)) {
-        return craterJson({ error: "customerId is required and must be a valid Crater global ID." }, 400)
+    const sessionId = parseCheckoutSessionId(optionalString(body?.sessionId))
+    if (!body || !sessionId) return craterJson({ error: "sessionId is required and must be a Stripe Checkout Session ID." }, 400)
+
+    const consents = body.consents && typeof body.consents === "object" && !Array.isArray(body.consents) ? (body.consents as Record<string, unknown>) : null
+    if (!consents || typeof consents.terms !== "boolean" || (consents.withdrawal !== undefined && typeof consents.withdrawal !== "boolean")) {
+        return craterJson({ error: "consents.terms must be a boolean, consents.withdrawal a boolean when given." }, 400)
     }
 
-    const customer = await findCustomerType(token, customerId)
-    if (customer.status === "unauthenticated") return craterJson({ error: "The Crater session has no authenticated user." }, 401)
-    if (customer.status === "missing") return craterJson({ error: "The checkout customer was not found." }, 404)
+    const termsVersion = optionalString(body.termsVersion)
+    if (termsVersion && termsVersion.length > MAX_TERMS_VERSION_LENGTH) return craterJson({ error: `termsVersion must be at most ${MAX_TERMS_VERSION_LENGTH} characters.` }, 400)
 
-    return consentRejection(body, customer.customerType) ?? craterJson({ accepted: true })
+    const input: MutationCheckoutRecordConsentArgs["input"] = {
+        sessionId,
+        terms: consents.terms,
+        ...(typeof consents.withdrawal === "boolean" ? { withdrawal: consents.withdrawal } : {}),
+        ...(termsVersion ? { termsVersion } : {}),
+    }
+    return runCraterResourceMutation(token, CHECKOUT_RECORD_CONSENT, { input }, (data) => data.checkoutRecordConsent, {
+        rejectionMessage: "Crater did not record the checkout consents.",
+        // Only a stored record bound to this very session lets the browser confirm.
+        selectResource: (payload) => (payload.consent?.stripeCheckoutSessionId === sessionId ? payload.consent : null),
+        missingResourceMessage: "Crater returned no consent for the checkout session.",
+        respond: () => craterJson({ recorded: true }),
+    })
 })

@@ -7,7 +7,6 @@ import type { LicenseContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { type CustomerEditSection, getCustomerEditSectionLabels, getLicenseEditSectionLabels, LICENSE_EDIT_SECTIONS, type LicenseEditSection } from "@/lib/licenses/editSections"
 import { downloadLicenseFile } from "@/lib/licenses/client"
-import { selectRecentLicenses } from "@/lib/licenses/recentLicenses"
 import { createLicenseCustomerPath, createLicensePath, resolveCustomerRouteId } from "@/lib/licenses/routes"
 import type { LicenseDashboardLicense } from "@/lib/licenses/types"
 import { formatLicenseDisplayValue } from "@/lib/licenses/displayValues"
@@ -170,17 +169,6 @@ function LicenseBackToCustomerButton({ label, license, locale }: { label: string
     )
 }
 
-function LicenseBackToCustomersButton({ label, locale }: { label: string; locale: AppLocale }) {
-    return (
-        <Link href={`/${locale}/licenses`} className="block">
-            <Button type="button" paddingSize="xxs" variant="none" justify="start" w="100%" className="rounded-2xl! text-xs! hover:shadow-[inset_0_1px_1px_#bfbfbf1a]!">
-                <IconArrowLeft aria-hidden="true" size={16} />
-                <span className="min-w-0 truncate">{label}</span>
-            </Button>
-        </Link>
-    )
-}
-
 function getLicenseSidebarName(license: LicenseDashboardLicense, values: LicenseContent["values"]) {
     const planName = formatLicenseDisplayValue(license.plan, "plan", values)
     if (license.deploymentType === "self_hosted") return planName
@@ -236,8 +224,7 @@ function getLicenseContextMenu(license: LicenseDashboardLicense, content: Licens
     const sectionLabels = getLicenseEditSectionLabels(content)
     const sectionIcons = { general: IconKey, upgrade: IconTrendingUp } satisfies Record<LicenseEditSection, typeof IconKey>
     // A canceled subscription has no plan left to upgrade, so its entry drops the upgrade section.
-    const sections: readonly LicenseEditSection[] =
-        license.subscriptionId && !isLicenseStatusCanceled(license.subscriptionStatus ?? license.status) ? LICENSE_EDIT_SECTIONS : ["general"]
+    const sections: readonly LicenseEditSection[] = license.subscriptionId && !isLicenseStatusCanceled(license.subscriptionStatus ?? license.status) ? LICENSE_EDIT_SECTIONS : ["general"]
 
     return {
         icon: license.deploymentType === "self_hosted" ? IconServer : IconCloud,
@@ -260,9 +247,9 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
     // While a license page loads, its actions are already shown, disabled until the license is known.
     const showLicenseActions = Boolean(activeLicense) || (isLoading && isLicenseRoute)
     const customerId = customerRouteSegment ? resolveCustomerRouteId(customerRouteSegment) : undefined
-    // A customer page lists that customer's licenses; the customer overview at /licenses lists the most recently edited ones.
-    const listedLicenses = customerId ? licenses.filter((license) => license.customerId === customerId) : selectRecentLicenses(licenses)
-    const listLabel = customerId ? content.licenses : content.dashboard.recentLicensesLabel
+
+    const listedLicenses = customerId ? licenses.filter((license) => license.customerId === customerId) : licenses
+    const listLabel = content.licenses
     const contextMenu = activeLicense
         ? getLicenseContextMenu(activeLicense, content, locale)
         : customerRouteSegment
@@ -288,15 +275,6 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                                 sideOffset={8}
                                 className="z-100 max-h-[calc(100dvh-5rem)]! w-[calc(100vw-2rem)]! overflow-y-auto! [&>.scroll-area--auto]:w-full! [&>.scroll-area--auto]:min-w-0! [&>.scroll-area--auto]:self-stretch! [&_.scroll-area__viewport]:w-full! [&_.scroll-area__viewport>div]:w-full!"
                             >
-                                {customerId ? (
-                                    <>
-                                        <MenuItem onSelect={() => router.push(`/${locale}/licenses`)} className="w-full! justify-start! text-left!">
-                                            <IconArrowLeft aria-hidden="true" size={16} />
-                                            <span>{content.sidebar.backToCustomersLabel}</span>
-                                        </MenuItem>
-                                        <MenuSeparator />
-                                    </>
-                                ) : null}
                                 <MenuLabel className="flex w-full! items-center justify-between gap-3">
                                     <span>{listLabel}</span>
                                     {isLoading ? null : <span className="text-xs tabular-nums text-tertiary">{listedLicenses.length}</span>}
@@ -424,8 +402,7 @@ export function LicenseSidebar({ content, isLoading, isLoggingOut, locale, licen
                 </Flex>
                 <div className="mt-6 flex shrink-0 flex-col gap-3">
                     {activeLicense?.deploymentType === "self_hosted" ? <LicenseDownloadButton content={content} license={activeLicense} /> : null}
-                    {showLicenseActions ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} locale={locale} license={activeLicense}/> : null}
-                    {customerId && !isLicenseRoute ? <LicenseBackToCustomersButton label={content.sidebar.backToCustomersLabel} locale={locale} /> : null}
+                    {showLicenseActions ? <LicenseBackToCustomerButton label={content.sidebar.backToCustomerLabel} locale={locale} license={activeLicense} /> : null}
                     {showLicenseActions ? <LicenseUpgradeButton content={content} license={activeLicense} locale={locale} /> : null}
                     {contextMenu ? <LicenseContextMenu {...contextMenu} /> : null}
                 </div>
