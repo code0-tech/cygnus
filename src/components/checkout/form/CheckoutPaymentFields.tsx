@@ -439,11 +439,12 @@ export function CheckoutPaymentFields({
             }
             payment={
                 <>
+                    {/* Desktop only: on phones the order card above the form leads back to billing. */}
                     <button
                         type="button"
                         disabled={isConfirming}
                         onClick={showBillingAddress}
-                        className="inline-flex cursor-pointer items-center gap-1.5 text-sm text-tertiary transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60 max-lg:min-h-11"
+                        className="inline-flex cursor-pointer items-center gap-1.5 text-sm text-tertiary transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60 max-lg:hidden"
                     >
                         <IconArrowLeft aria-hidden="true" size={16} />
                         {content.backToBillingLabel}

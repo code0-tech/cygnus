@@ -275,3 +275,10 @@
         transform: translate(0.04em, 0);
     }
 }
+
+/* The checkout scrolls natively. A classic scrollbar that appears and disappears would change the form's width, which
+   changes its height, which toggles the scrollbar again: CheckoutStageTransition measures that height and loops.
+   Reserving the gutter keeps the width constant. */
+html:has([data-checkout-shell]) {
+    scrollbar-gutter: stable;
+}

@@ -123,7 +123,7 @@ export function CheckoutFormSkeleton({ billingAddress, collectTaxId, content, cu
                     </>
                 ) : (
                     <>
-                        <span className="inline-flex items-center gap-1.5 text-sm text-tertiary max-lg:min-h-11">
+                        <span className="inline-flex items-center gap-1.5 text-sm text-tertiary max-lg:hidden">
                             <IconArrowLeft aria-hidden="true" size={16} />
                             {content.backToBillingLabel}
                         </span>

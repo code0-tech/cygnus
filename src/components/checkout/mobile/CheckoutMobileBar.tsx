@@ -5,8 +5,10 @@ import type { AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconArrowRight } from "@tabler/icons-react"
+import type { Ref } from "react"
 
 interface CheckoutMobileBarProps {
+    buttonRef?: Ref<HTMLButtonElement>
     continueLabel: string
     hidden: boolean
     includingTaxSuffix: string
@@ -16,8 +18,8 @@ interface CheckoutMobileBarProps {
     totalLabel: string
 }
 
-/** Fixed bottom bar below `lg` with the amount due today and the button that opens the checkout form. */
-export function CheckoutMobileBar({ continueLabel, hidden, includingTaxSuffix, locale, onContinue, pricing, totalLabel }: CheckoutMobileBarProps) {
+/** Fixed bottom bar below `lg` with the amount due today and the button that leads on to the checkout form. */
+export function CheckoutMobileBar({ buttonRef, continueLabel, hidden, includingTaxSuffix, locale, onContinue, pricing, totalLabel }: CheckoutMobileBarProps) {
     return (
         <div
             inert={hidden || undefined}
@@ -40,6 +42,7 @@ export function CheckoutMobileBar({ continueLabel, hidden, includingTaxSuffix, l
                     </p>
                 </div>
                 <button
+                    ref={buttonRef}
                     type="button"
                     onClick={onContinue}
                     className="inline-flex h-12 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-medium text-primary outline-none transition-colors hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-white/40"
