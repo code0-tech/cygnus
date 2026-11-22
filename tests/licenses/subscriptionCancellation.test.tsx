@@ -45,7 +45,6 @@ mock.module("@/components/licenses/dialog/shared/LicenseTabLayout", {
         LicenseTabHeader: ({ title, description }: { title: ReactNode; description: ReactNode }) => <header><h2>{title}</h2><p>{description}</p></header>,
         LicenseTabSection: ({ children, title }: { children: ReactNode; title?: ReactNode }) => <section>{title ? <h3>{title}</h3> : null}{children}</section>,
         LicenseTabRow: ({ title, description, action, children }: { title?: ReactNode; description?: ReactNode; action?: ReactNode; children?: ReactNode }) => <div><span>{title}</span><span>{description}</span>{action}{children}</div>,
-        LicenseTabAlert: ({ children }: { children: ReactNode }) => <p role="alert">{children}</p>,
     },
 })
 const { render, cleanup, screen, fireEvent, waitFor } = await import("@testing-library/react")

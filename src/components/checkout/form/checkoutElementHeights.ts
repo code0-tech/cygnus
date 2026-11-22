@@ -6,7 +6,7 @@ export type CheckoutElementHeightKey = "contactDetails" | "billingAddress" | "bi
 
 // First-visit estimates derived from the Stripe appearance: a row is a 12px label with 7px spacing above an input with
 // 11px padding (~62px), rows are 16px apart. After the first visit the measured heights replace them.
-export const FALLBACK_ELEMENT_HEIGHTS: Record<CheckoutElementHeightKey, number> = {
+const FALLBACK_ELEMENT_HEIGHTS: Record<CheckoutElementHeightKey, number> = {
     contactDetails: 62,
     billingAddress: 374,
     billingAddressWithTaxId: 530,

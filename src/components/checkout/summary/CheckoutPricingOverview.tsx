@@ -12,7 +12,7 @@ import type { ReactNode } from "react"
 
 export type CheckoutTaxStatus = "ready" | "loading" | "unknown"
 
-export interface CheckoutPricingOverviewData {
+interface CheckoutPricingOverviewData {
     aiTokens: number
     billingCountry?: string | null
     currency?: string

@@ -40,7 +40,7 @@ mock.module("@/components/licenses/dialog/customer/CustomerPaymentMethodCard", {
 mock.module("@/components/licenses/dialog/customer/PaymentMethodSetupDialog", { namedExports: { PaymentMethodSetupDialog: Wrap } })
 mock.module("@/components/ui/Loader", { namedExports: { ButtonLoader: () => null } })
 mock.module("@/components/licenses/dialog/shared/LicenseTabLayout", { namedExports: {
-    LicenseTabAlert: Wrap, LicenseTabRow: Wrap, LicenseTabSection: Wrap,
+    LicenseTabRow: Wrap, LicenseTabSection: Wrap,
     LicenseTabHeader: ({ action }: { action: ReactNode }) => <>{action}</>,
     LicenseTabSaveButton: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
 } })

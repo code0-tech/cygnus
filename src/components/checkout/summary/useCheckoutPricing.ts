@@ -19,7 +19,7 @@ interface CheckoutPricingInput {
     subscriptionPrices?: SubscriptionPriceCatalog | null
 }
 
-export interface CheckoutPeriodOption {
+interface CheckoutPeriodOption {
     discountBadge: string | null
     label: string
     monthlyPriceLabel: string

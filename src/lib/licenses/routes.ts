@@ -130,7 +130,7 @@ export function createLicenseDashboardLoginPath(returnPath: string) {
     return `/api/crater/auth/start?${new URLSearchParams({ flow: "licenses", returnPath })}`
 }
 
-export const LICENSE_DASHBOARD_ACTIONS = ["license", "upgrade", "customer"] as const
+const LICENSE_DASHBOARD_ACTIONS = ["license", "upgrade", "customer"] as const
 
 export type LicenseDashboardAction = (typeof LICENSE_DASHBOARD_ACTIONS)[number]
 

@@ -107,11 +107,6 @@ export function calculateSubscriptionQuote(selection: SubscriptionSelection, con
     return { currency: "EUR", items, subtotal, periodDiscount: subtotal - total, total }
 }
 
-export function getSubscriptionQuoteDiscountRate(selection: SubscriptionSelection, config: SubscriptionCatalog) {
-    const quote = calculateSubscriptionQuote(selection, config)
-    return quote.subtotal > 0 ? quote.periodDiscount / quote.subtotal : 0
-}
-
 export function getSubscriptionPeriodSavings(selection: SubscriptionSelection, config: SubscriptionCatalog) {
     return calculateSubscriptionQuote(selection, config).periodDiscount
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { Alert, Button, Card, Flex, type Sizes, Spacing, Text } from "@code0-tech/pictor"
+import { Button, Card, Flex, type Sizes, Spacing, Text } from "@code0-tech/pictor"
 import CardSection from "@code0-tech/pictor/dist/components/card/CardSection"
 import { cn } from "@/lib/utils"
 import { IconAlertTriangle } from "@tabler/icons-react"
@@ -91,14 +91,5 @@ export function LicenseTabRow({
                 </>
             ) : null}
         </CardSection>
-    )
-}
-
-export function LicenseTabAlert({ children }: { children: ReactNode }) {
-    return (
-        <>
-            <Spacing spacing="xs" />
-            <Alert color="error">{children}</Alert>
-        </>
     )
 }

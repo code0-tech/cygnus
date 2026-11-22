@@ -13,7 +13,7 @@ export type SubscriptionCatalog = SubscriptionSelectionCatalog & Pick<Subscripti
     subscriptionPrices: SubscriptionPriceCatalog
 }
 
-export function getSubscriptionSelectionCatalog(config: SubscriptionConfigData, checkoutPackages?: CheckoutPackages): SubscriptionSelectionCatalog {
+function getSubscriptionSelectionCatalog(config: SubscriptionConfigData, checkoutPackages?: CheckoutPackages): SubscriptionSelectionCatalog {
     return {
         defaults: config.defaults,
         workflowExecutions: checkoutPackages?.quantitySteps

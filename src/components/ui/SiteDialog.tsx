@@ -19,9 +19,9 @@ import { IconX } from "@tabler/icons-react"
 import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
-export const SITE_DIALOG_FRAME_CLASS_NAME = "h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-none! overflow-visible! border border-white/5 p-0.5! sm:h-[75dvh]! sm:w-[75vw]! sm:max-w-250!"
+const SITE_DIALOG_FRAME_CLASS_NAME = "h-[calc(100dvh-1rem)]! w-[calc(100vw-1rem)]! max-w-none! overflow-visible! border border-white/5 p-0.5! sm:h-[75dvh]! sm:w-[75vw]! sm:max-w-250!"
 
-export function DialogSurface({ children, inlineOnDesktop = false, fitContent = false }: { children: ReactNode; inlineOnDesktop?: boolean; fitContent?: boolean }) {
+function DialogSurface({ children, inlineOnDesktop = false, fitContent = false }: { children: ReactNode; inlineOnDesktop?: boolean; fitContent?: boolean }) {
     const content = <div className={cn("mx-auto w-full max-w-4xl px-4 py-10 sm:w-3/4 sm:px-4 sm:py-16", inlineOnDesktop && "lg:contents!")}>{children}</div>
 
     return (

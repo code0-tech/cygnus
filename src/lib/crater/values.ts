@@ -14,10 +14,6 @@ const CRATER_PAYMENT_PERIODS = {
     yearly: "YEARLY" as CheckoutPaymentPeriod,
 } as const satisfies Record<PaymentPeriod, CheckoutPaymentPeriod>
 
-export function toCraterPaymentPeriod(paymentPeriod: PaymentPeriod): CheckoutPaymentPeriod {
-    return CRATER_PAYMENT_PERIODS[paymentPeriod]
-}
-
 export function parseCraterPaymentPeriod(paymentPeriod: string | undefined): CheckoutPaymentPeriod | null {
     return paymentPeriod && Object.hasOwn(CRATER_PAYMENT_PERIODS, paymentPeriod) ? CRATER_PAYMENT_PERIODS[paymentPeriod as PaymentPeriod] : null
 }
@@ -29,7 +25,7 @@ const CRATER_PLANS = {
 } as const satisfies Record<string, `${CheckoutPlan}`>
 
 // The package ships declaration-only const enums, so these values cannot be imported at runtime.
-export function toCraterPlan(plan: keyof typeof CRATER_PLANS): CheckoutPlan {
+function toCraterPlan(plan: keyof typeof CRATER_PLANS): CheckoutPlan {
     return CRATER_PLANS[plan] as CheckoutPlan
 }
 

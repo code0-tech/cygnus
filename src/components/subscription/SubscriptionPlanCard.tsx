@@ -10,7 +10,7 @@ export interface SubscriptionPlanStat {
     comparison?: string
 }
 
-export interface SubscriptionPlanCapacity {
+interface SubscriptionPlanCapacity {
     value: string
     label: string
 }
