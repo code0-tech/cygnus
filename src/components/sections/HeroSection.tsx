@@ -119,14 +119,22 @@ export function HeroSection({ content }: HeroSectionProps) {
 
                 <StaggerContainer className={"relative z-20 flex h-full flex-col items-center justify-between gap-8 rounded-3xl p-8 lg:flex-row lg:p-16"}>
                     <div className={cn("flex w-full flex-col gap-4 text-start", hasHeroImage ? "lg:w-2/5" : "lg:max-w-3xl")}>
-                        <StaggerItem>
-                            <Link href={content.badge_link ?? ""}>
-                                <StableBadge className="group relative z-10 text-xs px-3 cursor-pointer" color="info">
-                                    {content.badge}
-                                    <IconArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                                </StableBadge>
-                            </Link>
-                        </StaggerItem>
+                        {content.badge && (
+                            <StaggerItem>
+                                {content.badge_link ? (
+                                    <Link href={content.badge_link}>
+                                        <StableBadge className="group relative z-10 text-xs px-3 cursor-pointer" color="info">
+                                            {content.badge}
+                                            <IconArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                        </StableBadge>
+                                    </Link>
+                                ) : (
+                                    <StableBadge className="relative z-10 text-xs px-3" color="info">
+                                        {content.badge}
+                                    </StableBadge>
+                                )}
+                            </StaggerItem>
+                        )}
 
                         <StaggerItem as="h1" className="relative z-10 font-bold text-3xl lg:text-4xl text-white text-balance">
                             {content.heading}
