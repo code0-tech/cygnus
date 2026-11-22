@@ -18,6 +18,18 @@ export function replaceCheckoutPage(url: string) {
     window.location.replace(url)
 }
 
+/**
+ * Ends the current Crater session, account or guest. Failures are swallowed: the caller leaves for a login page that
+ * does not resume a session while it shows a notice, so a session that survived cannot send the visitor back.
+ */
+export async function revokeCheckoutSession() {
+    try {
+        await checkoutFetch("/api/crater/auth/session", { method: "DELETE", credentials: "same-origin" })
+    } catch {
+        // See above: the login page stays on the login choice either way.
+    }
+}
+
 export async function createGuestCheckout(email: string) {
     const response = await checkoutFetch("/api/crater/guest", {
         method: "POST",

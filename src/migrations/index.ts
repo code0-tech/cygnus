@@ -211,6 +211,7 @@ import * as migration_20261112_120000_extraordinary_termination from './20261112
 import * as migration_20261116_120000_checkout_consent_errors from './20261116_120000_checkout_consent_errors';
 import * as migration_20261118_120000_license_usage from './20261118_120000_license_usage';
 import * as migration_20261121_120000_checkout_close_label from './20261121_120000_checkout_close_label';
+import * as migration_20261122_120000_checkout_customer_type_login from './20261122_120000_checkout_customer_type_login';
 
 export const migrations = [
   {
@@ -1272,5 +1273,10 @@ export const migrations = [
     up: migration_20261121_120000_checkout_close_label.up,
     down: migration_20261121_120000_checkout_close_label.down,
     name: '20261121_120000_checkout_close_label',
+  },
+  {
+    up: migration_20261122_120000_checkout_customer_type_login.up,
+    down: migration_20261122_120000_checkout_customer_type_login.down,
+    name: '20261122_120000_checkout_customer_type_login',
   },
 ];

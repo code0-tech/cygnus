@@ -1,6 +1,15 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { createCheckoutQuery, createCraterLoginCallbackUrl, createMainAppLoginUrl, hasCheckoutConfiguration, resolveCheckoutLoginRedirect } from "../../src/lib/checkout/checkoutLogin"
+import {
+    createCheckoutLoginNoticePath,
+    createCheckoutQuery,
+    createCraterLoginCallbackUrl,
+    createMainAppLoginUrl,
+    hasCheckoutConfiguration,
+    resolveCheckoutLoginNotice,
+    resolveCheckoutLoginRedirect,
+    resolveCheckoutReturnUrl,
+} from "../../src/lib/checkout/checkoutLogin"
 import { createLicenseNamespaceCallbackUrl, createLicenseNamespaceReturnPath } from "../../src/lib/licenses/routes"
 
 test("preserves the subscription configuration for guest checkout", () => {
@@ -92,4 +101,22 @@ test("renders the checkout when a session can exist or a failed login has to be 
     assert.equal(resolveCheckoutLoginRedirect("en", { plan: "pro" }, true), null)
     assert.equal(resolveCheckoutLoginRedirect("en", { plan: "pro", guestCheckout: "purchase-one" }, false), null)
     assert.equal(resolveCheckoutLoginRedirect("en", { plan: "pro", authError: "session" }, false), null)
+})
+
+test("returns to the login choice with a notice and without session state", () => {
+    const path = createCheckoutLoginNoticePath("de", new URLSearchParams("plan=pro&customerType=b2b&guestCheckout=old&token=secret&promotionCode=SAVE"), "customerTypeMismatch")
+
+    assert.equal(path, "/de/checkout/login?plan=pro&customerType=b2b&promotionCode=SAVE&loginNotice=customerTypeMismatch")
+})
+
+test("the login notice never travels on to the checkout or the login callback", () => {
+    assert.equal(createCheckoutQuery({ plan: "pro", loginNotice: "customerTypeMismatch" }), "plan=pro")
+    assert.equal(resolveCheckoutReturnUrl("/en/checkout?plan=pro&loginNotice=customerTypeMismatch", "https://code0.example")?.search, "?plan=pro")
+})
+
+test("accepts only known login notices", () => {
+    assert.equal(resolveCheckoutLoginNotice("customerTypeMismatch"), "customerTypeMismatch")
+    assert.equal(resolveCheckoutLoginNotice(["customerTypeMismatch", "other"]), "customerTypeMismatch")
+    assert.equal(resolveCheckoutLoginNotice("<script>"), null)
+    assert.equal(resolveCheckoutLoginNotice(undefined), null)
 })

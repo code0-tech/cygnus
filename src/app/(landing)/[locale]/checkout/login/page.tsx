@@ -1,9 +1,17 @@
+import { CheckoutErrorState } from "@/components/checkout/form/CheckoutErrorState"
 import { CheckoutGuestForm } from "@/components/checkout/form/CheckoutGuestForm"
 import { CheckoutLoginSessionGate } from "@/components/checkout/login/CheckoutLoginSessionGate"
 import { CheckoutLegalFooter } from "@/components/checkout/shared/CheckoutLegalFooter"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { getFooter, getGlobal } from "@/lib/cms"
-import { createCheckoutLoginStartPath, createCheckoutQuery, resolveCheckoutSessionHref, type CheckoutSearchParams } from "@/lib/checkout/checkoutLogin"
+import {
+    CHECKOUT_LOGIN_NOTICE_PARAM,
+    createCheckoutLoginStartPath,
+    createCheckoutQuery,
+    resolveCheckoutLoginNotice,
+    resolveCheckoutSessionHref,
+    type CheckoutSearchParams,
+} from "@/lib/checkout/checkoutLogin"
 import { assertCheckoutParameters } from "@/lib/checkout/checkoutParameters"
 import { CRATER_USER_LOGIN_COOKIE_NAME, CRATER_USER_LOGIN_COOKIE_VALUE } from "@/lib/crater/sessionCookies"
 import { isSupportedLocale } from "@/lib/i18n"
@@ -48,7 +56,10 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
     }
 
     const loginHref = createCheckoutLoginStartPath(guestHref, cancelUrl)
-    const hasAccountLogin = (await cookies()).get(CRATER_USER_LOGIN_COOKIE_NAME)?.value === CRATER_USER_LOGIN_COOKIE_VALUE
+    const notice = resolveCheckoutLoginNotice(resolvedSearchParams[CHECKOUT_LOGIN_NOTICE_PARAM])
+    // A notice means the checkout just signed the visitor out because that session cannot continue. Resuming a
+    // session that survived the sign-out would only return to the same failing checkout, so the choice stays open.
+    const hasAccountLogin = !notice && (await cookies()).get(CRATER_USER_LOGIN_COOKIE_NAME)?.value === CRATER_USER_LOGIN_COOKIE_VALUE
     const sessionHref = resolveCheckoutSessionHref(new URLSearchParams(query), guestHref, loginHref)
 
     return (
@@ -59,6 +70,12 @@ export default async function CheckoutLoginPage({ params, searchParams }: Checko
                         <Link href="/" className="mx-auto flex w-fit">
                             <Image src="/code0_text_logo_white.png" alt="code0" width={128} height={32} className="h-8 w-32 object-contain" priority />
                         </Link>
+
+                        {notice === "customerTypeMismatch" && (
+                            <div className="mx-auto w-full max-w-xl text-left">
+                                <CheckoutErrorState message={errors.checkoutCustomerTypeLogin} />
+                            </div>
+                        )}
 
                         <div className="relative mt-10 grid gap-8 md:grid-cols-2 md:gap-0">
                             <section className="flex flex-col items-center md:px-10">
