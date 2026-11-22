@@ -57,7 +57,10 @@ test("unavailable summaries stop retrying and can be reloaded manually", async (
     assert.equal(requests, 4)
     available = true
     act(() => result.current.refreshPaymentMethods())
-    await waitFor(() => assert.equal(result.current.paymentMethodsError, false))
+    // A refresh clears the error right away but keeps the previous methods until the new request answers, so waiting
+    // for the error alone could read the stale list.
+    await waitFor(() => assert.equal(result.current.isLoadingPaymentMethods, false))
+    assert.equal(result.current.paymentMethodsError, false)
     assert.deepEqual(result.current.paymentMethods, [card])
     assert.equal(requests, 5)
 })
