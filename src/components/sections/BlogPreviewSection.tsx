@@ -8,6 +8,7 @@ import { getMediaUrl } from "@/lib/media"
 import { cn } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import Image from "next/image"
+import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder"
 import Link from "next/link"
 import type { ReactNode } from "react"
 import { OffsetCardMotion } from "./client/OffsetCardMotion"
@@ -55,20 +56,20 @@ export async function BlogPreviewSection({ content, locale = "en" }: BlogPreview
     return (
         <Section heading={content.sectionHeading} description={content.sectionDescription} funnelType="center" animation={{ preset: "none" }}>
             <OffsetCardMotion index={0} preset={motionPreset} className={cn(isImageCenter && "mx-auto w-full max-w-5xl")}>
-                <Link href={postHref} className="group block">
+                <Link href={postHref} className="group block rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60">
                     <PreviewFrame showBorder={showBorder}>
                         <article className={cn("relative z-10 overflow-hidden", isImageCenter ? "flex flex-col" : "grid min-h-96 lg:grid-cols-2")}>
-                            <div className={cn("relative overflow-hidden bg-primary/40", isImageCenter ? "aspect-video" : "min-h-64 lg:min-h-96", isImageRight && "lg:order-2")}>
+                            <div className={cn("relative overflow-hidden rounded-2xl border border-white/5 bg-primary/40", isImageCenter ? "aspect-video" : "min-h-64 lg:min-h-96", isImageRight && "lg:order-2")}>
                                 {heroImageUrl ? (
                                     <Image
                                         src={heroImageUrl}
                                         alt={heroImage?.alt ?? post.title}
                                         fill
                                         sizes={isImageCenter ? "(min-width: 1024px) 960px, 100vw" : "(min-width: 1024px) 50vw, 100vw"}
-                                        className="object-cover border border-white/5 rounded-2xl"
+                                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                                     />
                                 ) : (
-                                    <div className="image-placeholder h-full min-h-64 w-full px-4 text-sm">{locale === "de" ? "Kein Bild" : "No image"}</div>
+                                    <ImagePlaceholder className="h-full min-h-64 w-full rounded-none border-0" />
                                 )}
                             </div>
 
@@ -76,7 +77,7 @@ export async function BlogPreviewSection({ content, locale = "en" }: BlogPreview
                                 <StaggerItem as="p" y={14} duration={0.38} className="mb-3 text-xs text-tertiary">
                                     {[authorName, publishedDate].filter(Boolean).join(" \u00b7 ")}
                                 </StaggerItem>
-                                <StaggerItem as="h2" y={14} duration={0.38} className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-white md:text-4xl">
+                                <StaggerItem as="h2" y={14} duration={0.38} className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-white transition-colors duration-300 group-hover:text-brand md:text-4xl">
                                     {post.title}
                                 </StaggerItem>
                                 {post.shortDescription && (
