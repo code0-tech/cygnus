@@ -22,6 +22,14 @@ const SOCIAL_ICONS = {
     github: SiGithub,
 } as const
 
+const SOCIAL_LABELS: Record<keyof typeof SOCIAL_ICONS, string> = {
+    instagram: "Instagram",
+    discord: "Discord",
+    x: "X",
+    linkedin: "LinkedIn",
+    github: "GitHub",
+}
+
 export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, currentYear }) => {
     if (!footer) return null
 
@@ -89,8 +97,8 @@ export const FooterSection: React.FC<FooterSectionProps> = ({ locale, footer, cu
                                     if (!Icon || !socialLink.url) return null
 
                                     return (
-                                        <HapticLink href={socialLink.url} key={`${socialLink.platform}-${socialLink.id ?? socialLink.url}`} className="group" target="_blank" rel="noreferrer">
-                                            <Icon size={16} className="text-tertiary group-hover:text-white" />
+                                        <HapticLink href={socialLink.url} key={`${socialLink.platform}-${socialLink.id ?? socialLink.url}`} className="group" target="_blank" rel="noreferrer" aria-label={SOCIAL_LABELS[socialLink.platform]}>
+                                            <Icon size={16} aria-hidden="true" className="text-tertiary group-hover:text-white" />
                                         </HapticLink>
                                     )
                                 })}

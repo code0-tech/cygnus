@@ -226,7 +226,7 @@ const NavigationMobile: React.FC<NavigationMobileProps> = ({ homeHref, items: na
                             <button
                                 ref={menuButtonRef}
                                 type="button"
-                                className="mr-1.5 border-0 bg-transparent transition-all"
+                                className="-my-1.5 -mr-1 flex size-11 items-center justify-center rounded-xl border-0 bg-transparent transition-all focus-visible:outline-2 focus-visible:outline-white/60"
                                 aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
                                 aria-expanded={isOpen}
                                 aria-controls={menuId}
