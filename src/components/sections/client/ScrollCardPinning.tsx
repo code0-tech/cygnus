@@ -30,7 +30,6 @@ export function ScrollCardPinning({ children, itemCount }: ScrollCardPinningProp
             const height = window.innerHeight
             const bottomOffset = topOffset
             const availableHeight = Math.max(height - topOffset - bottomOffset, 0)
-            const cardWidth = Math.min(rect.width, availableHeight * (16 / 9))
             const containerTop = rect.top + window.scrollY
             const rawProgress = window.scrollY - containerTop + topOffset
             const activeEnd = Math.max((itemCount - 1) * height, 0)
@@ -39,7 +38,6 @@ export function ScrollCardPinning({ children, itemCount }: ScrollCardPinningProp
             const phase = rect.top > topOffset ? "before" : rect.bottom <= height - topOffset ? "after" : "active"
             const previousPinStyle = pinStyleRef.current
 
-            container.style.setProperty("--scroll-card-width", `${cardWidth}px`)
             pinned.style.height = `${availableHeight}px`
 
             if (phase !== previousPinStyle.phase || rect.left !== previousPinStyle.left || rect.width !== previousPinStyle.width) {

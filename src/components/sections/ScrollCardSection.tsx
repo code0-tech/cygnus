@@ -94,7 +94,7 @@ export function ScrollCardSection({ content }: ScrollCardSectionProps) {
                                 gradientDirection={item.gradientDirection}
                                 radialGradient={item.gradient}
                                 className={cn(
-                                    "relative h-full w-full shrink-0 overflow-x-hidden overflow-y-auto bg-primary md:h-auto md:w-(--scroll-card-width) md:aspect-video md:overflow-hidden",
+                                    "relative h-full w-full shrink-0 overflow-x-hidden overflow-y-auto bg-primary md:overflow-hidden",
                                     isFullscreen ? "p-0" : isSideFullscreen ? "grid p-0 md:grid-cols-2" : "grid gap-6 p-6 sm:gap-8 sm:p-8 md:gap-12 md:p-12 md:grid-cols-[0.95fr_1.05fr]"
                                 )}
                             >
