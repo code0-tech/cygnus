@@ -78,6 +78,26 @@
         box-shadow: none !important;
     }
 
+    /*
+     * A value the visitor cannot change but that should read like the surrounding fields. The control stays disabled;
+     * only the disabled look (pictor's dimming and the rule above) is undone, matching Stripe's .Input in
+     * src/lib/stripeAppearance.ts. Everything is !important: pictor's unlayered rules and the important rule above
+     * would otherwise win over this layer.
+     */
+    .checkout-locked-input .input-wrapper:has(.input-wrapper__control:disabled) {
+        cursor: default !important;
+        opacity: 1 !important;
+        background: #272532 !important;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .checkout-locked-input .input-wrapper__control:disabled {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff;
+        opacity: 1 !important;
+        font-size: 13px !important;
+    }
+
     .card-bottom-fade {
         pointer-events: none;
         position: absolute;

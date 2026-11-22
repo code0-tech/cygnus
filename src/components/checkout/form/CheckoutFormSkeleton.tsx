@@ -96,9 +96,9 @@ export function CheckoutFormSkeleton({ billingAddress, collectTaxId, content, cu
                         <section className="w-full space-y-4">
                             <h3 className="text-lg text-white">{content.contactHeading}</h3>
                             {customerEmail ? (
-                                <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]!">
+                                <div className="checkout-locked-input w-full [&_.input-wrapper]:w-full!">
                                     <CheckoutFieldLabel>{content.emailLabel}</CheckoutFieldLabel>
-                                    <EmailInput value={customerEmail} disabled className="text-secondary! opacity-100!" />
+                                    <EmailInput value={customerEmail} disabled />
                                 </div>
                             ) : (
                                 <StoredHeightSkeleton heightKey="contactDetails" />

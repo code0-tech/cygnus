@@ -371,9 +371,9 @@ export function CheckoutPaymentFields({
                     <section className="w-full space-y-4">
                         <h3 className="text-lg text-white">{content.contactHeading}</h3>
                         {customerEmail ? (
-                            <div className="w-full [&_.input-wrapper]:w-full! [&_.input-wrapper]:bg-[#17151e]! [&_.input-wrapper:hover]:bg-[#17151e]!">
+                            <div className="checkout-locked-input w-full [&_.input-wrapper]:w-full!">
                                 <CheckoutFieldLabel htmlFor={emailInputId}>{content.emailLabel}</CheckoutFieldLabel>
-                                <EmailInput id={emailInputId} value={customerEmail} disabled className="text-secondary! opacity-100!" />
+                                <EmailInput id={emailInputId} value={customerEmail} disabled />
                             </div>
                         ) : activeStep === "billingAddress" ? (
                             <StripeElementSlot heightKey="contactDetails" ready={isContactElementReady}>
