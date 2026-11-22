@@ -97,7 +97,7 @@ export function ActionHeroSection({ action, locale, content }: { action: ActionI
                             {[0, 0.22, 0.44].map((delay) => (
                                 <div key={delay} className="relative h-0.5 overflow-hidden bg-white/25">
                                     <div
-                                        className="absolute inset-y-0 w-2/5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+                                        className="absolute inset-y-0 w-2/5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)] motion-reduce:hidden"
                                         style={{ animation: "action-hero-pulse 1.8s linear infinite", animationDelay: `${delay}s`, willChange: "left, opacity" }}
                                     />
                                 </div>
