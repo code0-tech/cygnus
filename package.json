@@ -29,7 +29,7 @@
     "dependencies": {
         "@apollo/client": "^4.3.8",
         "@base-ui/react": "^1.9.0",
-        "@c15t/nextjs": "^2.3.0",
+        "@c15t/nextjs": "^2.4.1",
         "@c15t/react": "^2.3.0",
         "@c15t/scripts": "^2.3.0",
         "@code0-tech/crater-graphql-types": "0.0.0-experimental-3094949851-f3ff15077ea2600662d6647a35cd383aaf3cf27f",
