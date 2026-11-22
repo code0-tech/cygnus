@@ -2,9 +2,10 @@
 
 import * as React from "react"
 import { IconArrowUpRight } from "@tabler/icons-react"
-import type { AppLocale } from "@/lib/i18n"
+import { getLocaleFromPath, localizeHref, type AppLocale } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 import Link, { LinkProps } from "next/link"
+import { usePathname } from "next/navigation"
 import { useWebHaptics } from "web-haptics/react"
 
 interface LinkButtonProps extends Omit<LinkProps, "href" | "locale">, Pick<React.AnchorHTMLAttributes<HTMLAnchorElement>, "target" | "rel"> {
@@ -24,8 +25,8 @@ const linkButtonClassName =
 export function LinkButton({ className, children, href, showArrow = true, locale, ...props }: LinkButtonProps) {
     const { trigger } = useWebHaptics()
 
-    const isString = typeof href === "string"
-    const localizedHref = isString && href.startsWith("/") ? `/${locale ?? ""}${href}`.replace("//", "/") : (href ?? "")
+    const pathname = usePathname()
+    const localizedHref = localizeHref(href ?? "", locale ?? getLocaleFromPath(pathname))
 
     return (
         <Link href={localizedHref} onClick={() => trigger("medium")} className={cn(linkButtonClassName, className)} {...props}>
