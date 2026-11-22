@@ -37,7 +37,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
     return (
         <div
             className={cn(
-                "group relative z-10 w-full min-w-0 max-w-full cursor-pointer overflow-hidden rounded-2xl bg-white/2 hover:bg-light transition-colors",
+                "group relative z-10 w-full min-w-0 max-w-full overflow-hidden rounded-2xl bg-white/2 hover:bg-light transition-colors",
                 "border border-white/5 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-linear-to-r",
                 "before:from-transparent before:via-white/30 before:to-transparent before:content-['']",
                 isOpen && "border-white/10 bg-light",
@@ -48,7 +48,7 @@ const AccordionItemComponent = ({ index, question, answer, isOpen, onToggle, cla
                 type="button"
                 onClick={() => onToggle(index)}
                 aria-expanded={isOpen}
-                className={cn("relative z-10 flex w-full min-w-0 items-center justify-between gap-5 px-5 py-4 pr-4 text-left", questionClassname)}
+                className={cn("relative z-10 flex w-full min-w-0 cursor-pointer items-center justify-between gap-5 px-5 py-4 pr-4 text-left", questionClassname)}
             >
                 <div className={cn("min-w-0 flex-1 text-sm font-medium text-secondary sm:text-base lg:text-lg warp-anywhere transition-colors", isOpen && "text-white")}>{question}</div>
                 <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center text-tertiary transition-transform", isOpen && "rotate-180")}>
