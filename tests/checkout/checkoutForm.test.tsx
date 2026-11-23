@@ -856,11 +856,12 @@ test("uses the user's single customer without offering a customer choice", async
     )
 })
 
-test("a customer of the other type cannot check out and is not offered a second customer", async () => {
+test("a customer of the other type signs the visitor out and returns to the login choice with a notice", async () => {
     checkoutSearchParams.set("customerType", "b2b")
     const requests: string[] = []
-    globalThis.fetch = (async (input) => {
-        requests.push(String(input))
+    globalThis.fetch = (async (input, init) => {
+        requests.push(`${init?.method ?? "GET"} ${String(input)}`)
+        if (init?.method === "DELETE") return Response.json({ authenticated: false })
         return Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
     }) as typeof fetch
 
@@ -869,9 +870,33 @@ test("a customer of the other type cannot check out and is not offered a second 
             <CheckoutForm content={content} errors={errors} locale="en" />
         </CheckoutErrorBoundary>
     )
-    await screen.findByTestId("checkout-error-page")
-    assert.deepEqual(requests, ["/api/crater/customer"])
+    await waitFor(() => assert.equal(checkoutPageReplacements.length, 1))
+    assert.deepEqual(requests, ["GET /api/crater/customer", "DELETE /api/crater/auth/session"])
+    assert.equal(checkoutPageReplacements[0], "/en/checkout/login?customerType=b2b&deploymentType=self_hosted&paymentPeriod=monthly&plan=pro&loginNotice=customerTypeMismatch")
+    assert.equal(screen.queryByTestId("checkout-error-page"), null)
     assert.equal(screen.queryByTestId("standalone-address"), null)
+})
+
+test("a customer type mismatch reported by Crater also returns to the login choice", async () => {
+    const requests: string[] = []
+    globalThis.fetch = (async (input, init) => {
+        requests.push(`${init?.method ?? "GET"} ${String(input)}`)
+        if (String(input) === "/api/crater/customer") {
+            return Response.json({ customers: [{ customerType: "personal", email: "ada@example.com", id: "gid://crater/Customer/1", name: "Ada" }] })
+        }
+        if (init?.method === "DELETE") return Response.json({ authenticated: false })
+        return Response.json({ error: "Mismatch", errorCode: "CUSTOMER_TYPE_MISMATCH", details: [] }, { status: 422 })
+    }) as typeof fetch
+
+    render(
+        <CheckoutErrorBoundary>
+            <CheckoutForm content={content} errors={errors} locale="en" />
+        </CheckoutErrorBoundary>
+    )
+    await waitFor(() => assert.equal(checkoutPageReplacements.length, 1))
+    assert.equal(requests.at(-1), "DELETE /api/crater/auth/session")
+    assert.match(checkoutPageReplacements[0], /^\/en\/checkout\/login\?.*loginNotice=customerTypeMismatch$/)
+    assert.equal(screen.queryByTestId("checkout-error-page"), null)
 })
 
 test("a customer created meanwhile in another tab is picked up instead of failing the checkout", async () => {
@@ -1098,7 +1123,6 @@ for (const [field, value] of [
 for (const [status, errorCode] of [
     [400, null],
     [422, "INVALID_CHECKOUT_SELECTION"],
-    [422, "CUSTOMER_TYPE_MISMATCH"],
 ] as const) {
     test(`opens the error page for invalid checkout parameters (${status}, ${errorCode})`, async () => {
         globalThis.fetch = (async (input) =>

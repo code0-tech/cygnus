@@ -17,9 +17,25 @@ const originalFetch = globalThis.fetch
 const originalDateNow = Date.now
 
 function LicenseState() {
-    const { error, isLoading, isSidebarLoading } = useLicenseData()
-    return <span>{error ?? (isLoading ? "loading" : isSidebarLoading ? "sidebar loading" : "loaded")}</span>
+    const { error, isLoading, isNotFound, isSidebarLoading } = useLicenseData()
+    return <span>{error ?? (isNotFound ? "not found" : isLoading ? "loading" : isSidebarLoading ? "sidebar loading" : "loaded")}</span>
 }
+
+function RefreshableLicenseState() {
+    const { customers, error, notice, reload } = useLicenseData()
+    return (
+        <div>
+            <span>{error ?? customers.map((customer) => customer.id).join(",")}</span>
+            <span>{notice ? `notice ${notice.id}: ${notice.message}` : "no notice"}</span>
+            <button type="button" onClick={reload}>
+                Reload
+            </button>
+        </div>
+    )
+}
+
+const craterUnavailable = () =>
+    new Response(JSON.stringify({ error: "Could not load license dashboard data from Crater.", errorCode: "PAYMENT_METHOD_UNAVAILABLE" }), { status: 503 })
 
 function PaginatedLicenseState() {
     const { customers, loadMore, loadingMore, pagination } = useLicenseData()
@@ -122,6 +138,57 @@ test("loads and merges the next customer cursor page", async () => {
     assert.equal(screen.queryByRole("button", { name: "More" }), null)
 })
 
+test("an initial load failure is a blocking error that a retry clears", async () => {
+    let available = false
+    globalThis.fetch = (async () =>
+        available ? new Response(JSON.stringify({ customers: [{ id: "customer-1", subscriptionCount: 0 }], licenses: [] }), { status: 200 }) : craterUnavailable()) as typeof fetch
+
+    render(
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
+            <RefreshableLicenseState />
+        </LicenseDataProvider>
+    )
+
+    assert.ok(await screen.findByText("Could not load licenses."))
+    assert.ok(screen.getByText("no notice"))
+    available = true
+    fireEvent.click(screen.getByRole("button", { name: "Reload" }))
+    assert.ok(await screen.findByText("customer-1"))
+})
+
+test("a failed refresh keeps the loaded data and reports a notice per failure", async () => {
+    let requests = 0
+    globalThis.fetch = (async () => {
+        requests += 1
+        return requests === 1 ? new Response(JSON.stringify({ customers: [{ id: "customer-1", subscriptionCount: 0 }], licenses: [] }), { status: 200 }) : craterUnavailable()
+    }) as typeof fetch
+
+    render(
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
+            <RefreshableLicenseState />
+        </LicenseDataProvider>
+    )
+
+    assert.ok(await screen.findByText("customer-1"))
+    fireEvent.click(screen.getByRole("button", { name: "Reload" }))
+    assert.ok(await screen.findByText("notice 1: Could not load licenses."))
+    assert.ok(screen.getByText("customer-1"))
+    fireEvent.click(screen.getByRole("button", { name: "Reload" }))
+    assert.ok(await screen.findByText("notice 2: Could not load licenses."))
+    assert.ok(screen.getByText("customer-1"))
+})
+
+test("an unknown customer or license is reported as not found instead of a load error", async () => {
+    globalThis.fetch = (async () => new Response(JSON.stringify({ error: "The requested license was not found." }), { status: 404 })) as typeof fetch
+
+    render(
+        <LicenseDataProvider loadError="Could not load licenses." sessionError="Session unavailable">
+            <LicenseState />
+        </LicenseDataProvider>
+    )
+
+    assert.ok(await screen.findByText("not found"))
+})
 
 function UpdatedSubscriptionState() {
     const { licenses, sidebarLicenses, updateLicense } = useLicenseData()

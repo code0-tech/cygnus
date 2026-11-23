@@ -6,9 +6,11 @@ import type { CheckoutData, ErrorsContent } from "@/lib/cms"
 import { resolveCraterCustomerType } from "@/lib/crater/values"
 import { clearCheckoutContactDraft, readCheckoutContactDraft, saveCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
 import { assertCheckoutParameters } from "@/lib/checkout/checkoutParameters"
+import { createCheckoutLoginNoticePath } from "@/lib/checkout/checkoutLogin"
 import {
     CheckoutSubmissionError,
     replaceCheckoutPage,
+    revokeCheckoutSession,
     createCheckoutCustomer,
     createCheckoutSession,
     getCheckoutCustomers,
@@ -55,6 +57,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
     const [isCreatingCustomer, setIsCreatingCustomer] = useState(false)
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [fatalError, setFatalError] = useState<Error | null>(null)
+    const [isLeavingForLogin, setIsLeavingForLogin] = useState(false)
     const [checkoutSession, setCheckoutSession] = useState<CheckoutSessionData | null>(null)
     const [customers, setCustomers] = useState<CheckoutCustomerData[]>([])
     const [hasExistingCustomers, setHasExistingCustomers] = useState<boolean | null>(null)
@@ -99,18 +102,25 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
 
     const handlePreparationError = useCallback(
         (error: unknown) => {
+            // A user manages a single customer and its type is fixed, so this account can never check out this
+            // configuration. Sign out and return to the login choice, which explains why; every login with such an
+            // account lands here again until the visitor uses another account or continues as a guest.
+            if (error instanceof CheckoutSubmissionError && error.errorCode === "CUSTOMER_TYPE_MISMATCH") {
+                clearCheckoutContactDraft()
+                setIsLeavingForLogin(true)
+                // Revoke first, so the login page offers a fresh login instead of the session that cannot check out.
+                const loginPath = createCheckoutLoginNoticePath(locale, new URLSearchParams(searchParamsString), "customerTypeMismatch")
+                void revokeCheckoutSession().then(() => replaceCheckoutPage(loginPath))
+                return
+            }
             const message = getPreparationErrorMessage(error, errors)
-            if (
-                error instanceof CheckoutSubmissionError &&
-                error.kind === "session" &&
-                (error.status === 400 || error.errorCode === "INVALID_CHECKOUT_SELECTION" || error.errorCode === "CUSTOMER_TYPE_MISMATCH")
-            ) {
+            if (error instanceof CheckoutSubmissionError && error.kind === "session" && (error.status === 400 || error.errorCode === "INVALID_CHECKOUT_SELECTION")) {
                 setFatalError(new Error(message))
                 return
             }
             setErrorMessage(message)
         },
-        [errors]
+        [errors, locale, searchParamsString]
     )
 
     const setStripeBillingAddress = useCallback((address: StripeCheckoutContact | null, complete: boolean) => {
@@ -282,7 +292,6 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
                 // A user manages a single customer and cannot create a second one, so a customer of the other type
                 // cannot check out here at all; Crater would answer the session with CUSTOMER_TYPE_MISMATCH.
                 if (availableCustomers.length > 0 && matchingCustomers.length === 0) {
-                    clearCheckoutContactDraft()
                     throw new CheckoutSubmissionError("session", "CUSTOMER_TYPE_MISMATCH", "The customer does not match the checkout's customer type.")
                 }
                 const restoredCustomerId = restoredContactDraft?.customerId ?? null
@@ -477,7 +486,7 @@ export function useCheckoutForm(content: CheckoutFormContent, errors: ErrorsCont
         hasExistingCustomers,
         guestEmail,
         isCreatingCustomer,
-        isLoading,
+        isLoading: isLoading || isLeavingForLogin,
         isConfirmingPayment,
         isRefreshingSession,
         isSessionLoading,

@@ -103,6 +103,68 @@ test("customer payment methods carry the display details Crater resolves for eve
 })
 
 
+test("customer payment methods include the selected subscription's default without asking Stripe for every subscription", async () => {
+    const subscriptionId = "gid://crater/Subscription/9"
+    await withGraphQLServer([
+        paymentMethodsPage(["pm_card"]),
+        { data: { paymentMethod: { brand: "visa", expiresMonth: 12, expiresYear: 2030, last4: "4242", type: "card" } } },
+        {
+            data: {
+                currentUser: {
+                    customer: {
+                        id: "gid://crater/Customer/1",
+                        subscriptions: {
+                            edges: [
+                                { cursor: "cursor-1", node: { id: "gid://crater/Subscription/1" } },
+                                { cursor: "cursor-9", node: { id: subscriptionId } },
+                            ],
+                            pageInfo: { endCursor: "cursor-9", hasNextPage: false },
+                        },
+                    },
+                },
+            },
+        },
+        { data: { currentUser: { customer: { id: "gid://crater/Customer/1", subscriptions: { nodes: [{ id: subscriptionId, paymentMethodId: "pm_card" }] } } } } },
+    ], async (graphQLServer) => {
+        const response = await getCustomerPaymentMethods(
+            new Request(`https://example.com/api/crater/customer/payment-methods?${new URLSearchParams({ customerId: "gid://crater/Customer/1", subscriptionId })}`, {
+                headers: sessionHeaders,
+            })
+        )
+
+        assert.equal(response.status, 200)
+        const result = await response.json()
+        assert.equal(result.subscriptionPaymentMethodId, "pm_card")
+        assert.equal(result.paymentMethods.length, 1)
+        assert.deepEqual(
+            graphQLServer.requests.map((request) => request.body.operationName),
+            ["CustomerPaymentMethods", "CustomerPaymentMethod", "InvoiceSubscriptionPosition", "SubscriptionPaymentMethod"]
+        )
+        assert.doesNotMatch(graphQLServer.requests[2].body.query ?? "", /paymentMethodId/)
+        assert.deepEqual(graphQLServer.requests[3].body.variables, { subscriptionAfter: "cursor-1" })
+    })
+})
+
+test("customer payment methods reject malformed or unknown subscriptions", async () => {
+    await withGraphQLServer([], async (graphQLServer) => {
+        const response = await getCustomerPaymentMethods(
+            new Request("https://example.com/api/crater/customer/payment-methods?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&subscriptionId=pm_card", { headers: sessionHeaders })
+        )
+        assert.equal(response.status, 400)
+        assert.equal(graphQLServer.requests.length, 0)
+    })
+
+    await withGraphQLServer([
+        paymentMethodsPage([]),
+        { data: { currentUser: { customer: { id: "gid://crater/Customer/1", subscriptions: { edges: [], pageInfo: { endCursor: null, hasNextPage: false } } } } } },
+    ], async () => {
+        const response = await getCustomerPaymentMethods(
+            new Request("https://example.com/api/crater/customer/payment-methods?customerId=gid%3A%2F%2Fcrater%2FCustomer%2F1&subscriptionId=gid%3A%2F%2Fcrater%2FSubscription%2F9", { headers: sessionHeaders })
+        )
+        assert.equal(response.status, 404)
+    })
+})
+
 test("creates a Stripe payment method SetupIntent for the user's customer without naming it", async () => {
     await withGraphQLServer([
         {

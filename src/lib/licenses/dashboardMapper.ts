@@ -183,7 +183,6 @@ export function mapSubscription(subscription: Subscription, customer: Customer):
         subscriptionId: subscription.id,
         ...(subscription.status ? { subscriptionStatus: subscription.status } : {}),
         ...(subscription.createdAt ? { subscriptionCreatedAt: subscription.createdAt } : {}),
-        ...(subscription.paymentMethodId ? { paymentMethodId: subscription.paymentMethodId } : {}),
         ...(subscription.cancelAt ? { cancelAt: subscription.cancelAt } : {}),
         ...(subscription.canceledAt ? { canceledAt: subscription.canceledAt } : {}),
         ...(subscription.currentPeriodEnd ? { currentPeriodEnd: subscription.currentPeriodEnd } : {}),

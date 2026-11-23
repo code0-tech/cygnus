@@ -47,6 +47,7 @@ interface LicenseGeneralTabProps {
     onRetryPaymentMethod?: () => void
     paymentMethodError?: boolean
     paymentMethods?: CustomerPaymentMethodSummary[] | null
+    selectedPaymentMethodId?: string | null
     subscriptionConfig: SubscriptionConfigData
     title: string
 }
@@ -64,6 +65,7 @@ export function LicenseGeneralTab({
     onRetryPaymentMethod,
     paymentMethodError,
     paymentMethods,
+    selectedPaymentMethodId,
     subscriptionConfig,
     title,
 }: LicenseGeneralTabProps) {
@@ -214,7 +216,7 @@ export function LicenseGeneralTab({
     // Same rule as the upgrade preview: effectiveAt dates the charge, the new total is first billed with the next period.
     const previewChargedOnDate = preview ? (preview.immediate ? new Date() : parseLicenseDate(preview.effectiveAt)) : null
     const previewNextPeriodDate = parseLicenseDate(license?.currentPeriodEnd)
-    const selectedPaymentMethod = paymentMethods?.find((method) => method.id === license?.paymentMethodId) ?? null
+    const selectedPaymentMethod = paymentMethods?.find((method) => method.id === selectedPaymentMethodId) ?? null
 
     return (
         <>
@@ -287,7 +289,7 @@ export function LicenseGeneralTab({
                                         action={
                                             paymentMethods && paymentMethods.length > 0 ? (
                                                 <div className="[&_.input-wrapper]:w-auto [&_.input-wrapper]:bg-transparent [&_.input-wrapper]:shadow-none [&_.input-wrapper>*]:pl-0">
-                                                    <SelectInput value={license.paymentMethodId ?? undefined} onValueChange={(value) => onAssignPaymentMethod?.(value)}>
+                                                    <SelectInput value={selectedPaymentMethodId ?? undefined} onValueChange={(value) => onAssignPaymentMethod?.(value)}>
                                                         <SelectTrigger w="fit-content" asChild>
                                                             <Button type="button" paddingSize="xxs" color="tertiary" disabled={Boolean(assigningPaymentMethodId)}>
                                                                 {assigningPaymentMethodId ? (

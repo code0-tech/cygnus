@@ -87,7 +87,6 @@ export interface LicenseDashboardLicense {
     namespaceName?: string | null
     immediateCancellationAvailable?: boolean
     immediateCancellationUntil?: string
-    paymentMethodId?: string
     paymentPeriod?: string
     pendingUpdate?: SubscriptionPendingUpdate | null
     plan?: string

@@ -3545,6 +3545,7 @@ export interface Error {
   sessionUnavailable: string;
   customerCreation: string;
   customerTypeMismatch: string;
+  checkoutCustomerTypeLogin: string;
   checkoutCustomer: string;
   checkoutSession: string;
   checkoutRateLimit: string;
@@ -4402,6 +4403,7 @@ export interface ErrorsSelect<T extends boolean = true> {
   sessionUnavailable?: T;
   customerCreation?: T;
   customerTypeMismatch?: T;
+  checkoutCustomerTypeLogin?: T;
   checkoutCustomer?: T;
   checkoutSession?: T;
   checkoutRateLimit?: T;

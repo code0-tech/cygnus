@@ -1,7 +1,8 @@
 import { createApolloClient } from "@/lib/apolloClient"
 import { craterJson, withCraterSession } from "@/lib/crater/api.server"
 import { readCustomerPaymentMethodIds } from "@/lib/crater/customerPaymentMethods.server"
-import { isCustomerId } from "@/lib/crater/request"
+import { isCustomerId, isSubscriptionId } from "@/lib/crater/request"
+import { findSubscriptionPaymentMethodId } from "@/lib/licenses/snapshotLookup.server"
 import type { CustomerPaymentMethodSummary } from "@/lib/licenses/types"
 import type { Query, QueryPaymentMethodArgs, PaymentMethodSummary } from "@code0-tech/crater-graphql-types"
 import { gql, type TypedDocumentNode } from "@apollo/client"
@@ -53,11 +54,22 @@ async function resolvePaymentMethods(client: ReturnType<typeof createApolloClien
 }
 
 export const GET = withCraterSession({ log: "Crater customer payment methods error", error: "Could not load the customer's payment methods." }, async (request, token) => {
-    const customerId = new URL(request.url).searchParams.get("customerId")?.trim() ?? ""
+    const searchParams = new URL(request.url).searchParams
+    const customerId = searchParams.get("customerId")?.trim() ?? ""
+    const subscriptionId = searchParams.get("subscriptionId")?.trim()
     if (!isCustomerId(customerId)) return craterJson({ error: "A valid Crater customer id is required." }, 400)
+    if (subscriptionId !== undefined && !isSubscriptionId(subscriptionId)) return craterJson({ error: "A valid Crater subscription id is required." }, 400)
 
     const client = createApolloClient(token)
     const current = await readCustomerPaymentMethodIds(client, customerId)
     if (current.response) return current.response
-    return craterJson({ paymentMethods: await resolvePaymentMethods(client, current.paymentMethodIds) })
+    const paymentMethods = await resolvePaymentMethods(client, current.paymentMethodIds)
+    if (!subscriptionId) return craterJson({ paymentMethods })
+
+    // The license dashboard leaves Subscription.paymentMethodId out because Crater reads it from Stripe, so the edit
+    // dialog asks for it here, where a Stripe outage only affects the payment method section.
+    const subscription = await findSubscriptionPaymentMethodId(token, customerId, subscriptionId)
+    if (subscription.status === "unauthenticated") return craterJson({ error: "The Crater session has no authenticated user." }, 401)
+    if (subscription.status === "missing") return craterJson({ error: "The subscription was not found." }, 404)
+    return craterJson({ paymentMethods, subscriptionPaymentMethodId: subscription.paymentMethodId })
 })

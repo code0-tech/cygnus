@@ -16,10 +16,12 @@ interface LicenseDataContextValue extends LicenseDashboardData {
     awaitingPayment: AwaitedPayment | null
     error: string | null
     isLoading: boolean
+    isNotFound: boolean
     isRefreshing: boolean
     isSidebarLoading: boolean
     loadingMore: "customers" | "invoices" | "licenses" | null
     loadMore: (resource: "customers" | "invoices" | "licenses") => Promise<void>
+    notice: LicenseDataNotice | null
     reload: () => void
     sidebarLicenses: LicenseDashboardLicense[]
     updateCustomer: (id: string, values: { address?: LicenseDashboardCustomerAddress; email?: string; name?: string; phone?: string }) => void
@@ -33,7 +35,6 @@ interface LicenseDataContextValue extends LicenseDashboardData {
             namespaceName?: string | null
             immediateCancellationAvailable?: boolean
             immediateCancellationUntil?: string
-            paymentMethodId?: string
             paymentPeriod?: string
             plan?: string
             pendingUpdate?: SubscriptionPendingUpdate | null
@@ -42,6 +43,11 @@ interface LicenseDataContextValue extends LicenseDashboardData {
             workflowExecutions?: number
         }
     ) => void
+}
+
+export interface LicenseDataNotice {
+    id: number
+    message: string
 }
 
 const LicenseDataContext = createContext<LicenseDataContextValue | null>(null)
@@ -80,6 +86,10 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [loadingMore, setLoadingMore] = useState<PaginatedResource | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [isNotFound, setIsNotFound] = useState(false)
+    const [notice, setNotice] = useState<LicenseDataNotice | null>(null)
+    const noticeIdRef = useRef(0)
+    const reportNotice = useCallback((message: string) => setNotice({ id: ++noticeIdRef.current, message }), [])
     const [needsLogin, setNeedsLogin] = useState(false)
     const [reloadKey, setReloadKey] = useState(0)
     const [paymentPoll, setPaymentPoll] = useState<{ attempt: number; payment: AwaitedPayment; startedAt: number } | null>(null)
@@ -132,6 +142,7 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
         lastRequestStartedAtRef.current = Date.now()
         const isInitialPathLoad = loadedPathRef.current !== pathname
         setError(null)
+        setIsNotFound(false)
         if (isInitialPathLoad) setIsLoading(true)
         else setIsRefreshing(true)
         const currentUrl = new URL(window.location.href)
@@ -166,6 +177,11 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
                     window.location.replace(createDashboardLoginPath())
                     return null
                 }
+                if (status === 404) {
+                    setNeedsLogin(false)
+                    setIsNotFound(true)
+                    return null
+                }
                 if (!nextData) throw new Error(loadError)
                 setNeedsLogin(false)
                 setData(nextData)
@@ -175,7 +191,10 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
             .catch((error: unknown) => {
                 if (error instanceof DOMException && error.name === "AbortError") return
                 console.error(loadError, error)
-                setError(loadError)
+                // A failed refresh of the route that is already on screen keeps its data; only a route without data
+                // is replaced by the error.
+                if (loadedPathRef.current === pathname) reportNotice(loadError)
+                else setError(loadError)
             })
             .finally(() => {
                 if (requestId !== requestIdRef.current) return
@@ -192,7 +211,7 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
             })
 
         return () => controller.abort()
-    }, [loadError, pathname, reloadKey, sessionError])
+    }, [loadError, pathname, reloadKey, reportNotice, sessionError])
 
     const loadMore = useCallback(
         async (resource: PaginatedResource) => {
@@ -219,12 +238,12 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
                 }))
             } catch (error) {
                 console.error(loadError, error)
-                setError(loadError)
+                reportNotice(loadError)
             } finally {
                 setLoadingMore(null)
             }
         },
-        [data.pagination, loadError, loadingMore, pathname]
+        [data.pagination, loadError, loadingMore, pathname, reportNotice]
     )
 
     useEffect(() => {
@@ -263,10 +282,12 @@ export function LicenseDataProvider({ children, loadError, sessionError }: { chi
                 awaitingPayment: paymentPoll?.payment ?? null,
                 error,
                 isLoading,
+                isNotFound,
                 isRefreshing,
                 isSidebarLoading: (isLoading || needsLogin) && !hasLoadedOnce,
                 loadingMore,
                 loadMore,
+                notice,
                 reload,
                 sidebarLicenses: data.navigationLicenses ? mergeLicensePages(data.navigationLicenses, data.licenses) : data.licenses,
                 updateCustomer,

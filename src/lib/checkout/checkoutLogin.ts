@@ -4,6 +4,26 @@ export type CheckoutSearchParams = Record<string, string | string[] | undefined>
 
 const CHECKOUT_CONFIGURATION_PARAMS = ["plan", "deploymentType", "deployment", "customerType", "paymentPeriod", "workflowExecutions", "aiTokens"]
 
+// Why the checkout sent the visitor back to the login choice. Only the login page reads it; it never travels on.
+export const CHECKOUT_LOGIN_NOTICE_PARAM = "loginNotice"
+export type CheckoutLoginNotice = "customerTypeMismatch"
+const CHECKOUT_LOGIN_NOTICES: readonly CheckoutLoginNotice[] = ["customerTypeMismatch"]
+// Session and one-shot state that must not be carried from the checkout to the login choice or back.
+const CHECKOUT_TRANSIENT_PARAMS = ["token", "authError", "guestCheckout", CHECKOUT_LOGIN_NOTICE_PARAM]
+
+export function resolveCheckoutLoginNotice(value: string | string[] | undefined): CheckoutLoginNotice | null {
+    const notice = Array.isArray(value) ? value[0] : value
+    return CHECKOUT_LOGIN_NOTICES.find((candidate) => candidate === notice) ?? null
+}
+
+/** The login choice for the current checkout configuration, explaining why the checkout could not continue. */
+export function createCheckoutLoginNoticePath(locale: string, searchParams: URLSearchParams, notice: CheckoutLoginNotice) {
+    const query = new URLSearchParams(searchParams)
+    CHECKOUT_TRANSIENT_PARAMS.forEach((key) => query.delete(key))
+    query.set(CHECKOUT_LOGIN_NOTICE_PARAM, notice)
+    return `/${locale}/checkout/login?${query}`
+}
+
 export function hasCheckoutConfiguration(searchParams: URLSearchParams) {
     return CHECKOUT_CONFIGURATION_PARAMS.some((key) => Boolean(searchParams.get(key)))
 }
@@ -12,7 +32,7 @@ export function createCheckoutQuery(searchParams: CheckoutSearchParams): string 
     const query = new URLSearchParams()
 
     for (const [key, value] of Object.entries(searchParams)) {
-        if (key === "token" || key === "authError" || key === "guestCheckout") continue
+        if (CHECKOUT_TRANSIENT_PARAMS.includes(key)) continue
         if (Array.isArray(value)) {
             value.forEach((item) => query.append(key, item))
         } else if (value !== undefined) {
@@ -59,9 +79,7 @@ export function resolveCheckoutReturnUrl(returnPath: string | null, siteOrigin: 
     const segments = returnUrl.pathname.split("/").filter(Boolean)
     if (returnUrl.origin !== siteOrigin || segments.length !== 2 || !isSupportedLocale(segments[0]) || segments[1] !== "checkout") return null
 
-    returnUrl.searchParams.delete("guestCheckout")
-    returnUrl.searchParams.delete("token")
-    returnUrl.searchParams.delete("authError")
+    CHECKOUT_TRANSIENT_PARAMS.forEach((key) => returnUrl.searchParams.delete(key))
     return returnUrl
 }
 

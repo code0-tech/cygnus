@@ -23,6 +23,8 @@ mock.module("next/link", {
 let routerReplaceCalls: string[] = []
 mock.module("next/navigation", {
     namedExports: {
+        // LinkButton falls back to the locale of the current path.
+        usePathname: () => "/en/checkout/success",
         useRouter: () => ({
             replace: (url: string) => {
                 routerReplaceCalls.push(url)

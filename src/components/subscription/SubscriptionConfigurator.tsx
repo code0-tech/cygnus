@@ -124,7 +124,7 @@ export function SubscriptionConfigurator({ locale, content, onActiveImageChangeA
     const optionPrice = (action: SubscriptionSelectionAction, active: boolean): SubscriptionOptionPrice | undefined => {
         if (active) return { amount: formatReferencePrice(paymentPeriodPrice), suffix: paymentPeriodSuffix }
         const difference = getSubscriptionSelectionPriceDifference(selection, reduceSubscriptionSelection(selection, action, catalog), catalog)
-        if (difference === 0) return undefined
+        if (difference <= 0) return undefined
         return { amount: signedPriceFormatter.format(difference / 100), suffix: paymentPeriodSuffix, relative: true }
     }
 
@@ -300,7 +300,7 @@ export function SubscriptionConfigurator({ locale, content, onActiveImageChangeA
                             <div className="flex w-full items-center justify-end gap-4">
                                 <div className="flex flex-wrap items-start justify-end gap-2">
                                     <p className="text-sm font-medium text-tertiary">{content.contactSales.prompt}</p>
-                                    <LinkButton href={content.contactSales.href} className="border-b-0 py-0 text-sm text-secondary" showArrow={false}>
+                                    <LinkButton href={content.contactSales.href} target="_blank" rel="noopener noreferrer" className="border-b-0 py-0 text-sm text-secondary" showArrow={false}>
                                         {content.contactSales.label}
                                     </LinkButton>
                                 </div>
