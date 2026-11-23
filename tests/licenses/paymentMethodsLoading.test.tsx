@@ -25,20 +25,39 @@ test("waits for methods and display details to become available after checkout",
     let requests = 0
     globalThis.fetch = async () => {
         requests += 1
-        return Response.json({ paymentMethods: responses.shift() })
+        return Response.json({ paymentMethods: responses.shift(), subscriptionPaymentMethodId: card.id })
     }
-    const { result } = renderHook(() => useCustomerPaymentMethods("customer-1", true, card.id))
+    const { result } = renderHook(() => useCustomerPaymentMethods("customer-1", true, "subscription-1"))
     assert.equal(result.current.isLoadingPaymentMethods, true)
     await waitFor(() => assert.equal(result.current.isLoadingPaymentMethods, false))
     assert.equal(requests, 3)
     assert.deepEqual(result.current.paymentMethods, [card])
+    assert.equal(result.current.subscriptionPaymentMethodId, card.id)
     assert.equal(result.current.paymentMethodsError, false)
+})
+
+test("asks for the subscription's default payment method only when a subscription is given", async () => {
+    const urls: URL[] = []
+    globalThis.fetch = async (url) => {
+        urls.push(new URL(String(url)))
+        return Response.json(urls.length === 1 ? { paymentMethods: [card] } : { paymentMethods: [card], subscriptionPaymentMethodId: null })
+    }
+    const customerOnly = renderHook(() => useCustomerPaymentMethods("customer-1"))
+    await waitFor(() => assert.equal(customerOnly.result.current.isLoadingPaymentMethods, false))
+    assert.equal(urls[0].searchParams.has("subscriptionId"), false)
+    assert.equal(customerOnly.result.current.subscriptionPaymentMethodId, null)
+
+    const withSubscription = renderHook(() => useCustomerPaymentMethods("customer-1", true, "subscription-1"))
+    await waitFor(() => assert.equal(withSubscription.result.current.isLoadingPaymentMethods, false))
+    assert.equal(urls[1].searchParams.get("subscriptionId"), "subscription-1")
+    assert.equal(withSubscription.result.current.subscriptionPaymentMethodId, null)
+    assert.equal(withSubscription.result.current.paymentMethodsError, false)
 })
 
 test("retries when the subscription's payment method is not in the customer's list yet", async () => {
     let requests = 0
-    globalThis.fetch = async () => Response.json({ paymentMethods: ++requests === 1 ? [{ ...card, id: "pm_other" }] : [card] })
-    const { result } = renderHook(() => useCustomerPaymentMethods("customer-1", true, card.id))
+    globalThis.fetch = async () => Response.json({ paymentMethods: ++requests === 1 ? [{ ...card, id: "pm_other" }] : [card], subscriptionPaymentMethodId: card.id })
+    const { result } = renderHook(() => useCustomerPaymentMethods("customer-1", true, "subscription-1"))
     await waitFor(() => assert.equal(result.current.isLoadingPaymentMethods, false))
     assert.equal(requests, 2)
     assert.deepEqual(result.current.paymentMethods, [card])
@@ -82,9 +101,9 @@ test("an expected method that stays missing offers an error instead of a mislead
     let requests = 0
     globalThis.fetch = async () => {
         requests += 1
-        return Response.json({ paymentMethods: [] })
+        return Response.json({ paymentMethods: [], subscriptionPaymentMethodId: card.id })
     }
-    const { result } = renderHook(() => useCustomerPaymentMethods("customer-1", true, card.id))
+    const { result } = renderHook(() => useCustomerPaymentMethods("customer-1", true, "subscription-1"))
     await waitFor(() => assert.equal(result.current.paymentMethodsError, true))
     assert.equal(result.current.isLoadingPaymentMethods, false)
     assert.equal(requests, 4)

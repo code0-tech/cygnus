@@ -337,6 +337,8 @@ test("license dashboard loads from the HttpOnly Crater session cookie", async ()
         assert.doesNotMatch(graphQLServer.requests[0].body.query ?? "", /\bnamespaceId\b/)
         assert.match(graphQLServer.requests[1].body.query ?? "", /immediateCancellationAvailable/)
         assert.match(graphQLServer.requests[1].body.query ?? "", /immediateCancellationUntil/)
+        // Crater reads Subscription.paymentMethodId from Stripe, so an outage would fail the whole dashboard.
+        for (const request of graphQLServer.requests) assert.doesNotMatch(request.body.query ?? "", /paymentMethodId/)
         assert.deepEqual(await response.json(), {
             customers: [
                 {

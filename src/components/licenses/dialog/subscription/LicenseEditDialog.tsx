@@ -35,7 +35,7 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const { licenses, updateLicense } = useLicenseData()
+    const { licenses } = useLicenseData()
     const resolvedCustomerId = resolveCustomerRouteId(customerId)
     const resolvedSubscriptionId = resolveSubscriptionRouteId(licenseId)
     const license = licenses.find((candidate) => candidate.id === resolvedSubscriptionId && candidate.customerId === resolvedCustomerId)
@@ -51,7 +51,8 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
         paymentMethods: customerPaymentMethods,
         paymentMethodsError: customerPaymentMethodsError,
         refreshPaymentMethods: refreshCustomerPaymentMethods,
-    } = useCustomerPaymentMethods(license?.customerId, section === "general", license?.paymentMethodId)
+        subscriptionPaymentMethodId,
+    } = useCustomerPaymentMethods(license?.customerId, section === "general", license?.subscriptionId)
     const [assigningPaymentMethodId, setAssigningPaymentMethodId] = useState<string | null>(null)
     const close = () => router.replace(createLicensePath(locale, resolvedCustomerId, resolvedSubscriptionId))
 
@@ -78,7 +79,6 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
             const subscription = await updateSubscription({ id: license.subscriptionId, paymentMethodId }, errors.paymentMethodAssign)
             if (subscription.paymentMethodId !== paymentMethodId) throw new Error(errors.paymentMethodAssign)
 
-            updateLicense(license.id, { paymentMethodId })
             refreshCustomerPaymentMethods()
             toasts.success("paymentAssigned")
         } catch {
@@ -105,6 +105,7 @@ export function LicenseEditDialog({ checkoutPackages, content, customerId, error
                 onRetryPaymentMethod={refreshCustomerPaymentMethods}
                 paymentMethodError={customerPaymentMethodsError}
                 paymentMethods={customerPaymentMethods}
+                selectedPaymentMethodId={subscriptionPaymentMethodId}
                 subscriptionConfig={subscriptionConfig}
                 title={sectionLabels.general}
             />

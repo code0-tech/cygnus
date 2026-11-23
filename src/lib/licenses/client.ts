@@ -152,9 +152,15 @@ export async function createInvoicePaymentSession(invoiceId: string, errorMessag
     return result.clientSecret
 }
 
-export async function fetchCustomerPaymentMethods(customerId: string, signal: AbortSignal): Promise<CustomerPaymentMethodSummary[]> {
+export interface CustomerPaymentMethodsResult {
+    paymentMethods: CustomerPaymentMethodSummary[]
+    subscriptionPaymentMethodId?: string | null
+}
+
+export async function fetchCustomerPaymentMethods(customerId: string, signal: AbortSignal, subscriptionId?: string): Promise<CustomerPaymentMethodsResult> {
     const url = new URL("/api/crater/customer/payment-methods", window.location.origin)
     url.searchParams.set("customerId", customerId)
+    if (subscriptionId) url.searchParams.set("subscriptionId", subscriptionId)
 
     const response = await fetch(url, { cache: "no-store", credentials: "same-origin", signal })
     const result: unknown = await response.json()
@@ -162,7 +168,15 @@ export async function fetchCustomerPaymentMethods(customerId: string, signal: Ab
         throw new Error("Invalid payment methods response.")
     }
 
-    return result.paymentMethods as CustomerPaymentMethodSummary[]
+    const subscriptionPaymentMethodId = "subscriptionPaymentMethodId" in result ? result.subscriptionPaymentMethodId : undefined
+    if (subscriptionId && subscriptionPaymentMethodId !== null && typeof subscriptionPaymentMethodId !== "string") {
+        throw new Error("Invalid payment methods response.")
+    }
+
+    return {
+        paymentMethods: result.paymentMethods as CustomerPaymentMethodSummary[],
+        ...(subscriptionId ? { subscriptionPaymentMethodId: subscriptionPaymentMethodId as string | null } : {}),
+    }
 }
 
 export async function downloadLicenseFile(licenseId: string, request: typeof fetch = fetch) {

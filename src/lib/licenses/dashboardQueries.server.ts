@@ -39,7 +39,6 @@ const SUBSCRIPTION_FIELDS = gql`
         }
         immediateCancellationAvailable
         immediateCancellationUntil
-        paymentMethodId
         paymentPeriod
         plan
         status

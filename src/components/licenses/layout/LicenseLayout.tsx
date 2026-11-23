@@ -3,13 +3,13 @@
 import { LicenseDataProvider, useLicenseData } from "@/components/licenses/data/LicenseDataProvider"
 import { LicensePrimarySidebar } from "@/components/licenses/layout/LicensePrimarySidebar"
 import { LicenseSidebar } from "@/components/licenses/layout/LicenseSidebar"
-import { LicenseNotifications } from "@/components/licenses/layout/LicenseNotifications"
+import { LicenseNotifications, useLicenseToasts } from "@/components/licenses/layout/LicenseNotifications"
 import { logoutLicenseSession } from "@/lib/licenses/client"
 import type { ErrorsContent, LicenseContent, LicenseToastsContent } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
-import { AuroraBackground, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from "@code0-tech/pictor"
+import { Alert, AuroraBackground, Button, FullScreen, ScrollArea, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from "@code0-tech/pictor"
 import { notFound } from "next/navigation"
-import { Fragment, type ReactNode, useState } from "react"
+import { Fragment, type ReactNode, useEffect, useState } from "react"
 
 interface LicenseLayoutProps {
     children: ReactNode
@@ -21,11 +21,17 @@ interface LicenseLayoutProps {
     toasts: LicenseToastsContent
 }
 
-function LicenseLayoutContent({ children, content, locale, sculptorUrl }: LicenseLayoutProps) {
-    const { error, isSidebarLoading, sidebarLicenses } = useLicenseData()
+function LicenseLayoutContent({ children, content, errors, locale, sculptorUrl }: LicenseLayoutProps) {
+    const { error, isNotFound, isSidebarLoading, notice, reload, sidebarLicenses } = useLicenseData()
+    const toasts = useLicenseToasts()
     const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-    if (error) notFound()
+    useEffect(() => {
+        if (notice) toasts.error(notice.message)
+    }, [notice, toasts])
+
+    // Only a customer or license Crater does not know is a missing page; failed loads stay inside the layout.
+    if (isNotFound) notFound()
 
     const openMainApplication = (path: string, newWindow = false) => {
         const url = new URL(path, sculptorUrl).toString()
@@ -71,7 +77,16 @@ function LicenseLayoutContent({ children, content, locale, sculptorUrl }: Licens
                         <ScrollArea h={"100%"} type={"scroll"}>
                             <ScrollAreaViewport>
                                 <div style={{ maxWidth: "52rem", margin: "0 auto", padding: "1rem 1rem" }}>
-                                    {children}
+                                    {error ? (
+                                        <Alert color="error">
+                                            <span className="min-w-0 flex-1">{error}</span>
+                                            <Button type="button" variant="normal" paddingSize="xxs" onClick={reload}>
+                                                {errors.retry}
+                                            </Button>
+                                        </Alert>
+                                    ) : (
+                                        children
+                                    )}
                                 </div>
                             </ScrollAreaViewport>
                             <ScrollAreaScrollbar orientation={"vertical"}>

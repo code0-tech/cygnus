@@ -112,6 +112,23 @@ const INVOICE_PDF_URL: TypedDocumentNode<LookupData, InvoiceLookupVariables> = g
     }
 `
 
+// Only the selected subscription asks for paymentMethodId, because Crater reads it from Stripe for every node.
+const SUBSCRIPTION_PAYMENT_METHOD: TypedDocumentNode<LookupData, SubscriptionCustomerVariables> = gql`
+    query SubscriptionPaymentMethod($subscriptionAfter: String) {
+        currentUser {
+            customer {
+                id
+                subscriptions(first: 1, after: $subscriptionAfter) {
+                    nodes {
+                        id
+                        paymentMethodId
+                    }
+                }
+            }
+        }
+    }
+`
+
 function nextCursor(pageInfo: { endCursor?: string | null; hasNextPage?: boolean | null } | null | undefined, seen: Set<string>) {
     if (!pageInfo?.hasNextPage) return undefined
     if (!pageInfo.endCursor || seen.has(pageInfo.endCursor)) throw new Error("Crater returned an invalid snapshot lookup cursor.")
@@ -193,11 +210,10 @@ export async function findCustomerForSubscription(sessionToken: string, subscrip
     }
 }
 
-export async function findInvoicePdfUrl(sessionToken: string, customerId: string, subscriptionId: string, invoiceId: string) {
-    const client = createLookupClient(sessionToken)
+/** The `after` cursor that makes `subscriptions(first: 1, after:)` select exactly the given subscription. */
+async function locateSubscriptionCursor(client: ReturnType<typeof createLookupClient>, customerId: string, subscriptionId: string) {
     const subscriptionCursors = new Set<string>()
     let subscriptionPageAfter: string | undefined
-    let subscriptionAfter: string | undefined
     while (true) {
         const result = await client.query({
             query: INVOICE_SUBSCRIPTION_POSITION,
@@ -210,13 +226,39 @@ export async function findInvoicePdfUrl(sessionToken: string, customerId: string
         const edges = customer.subscriptions?.edges ?? []
         const index = edges.findIndex((edge) => edge?.node?.id === subscriptionId)
         if (index >= 0) {
-            subscriptionAfter = index === 0 ? subscriptionPageAfter : (edges[index - 1]?.cursor ?? undefined)
+            const subscriptionAfter = index === 0 ? subscriptionPageAfter : (edges[index - 1]?.cursor ?? undefined)
             if (index > 0 && !subscriptionAfter) throw new Error("Crater returned an invalid subscription selection cursor.")
-            break
+            return { status: "found" as const, subscriptionAfter }
         }
         subscriptionPageAfter = nextCursor(customer.subscriptions?.pageInfo, subscriptionCursors)
         if (!subscriptionPageAfter) return { status: "missing" as const }
     }
+}
+
+/** The subscription's own default payment method, which Crater reads from Stripe (`PAYMENT_METHOD_UNAVAILABLE` on an outage). */
+export async function findSubscriptionPaymentMethodId(sessionToken: string, customerId: string, subscriptionId: string) {
+    const client = createLookupClient(sessionToken)
+    const position = await locateSubscriptionCursor(client, customerId, subscriptionId)
+    if (position.status !== "found") return position
+
+    const result = await client.query({
+        query: SUBSCRIPTION_PAYMENT_METHOD,
+        variables: { ...(position.subscriptionAfter ? { subscriptionAfter: position.subscriptionAfter } : {}) },
+        fetchPolicy: "no-cache",
+    })
+    if (!result.data?.currentUser) return { status: "unauthenticated" as const }
+    const customer = result.data.currentUser.customer
+    if (customer?.id !== customerId) throw new Error("Crater returned a different customer while locating a subscription payment method.")
+    const subscription = customer.subscriptions?.nodes?.[0]
+    if (subscription?.id !== subscriptionId) throw new Error("Crater returned a different subscription while locating its payment method.")
+    return { status: "found" as const, paymentMethodId: subscription.paymentMethodId ?? null }
+}
+
+export async function findInvoicePdfUrl(sessionToken: string, customerId: string, subscriptionId: string, invoiceId: string) {
+    const client = createLookupClient(sessionToken)
+    const position = await locateSubscriptionCursor(client, customerId, subscriptionId)
+    if (position.status !== "found") return position
+    const { subscriptionAfter } = position
 
     const invoiceCursors = new Set<string>()
     let invoiceAfter: string | undefined
