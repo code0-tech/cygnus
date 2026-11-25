@@ -6,7 +6,6 @@ import { Alert, Button, EmailInput, emailValidation, TextAreaInput, TextInput, u
 import type { FocusEvent } from "react"
 import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
-import { Card } from "../ui/Card"
 
 interface JobApplicationFormContent {
     applicationHeading: string
@@ -129,12 +128,12 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
     const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
 
     return (
-        <Card variant={"light"} size="lg" className="space-y-4 p-4 min-w-0">
-            <h1 className="text-4xl font-semibold text-white mb-4">{labels.applicationHeading}</h1>
+        <div className="min-w-0 space-y-4 rounded-3xl bg-light p-4 shadow-[inset_0_1px_1px_#bfbfbf1a]">
+            <h1 className="text-2xl font-semibold text-white mb-4">{labels.applicationHeading}</h1>
             <TextInput
                 maxLength={100}
                 placeholder={labels.applicationNamePlaceholder}
-                label={labels.applicationNameLabel}
+                title={labels.applicationNameLabel}
                 onChange={() => {
                     if (!nameInputProps.formValidation?.valid) {
                         validate("name")
@@ -145,7 +144,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
             <EmailInput
                 maxLength={254}
                 placeholder={labels.applicationEmailPlaceholder}
-                label={labels.applicationEmailLabel}
+                title={labels.applicationEmailLabel}
                 onChange={() => {
                     if (!emailInputProps.formValidation?.valid) {
                         validate("email")
@@ -162,7 +161,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
             <TextAreaInput
                 maxLength={5000}
                 placeholder={labels.applicationMessagePlaceholder}
-                label={labels.applicationMessageLabel}
+                title={labels.applicationMessageLabel}
                 onChange={() => {
                     if (!textInputProps.formValidation?.valid) {
                         validate("text")
@@ -174,7 +173,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
             <Button
                 type="submit"
                 variant="normal"
-                className="mt-2 w-full! text-base!"
+                className="mt-2 h-12! w-full! bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90! lg:h-10!"
                 onClick={() => {
                     trigger("heavy")
                     validate()
@@ -188,6 +187,6 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                     {submitStatus.message}
                 </Alert>
             )}
-        </Card>
+        </div>
     )
 }
