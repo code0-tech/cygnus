@@ -8,7 +8,6 @@ import Image from "next/image"
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder"
 import Link from "next/link"
 import { useWebHaptics } from "web-haptics/react"
-import { Card } from "../ui/Card"
 
 export function FirstBlogCard({ locale, post }: { locale: string; post: BlogPostItem }) {
     const { trigger } = useWebHaptics()
@@ -31,7 +30,7 @@ export function FirstBlogCard({ locale, post }: { locale: string; post: BlogPost
                     {post.shortDescription && <p className="text-base text-balance md:text-lg leading-7 text-secondary mt-4 mb-2">{post.shortDescription}</p>}
                 </div>
 
-                <Card size="lg" className="w-full shrink-0 aspect-video p-2 xl:w-3/5">
+                <div className="aspect-video w-full shrink-0 rounded-3xl bg-light p-2 shadow-[inset_0_1px_1px_#bfbfbf1a] xl:w-3/5">
                     <Link href={postHref} onClick={() => trigger("medium")} className="relative block h-full w-full overflow-hidden rounded-2xl bg-primary/50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60">
                         {heroImageUrl ? (
                             <Image
@@ -46,7 +45,7 @@ export function FirstBlogCard({ locale, post }: { locale: string; post: BlogPost
                             <ImagePlaceholder className="aspect-video w-full" />
                         )}
                     </Link>
-                </Card>
+                </div>
             </div>
         </div>
     )

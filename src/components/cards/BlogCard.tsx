@@ -8,7 +8,6 @@ import Image from "next/image"
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder"
 import Link from "next/link"
 import { useWebHaptics } from "web-haptics/react"
-import { Card } from "../ui/Card"
 
 export function BlogCard({ locale, post }: { locale: string; post: BlogPostItem }) {
     const { trigger } = useWebHaptics()
@@ -19,7 +18,7 @@ export function BlogCard({ locale, post }: { locale: string; post: BlogPostItem 
 
     return (
         <Link href={`/${locale}/blog/${post.slug}`} onClick={() => trigger("medium")} className="group block h-full rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60">
-            <Card size="lg" variant={"light"} className="h-full p-2!">
+            <div className="h-full rounded-3xl bg-light p-2 shadow-[inset_0_1px_1px_#bfbfbf1a]">
                 <div className="relative z-10 flex h-full flex-row items-stretch gap-4 md:flex-col">
                     {heroImageUrl ? (
                         <div className="relative w-40 aspect-video shrink-0 overflow-hidden rounded-2xl bg-primary/40 md:w-full md:aspect-video">
@@ -37,7 +36,7 @@ export function BlogCard({ locale, post }: { locale: string; post: BlogPostItem 
                         </p>
                     </div>
                 </div>
-            </Card>
+            </div>
         </Link>
     )
 }
