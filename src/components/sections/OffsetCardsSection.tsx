@@ -7,7 +7,6 @@ import { getMediaUrl } from "@/lib/media"
 import { cn, type AnimationPreset } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import Image from "next/image"
-import { Card } from "../ui/Card"
 import { OffsetCardMotion } from "./client/OffsetCardMotion"
 
 interface OffsetCardsSectionProps {
@@ -41,6 +40,7 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                     const isPlayground = item.mediaType === "playground"
                     const cardPlacement = content.cardPlacement ?? "alternate"
                     const isCardLeft = cardPlacement === "left" || (cardPlacement === "alternate" && index % 2 !== 0)
+                    const hasFrame = item.showImageBorder ?? true
 
                     return (
                         <OffsetCardMotion
@@ -70,20 +70,19 @@ export function OffsetCardsSection({ content }: OffsetCardsSectionProps) {
                                     </StaggerItem>
                                 )}
                             </StaggerContainer>
-                            <Card
-                                size="lg"
-                                topline={item.showImageBorder ?? true}
-                                className={cn("relative aspect-video w-full overflow-hidden lg:w-2/3", item.showImageBorder === false && "border-0")}
-                            >
-                                {isPlayground ? (
-                                    <PlaygroundFrame url={item.playgroundUrl} title={`${item.title} playground`} />
-                                ) : (
-                                    imageUrl && <Image src={imageUrl} alt={image.alt ?? item.title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />
-                                )}
-                                {item.mask?.map((side) => (
-                                    <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side])} />
-                                ))}
-                            </Card>
+                            <div className={cn("w-full lg:w-2/3", hasFrame && "rounded-3xl bg-light p-2 shadow-[inset_0_1px_1px_#bfbfbf1a]")}>
+                                <div className={cn("relative aspect-video w-full overflow-hidden", hasFrame ? "rounded-2xl bg-primary/40" : "rounded-3xl")}>
+                                    {isPlayground ? (
+                                        <PlaygroundFrame url={item.playgroundUrl} title={`${item.title} playground`} />
+                                    ) : (
+                                        imageUrl && <Image src={imageUrl} alt={image.alt ?? item.title} fill sizes="(min-width: 768px) 66vw, 100vw" className="object-fill" />
+                                    )}
+                                    {item.mask?.map((side) => (
+                                        // Fade into whatever surrounds the media: the card surface when framed, the page otherwise.
+                                        <div key={side} aria-hidden="true" className={cn("pointer-events-none absolute z-10", IMAGE_MASK_CLASSES[side], hasFrame && "from-light")} />
+                                    ))}
+                                </div>
+                            </div>
                             <StaggerContainer className="w-full px-2 pb-2 text-left lg:hidden lg:text-center" delayChildren={0.06} staggerChildren={0.08}>
                                 <StaggerItem as="p" y={14} duration={0.38} className="text-xl font-semibold tracking-tight text-white">
                                     {item.title}
