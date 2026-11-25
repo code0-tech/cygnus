@@ -218,6 +218,8 @@ import * as migration_20261125_200000_pricing_comparison_table from './20261125_
 import * as migration_20261125_201500_remove_pricing_popular_pill from './20261125_201500_remove_pricing_popular_pill';
 import * as migration_20261125_203000_pricing_customer_type from './20261125_203000_pricing_customer_type';
 import * as migration_20261125_204000_small_pricing_customer_type from './20261125_204000_small_pricing_customer_type';
+import * as migration_20261125_204500_remove_small_pricing_features from './20261125_204500_remove_small_pricing_features';
+import * as migration_20261125_205000_small_pricing_copy_fields from './20261125_205000_small_pricing_copy_fields';
 
 export const migrations = [
   {
@@ -1314,5 +1316,15 @@ export const migrations = [
     up: migration_20261125_204000_small_pricing_customer_type.up,
     down: migration_20261125_204000_small_pricing_customer_type.down,
     name: '20261125_204000_small_pricing_customer_type',
+  },
+  {
+    up: migration_20261125_204500_remove_small_pricing_features.up,
+    down: migration_20261125_204500_remove_small_pricing_features.down,
+    name: '20261125_204500_remove_small_pricing_features',
+  },
+  {
+    up: migration_20261125_205000_small_pricing_copy_fields.up,
+    down: migration_20261125_205000_small_pricing_copy_fields.down,
+    name: '20261125_205000_small_pricing_copy_fields',
   },
 ];

@@ -1444,102 +1444,6 @@ export const pages_blocks_pricing = pgTable('pages_blocks_pricing', {
 )
 
 
-export const pages_blocks_small_pricing_pro_features = pgTable('pages_blocks_small_pricing_pro_features', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  text: varchar('text').notNull(),
-}, (columns) => [
-    index('pages_blocks_small_pricing_pro_features_order_idx').on(columns._order), index('pages_blocks_small_pricing_pro_features_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_pro_features_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_pro_features_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const pages_blocks_small_pricing_pro_missing = pgTable('pages_blocks_small_pricing_pro_missing', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  text: varchar('text').notNull(),
-}, (columns) => [
-    index('pages_blocks_small_pricing_pro_missing_order_idx').on(columns._order), index('pages_blocks_small_pricing_pro_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_pro_missing_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_pro_missing_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const pages_blocks_small_pricing_max_features = pgTable('pages_blocks_small_pricing_max_features', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  text: varchar('text').notNull(),
-}, (columns) => [
-    index('pages_blocks_small_pricing_max_features_order_idx').on(columns._order), index('pages_blocks_small_pricing_max_features_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_max_features_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_max_features_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const pages_blocks_small_pricing_max_missing = pgTable('pages_blocks_small_pricing_max_missing', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  text: varchar('text').notNull(),
-}, (columns) => [
-    index('pages_blocks_small_pricing_max_missing_order_idx').on(columns._order), index('pages_blocks_small_pricing_max_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_max_missing_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_max_missing_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const pages_blocks_small_pricing_custom_features = pgTable('pages_blocks_small_pricing_custom_features', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  text: varchar('text').notNull(),
-}, (columns) => [
-    index('pages_blocks_small_pricing_custom_features_order_idx').on(columns._order), index('pages_blocks_small_pricing_custom_features_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_custom_features_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_custom_features_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
-export const pages_blocks_small_pricing_custom_missing = pgTable('pages_blocks_small_pricing_custom_missing', {
-  _order: integer('_order').notNull(),
-  _parentID: varchar('_parent_id').notNull(),
-  _locale: enum__locales('_locale').notNull(),
-  id: varchar('id').primaryKey(),
-  text: varchar('text').notNull(),
-}, (columns) => [
-    index('pages_blocks_small_pricing_custom_missing_order_idx').on(columns._order), index('pages_blocks_small_pricing_custom_missing_parent_id_idx').on(columns._parentID), index('pages_blocks_small_pricing_custom_missing_locale_idx').on(columns._locale), foreignKey({
-      columns: [columns['_parentID']],
-      foreignColumns: [pages_blocks_small_pricing.id],
-      name: 'pages_blocks_small_pricing_custom_missing_parent_id_fk'
-    }).onDelete('cascade'),
-]
-)
-
-
 export const pages_blocks_small_pricing = pgTable('pages_blocks_small_pricing', {
   _order: integer('_order').notNull(),
   _parentID: integer('_parent_id').notNull(),
@@ -1547,11 +1451,24 @@ export const pages_blocks_small_pricing = pgTable('pages_blocks_small_pricing', 
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
   pricingCustomerType: enum_pages_blocks_small_pricing_pricing_customer_type('pricing_customer_type').notNull().default("b2c"),
-  sectionHeading: varchar('section_heading'),
+  sectionHeading: varchar('section_heading').default("**Simple pricing**\\nfor every stage of your business."),
   sectionLayout: enum_pages_blocks_small_pricing_section_layout('section_layout').notNull().default("center"),
   sectionDescription: varchar('section_description'),
   sectionLinkButton_label: varchar('section_link_button_label'),
   sectionLinkButton_url: varchar('section_link_button_url'),
+  copy_popularLabel: varchar('copy_popular_label').default("Popular"),
+  copy_customPricePrefix: varchar('copy_custom_price_prefix').default("from"),
+  copy_customPriceFrom: numeric('copy_custom_price_from', {mode: 'number'}).default(49.9),
+  copy_discountPrefix: varchar('copy_discount_prefix').default("-"),
+  copy_workflowUnitLabel: varchar('copy_workflow_unit_label').default("executions"),
+  copy_aiTokensUnitLabel: varchar('copy_ai_tokens_unit_label').default("AI tokens"),
+  copy_usageSeparator: varchar('copy_usage_separator').default("•"),
+  copy_customUsageText: varchar('copy_custom_usage_text').default("Usage you configure yourself"),
+  copy_notSureTitle: varchar('copy_not_sure_title').default("Not sure yet?"),
+  copy_notSureDescription: varchar('copy_not_sure_description').default("Compare all plans and features side by side."),
+  copy_detailsButtonLabel: varchar('copy_details_button_label').default("See all plan details"),
+  copy_detailsUrl: varchar('copy_details_url').default("/pricing"),
+  copy_periodSavingsText: varchar('copy_period_savings_text').default("Save {quarterly} quarterly or {yearly} yearly."),
   pricingPeriod: enum_pages_blocks_small_pricing_pricing_period('pricing_period').notNull().default("monthly"),
   gradient: enum_pages_blocks_small_pricing_gradient('gradient').default("blue"),
   gradientDirection: enum_pages_blocks_small_pricing_gradient_direction('gradient_direction').default("topLeft"),
@@ -3576,78 +3493,12 @@ export const relations_pages_blocks_pricing = relations(pages_blocks_pricing, ({
             relationName: 'custom_missing',
     }),
       }))
-export const relations_pages_blocks_small_pricing_pro_features = relations(pages_blocks_small_pricing_pro_features, ({ one }) => ({
-  _parentID: one(pages_blocks_small_pricing, {
-    
-    fields: [pages_blocks_small_pricing_pro_features._parentID],
-    references: [pages_blocks_small_pricing.id],
-    relationName: 'pro_features',
-    }),
-      }))
-export const relations_pages_blocks_small_pricing_pro_missing = relations(pages_blocks_small_pricing_pro_missing, ({ one }) => ({
-  _parentID: one(pages_blocks_small_pricing, {
-    
-    fields: [pages_blocks_small_pricing_pro_missing._parentID],
-    references: [pages_blocks_small_pricing.id],
-    relationName: 'pro_missing',
-    }),
-      }))
-export const relations_pages_blocks_small_pricing_max_features = relations(pages_blocks_small_pricing_max_features, ({ one }) => ({
-  _parentID: one(pages_blocks_small_pricing, {
-    
-    fields: [pages_blocks_small_pricing_max_features._parentID],
-    references: [pages_blocks_small_pricing.id],
-    relationName: 'max_features',
-    }),
-      }))
-export const relations_pages_blocks_small_pricing_max_missing = relations(pages_blocks_small_pricing_max_missing, ({ one }) => ({
-  _parentID: one(pages_blocks_small_pricing, {
-    
-    fields: [pages_blocks_small_pricing_max_missing._parentID],
-    references: [pages_blocks_small_pricing.id],
-    relationName: 'max_missing',
-    }),
-      }))
-export const relations_pages_blocks_small_pricing_custom_features = relations(pages_blocks_small_pricing_custom_features, ({ one }) => ({
-  _parentID: one(pages_blocks_small_pricing, {
-    
-    fields: [pages_blocks_small_pricing_custom_features._parentID],
-    references: [pages_blocks_small_pricing.id],
-    relationName: 'custom_features',
-    }),
-      }))
-export const relations_pages_blocks_small_pricing_custom_missing = relations(pages_blocks_small_pricing_custom_missing, ({ one }) => ({
-  _parentID: one(pages_blocks_small_pricing, {
-    
-    fields: [pages_blocks_small_pricing_custom_missing._parentID],
-    references: [pages_blocks_small_pricing.id],
-    relationName: 'custom_missing',
-    }),
-      }))
-export const relations_pages_blocks_small_pricing = relations(pages_blocks_small_pricing, ({ one, many }) => ({
+export const relations_pages_blocks_small_pricing = relations(pages_blocks_small_pricing, ({ one }) => ({
   _parentID: one(pages, {
     
     fields: [pages_blocks_small_pricing._parentID],
     references: [pages.id],
     relationName: '_blocks_smallPricing',
-    }),
-    pro_features: many(pages_blocks_small_pricing_pro_features, {
-            relationName: 'pro_features',
-    }),
-    pro_missing: many(pages_blocks_small_pricing_pro_missing, {
-            relationName: 'pro_missing',
-    }),
-    max_features: many(pages_blocks_small_pricing_max_features, {
-            relationName: 'max_features',
-    }),
-    max_missing: many(pages_blocks_small_pricing_max_missing, {
-            relationName: 'max_missing',
-    }),
-    custom_features: many(pages_blocks_small_pricing_custom_features, {
-            relationName: 'custom_features',
-    }),
-    custom_missing: many(pages_blocks_small_pricing_custom_missing, {
-            relationName: 'custom_missing',
     }),
       }))
 export const relations_pages_blocks_compare_application_apps_features = relations(pages_blocks_compare_application_apps_features, ({ one }) => ({
@@ -4532,12 +4383,6 @@ type DatabaseSchema = {
   pages_blocks_pricing_custom_features: typeof pages_blocks_pricing_custom_features
   pages_blocks_pricing_custom_missing: typeof pages_blocks_pricing_custom_missing
   pages_blocks_pricing: typeof pages_blocks_pricing
-  pages_blocks_small_pricing_pro_features: typeof pages_blocks_small_pricing_pro_features
-  pages_blocks_small_pricing_pro_missing: typeof pages_blocks_small_pricing_pro_missing
-  pages_blocks_small_pricing_max_features: typeof pages_blocks_small_pricing_max_features
-  pages_blocks_small_pricing_max_missing: typeof pages_blocks_small_pricing_max_missing
-  pages_blocks_small_pricing_custom_features: typeof pages_blocks_small_pricing_custom_features
-  pages_blocks_small_pricing_custom_missing: typeof pages_blocks_small_pricing_custom_missing
   pages_blocks_small_pricing: typeof pages_blocks_small_pricing
   pages_blocks_compare_application_apps_features: typeof pages_blocks_compare_application_apps_features
   pages_blocks_compare_application_apps: typeof pages_blocks_compare_application_apps
@@ -4661,12 +4506,6 @@ type DatabaseSchema = {
   relations_pages_blocks_pricing_custom_features: typeof relations_pages_blocks_pricing_custom_features
   relations_pages_blocks_pricing_custom_missing: typeof relations_pages_blocks_pricing_custom_missing
   relations_pages_blocks_pricing: typeof relations_pages_blocks_pricing
-  relations_pages_blocks_small_pricing_pro_features: typeof relations_pages_blocks_small_pricing_pro_features
-  relations_pages_blocks_small_pricing_pro_missing: typeof relations_pages_blocks_small_pricing_pro_missing
-  relations_pages_blocks_small_pricing_max_features: typeof relations_pages_blocks_small_pricing_max_features
-  relations_pages_blocks_small_pricing_max_missing: typeof relations_pages_blocks_small_pricing_max_missing
-  relations_pages_blocks_small_pricing_custom_features: typeof relations_pages_blocks_small_pricing_custom_features
-  relations_pages_blocks_small_pricing_custom_missing: typeof relations_pages_blocks_small_pricing_custom_missing
   relations_pages_blocks_small_pricing: typeof relations_pages_blocks_small_pricing
   relations_pages_blocks_compare_application_apps_features: typeof relations_pages_blocks_compare_application_apps_features
   relations_pages_blocks_compare_application_apps: typeof relations_pages_blocks_compare_application_apps

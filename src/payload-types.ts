@@ -1231,22 +1231,25 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
+            copy?: {
+              popularLabel?: string | null;
+              customPricePrefix?: string | null;
+              customPriceFrom?: number | null;
+              discountPrefix?: string | null;
+              workflowUnitLabel?: string | null;
+              aiTokensUnitLabel?: string | null;
+              usageSeparator?: string | null;
+              customUsageText?: string | null;
+              notSureTitle?: string | null;
+              notSureDescription?: string | null;
+              detailsButtonLabel?: string | null;
+              detailsUrl?: string | null;
+              periodSavingsText?: string | null;
+            };
             pricingPeriod: 'monthly' | 'quarterly' | 'yearly';
             gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
             gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
             pro?: {
-              features?:
-                | {
-                    text: string;
-                    id?: string | null;
-                  }[]
-                | null;
-              missing?:
-                | {
-                    text: string;
-                    id?: string | null;
-                  }[]
-                | null;
               button?: {
                 label?: string | null;
                 url?: string | null;
@@ -1254,18 +1257,6 @@ export interface Page {
               };
             };
             max?: {
-              features?:
-                | {
-                    text: string;
-                    id?: string | null;
-                  }[]
-                | null;
-              missing?:
-                | {
-                    text: string;
-                    id?: string | null;
-                  }[]
-                | null;
               button?: {
                 label?: string | null;
                 url?: string | null;
@@ -1273,18 +1264,6 @@ export interface Page {
               };
             };
             custom?: {
-              features?:
-                | {
-                    text: string;
-                    id?: string | null;
-                  }[]
-                | null;
-              missing?:
-                | {
-                    text: string;
-                    id?: string | null;
-                  }[]
-                | null;
               button?: {
                 label?: string | null;
                 url?: string | null;
@@ -2518,24 +2497,29 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              copy?:
+                | T
+                | {
+                    popularLabel?: T;
+                    customPricePrefix?: T;
+                    customPriceFrom?: T;
+                    discountPrefix?: T;
+                    workflowUnitLabel?: T;
+                    aiTokensUnitLabel?: T;
+                    usageSeparator?: T;
+                    customUsageText?: T;
+                    notSureTitle?: T;
+                    notSureDescription?: T;
+                    detailsButtonLabel?: T;
+                    detailsUrl?: T;
+                    periodSavingsText?: T;
+                  };
               pricingPeriod?: T;
               gradient?: T;
               gradientDirection?: T;
               pro?:
                 | T
                 | {
-                    features?:
-                      | T
-                      | {
-                          text?: T;
-                          id?: T;
-                        };
-                    missing?:
-                      | T
-                      | {
-                          text?: T;
-                          id?: T;
-                        };
                     button?:
                       | T
                       | {
@@ -2547,18 +2531,6 @@ export interface PagesSelect<T extends boolean = true> {
               max?:
                 | T
                 | {
-                    features?:
-                      | T
-                      | {
-                          text?: T;
-                          id?: T;
-                        };
-                    missing?:
-                      | T
-                      | {
-                          text?: T;
-                          id?: T;
-                        };
                     button?:
                       | T
                       | {
@@ -2570,18 +2542,6 @@ export interface PagesSelect<T extends boolean = true> {
               custom?:
                 | T
                 | {
-                    features?:
-                      | T
-                      | {
-                          text?: T;
-                          id?: T;
-                        };
-                    missing?:
-                      | T
-                      | {
-                          text?: T;
-                          id?: T;
-                        };
                     button?:
                       | T
                       | {
