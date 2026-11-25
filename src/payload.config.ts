@@ -77,7 +77,7 @@ export default buildConfig({
                 {
                     type: "image/ico",
                     rel: "icon",
-                    url: "/favicons/favicon.ico",
+                    url: "/favicon.ico",
                 },
             ],
         },
