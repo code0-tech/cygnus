@@ -347,6 +347,7 @@ export function CheckoutDiscount({
                 <div className="min-w-0 w-full">
                     <TextInput
                         aria-label={inputPlaceholder}
+                        autoFocus
                         autoComplete="off"
                         maxLength={128}
                         onChange={(event) => {

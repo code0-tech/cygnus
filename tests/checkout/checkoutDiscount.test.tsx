@@ -113,6 +113,13 @@ test("applies and removes a promotion code directly through the active Stripe SD
     assert.equal(window.location.search, "")
 })
 
+test("focuses the code input as soon as the dialog opens", async () => {
+    const user = userEvent.setup()
+    render(<CheckoutDiscount {...props} checkoutRef={sdk()} />)
+    await user.click(screen.getByRole("button", { name: props.promptLabel }))
+    assert.equal(document.activeElement, screen.getByPlaceholderText(props.inputPlaceholder))
+})
+
 test("closes the dialog after applying a promotion code", async () => {
     const user = userEvent.setup()
     render(<CheckoutDiscount {...props} checkoutRef={sdk()} />)
