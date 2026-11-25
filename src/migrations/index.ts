@@ -214,6 +214,9 @@ import * as migration_20261121_120000_checkout_close_label from './20261121_1200
 import * as migration_20261122_120000_checkout_customer_type_login from './20261122_120000_checkout_customer_type_login';
 import * as migration_20261125_120000_checkout_summary_plan_title_heading from './20261125_120000_checkout_summary_plan_title_heading';
 import * as migration_20261125_180000_action_definition_show_more_labels from './20261125_180000_action_definition_show_more_labels';
+import * as migration_20261125_200000_pricing_comparison_table from './20261125_200000_pricing_comparison_table';
+import * as migration_20261125_201500_remove_pricing_popular_pill from './20261125_201500_remove_pricing_popular_pill';
+import * as migration_20261125_203000_pricing_customer_type from './20261125_203000_pricing_customer_type';
 
 export const migrations = [
   {
@@ -1290,5 +1293,20 @@ export const migrations = [
     up: migration_20261125_180000_action_definition_show_more_labels.up,
     down: migration_20261125_180000_action_definition_show_more_labels.down,
     name: '20261125_180000_action_definition_show_more_labels',
+  },
+  {
+    up: migration_20261125_200000_pricing_comparison_table.up,
+    down: migration_20261125_200000_pricing_comparison_table.down,
+    name: '20261125_200000_pricing_comparison_table',
+  },
+  {
+    up: migration_20261125_201500_remove_pricing_popular_pill.up,
+    down: migration_20261125_201500_remove_pricing_popular_pill.down,
+    name: '20261125_201500_remove_pricing_popular_pill',
+  },
+  {
+    up: migration_20261125_203000_pricing_customer_type.up,
+    down: migration_20261125_203000_pricing_customer_type.down,
+    name: '20261125_203000_pricing_customer_type',
   },
 ];

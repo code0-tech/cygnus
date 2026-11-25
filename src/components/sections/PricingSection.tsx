@@ -1,10 +1,9 @@
 "use client"
 
 import type { PaymentPeriod } from "@/lib/subscription/types"
-import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
-import { getIcon } from "@/components/ui/IconRenderer"
 import { Section } from "@/components/ui/Section"
+import { FormattedText } from "@/components/ui/FormattedText"
 import { StableBadge } from "@/components/ui/StableBadge"
 import { SegmentedControl, SegmentedControlItem } from "@code0-tech/pictor"
 import type { PricingLayoutBlock, SubscriptionConfigData } from "@/lib/cms"
@@ -13,30 +12,25 @@ import { formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
 import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
-import { IconCheck, IconX } from "@tabler/icons-react"
-import { BorderBeam } from "border-beam"
-import { AnimatePresence, m as motion } from "motion/react"
-import { useState } from "react"
+import { IconCheck } from "@tabler/icons-react"
+import { Fragment, useState } from "react"
 
-const popularPillColorClasses = {
-    brand: "border-brand/10! bg-brand/10! text-brand!",
-    pink: "border-pink/10! bg-pink/10! text-pink!",
-    yellow: "border-yellow/10! bg-yellow/10! text-yellow!",
-    aqua: "border-aqua/10! bg-aqua/10! text-aqua!",
-    blue: "border-blue/10! bg-blue/10! text-blue!",
-    lime: "border-lime/10! bg-lime/10! text-lime!",
-    magenta: "border-magenta/10! bg-magenta/10! text-magenta!",
-} as const
-
-const highlightedCardColors = {
-    brand: "var(--bg-brand)",
-    pink: "var(--bg-pink)",
-    yellow: "var(--bg-yellow)",
-    aqua: "var(--bg-aqua)",
-    blue: "var(--bg-blue)",
-    lime: "var(--bg-lime)",
-    magenta: "var(--bg-magenta)",
-} as const
+const defaultComparisonCategories: NonNullable<PricingLayoutBlock["comparisonCategories"]> = [
+    { title: "Usage", rows: [
+        { label: "Workflow executions per month", pro: "2,000", max: "25,000", custom: "Configurable" },
+        { label: "AI tokens per month", pro: "500k", max: "4M", custom: "Configurable" },
+    ] },
+    { title: "Build", rows: [
+        { label: "Visual flow builder", pro: "\u2713", max: "\u2713", custom: "\u2713" },
+        { label: "AI agents with MCP & multi-agent", pro: "\u2713", max: "\u2713", custom: "\u2713" },
+        { label: "Files in flows", pro: "\u2713", max: "\u2713", custom: "\u2713" },
+    ] },
+    { title: "Run & debug", rows: [
+        { label: "Deterministic replay", pro: "\u2713", max: "\u2713", custom: "\u2713" },
+        { label: "Eject as binary / WASM", pro: "\u2713", max: "\u2713", custom: "\u2713" },
+    ] },
+    { title: "Support", rows: [{ label: "[SUPPORT LEVEL]", pro: "\u2014", max: "\u2014", custom: "\u2014" }] },
+]
 
 interface PricingSectionProps {
     content?: PricingLayoutBlock | null
@@ -53,7 +47,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
     const getPricingForPeriod = (plan: "pro" | "max", period: PaymentPeriod) =>
         resolveCheckoutPricing({
             aiTokensParam: null,
-            customerTypeParam: "b2c",
+            customerTypeParam: content.pricingCustomerType ?? "b2c",
             fallbackPeriodSuffix: subscriptionConfig.paymentPeriod.monthlyPeriodSuffix,
             paymentPeriodParam: period,
             planParam: plan,
@@ -124,16 +118,25 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
         },
     ]
 
+    const comparisonCategories = content.comparisonCategories?.length ? content.comparisonCategories : defaultComparisonCategories
+
     return (
         <Section
-            heading={content.sectionHeading}
-            description={content.sectionDescription}
-            linkButton={content.sectionLinkButton}
-            funnelType={content.sectionLayout ?? "center"}
+            showFunnel={false}
             animation={{ preset: "none" }}
             className="overflow-visible!"
         >
-            <div className="flex w-full justify-center">
+            <div className="flex w-full flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+                <div className="max-w-2xl text-left">
+                    <h2 className="text-3xl font-semibold leading-tight text-white md:text-4xl">
+                        {content.sectionHeading ? <FormattedText text={content.sectionHeading} /> : (
+                            <>
+                                Your pricing for Enterprise,<br />
+                                <span className="text-secondary">licensed per workspace.</span>
+                            </>
+                        )}
+                    </h2>
+                </div>
                 <SegmentedControl
                     type="single"
                     color="secondary"
@@ -143,7 +146,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
                         const option = periodOptions.find((option) => option.value === value)
                         if (option) setSelectedPeriod(option.value)
                     }}
-                    className="grid! w-full max-w-full grid-cols-3! sm:w-auto [&>span]:min-w-0"
+                    className="grid! w-full max-w-full shrink-0 grid-cols-3! sm:w-auto [&>span]:min-w-0"
                 >
                     {periodOptions.map((option) => (
                         <SegmentedControlItem key={option.value} value={option.value} className="w-full! min-w-0! px-3! py-2! text-xs! sm:min-w-40! sm:text-sm!">
@@ -160,134 +163,52 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
                 </SegmentedControl>
             </div>
 
-            <StaggerContainer className="grid w-full grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3" delayChildren={0.04} staggerChildren={0.08}>
-                {pricingPackages.map((pricingPackage) => {
-                    const features = pricingPackage.content?.features?.filter((feature) => Boolean(feature.text)) ?? []
-                    const missingFeatures = pricingPackage.content?.missing?.filter((feature) => Boolean(feature.text)) ?? []
-                    const buttonLabel = pricingPackage.content?.button?.label?.trim()
-                    const buttonUrl = pricingPackage.content?.button?.url?.trim()
-                    const highlighted = pricingPackage.key === "max"
-                    const popularPillColor = content.popularPill?.color ?? "brand"
-                    const highlightedCardColor = content.highlightedCardColor ? highlightedCardColors[content.highlightedCardColor] : null
-                    const regularPrice = pricingPackage.pricing?.totalBeforeDiscount ?? null
-                    const hasDiscount = regularPrice !== null && pricingPackage.price !== null && pricingPackage.price < regularPrice
-                    const discount = regularPrice !== null && regularPrice > 0 && pricingPackage.price !== null ? Math.max(0, (regularPrice - pricingPackage.price) / regularPrice) : 0
-
-                    const card = (
-                        <StaggerItem
-                            key={pricingPackage.key}
-                            y={14}
-                            duration={0.42}
-                            className="relative flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-white/5 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_28%,rgba(8,10,20,0.6)_100%)] p-6 md:p-8"
-                            style={
-                                highlighted && highlightedCardColor
-                                    ? {
-                                          background: `linear-gradient(160deg, color-mix(in oklch, ${highlightedCardColor} 8%, transparent), color-mix(in oklch, ${highlightedCardColor} 2%, transparent) 28%, rgba(8, 10, 20, 0.6) 100%)`,
-                                      }
-                                    : undefined
-                            }
-                        >
-                            {highlighted && <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(1_0_0/0.1),transparent_36%)]" />}
-                            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/30 to-transparent" />
-                            {highlighted && content.popularPill?.text && (
-                                <div className="absolute right-4 top-4 z-20 md:right-6 md:top-6">
-                                    <StableBadge border className={cn("border! py-0.5 pr-3 pl-2 text-sm font-medium", popularPillColorClasses[popularPillColor])}>
-                                        <span className="inline-flex items-center gap-1.5">
-                                            {getIcon(content.popularPill.icon, 14)}
-                                            {content.popularPill.text}
-                                        </span>
-                                    </StableBadge>
-                                </div>
-                            )}
-                            <h3
-                                className={cn("relative z-10 text-2xl font-semibold text-white", pricingPackage.price !== null && "pr-20")}
-                                style={highlighted && content.titleColor ? { color: content.titleColor } : undefined}
-                            >
-                                {pricingPackage.title}
-                            </h3>
-                            {pricingPackage.description && <p className="relative z-10 mt-1 leading-6 text-secondary">{pricingPackage.description}</p>}
-
-                            {pricingPackage.price !== null && (
-                                <div className="relative z-10 mt-6 flex flex-col items-start gap-0">
-                                    <AnimatePresence initial={false}>
-                                        {hasDiscount && (
-                                            <motion.span
-                                                key={selectedPeriod}
-                                                initial={{ opacity: 0, y: 4 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: 4 }}
-                                                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                                                className="relative -mb-1 inline-flex text-sm leading-none font-medium text-tertiary after:absolute after:top-1/2 after:right-0 after:left-0 after:z-10 after:h-px after:bg-current after:content-['']"
-                                            >
-                                                {regularPrice.toLocaleString(locale === "de" ? "de-DE" : "en-US", {
-                                                    style: "currency",
-                                                    currency: "EUR",
-                                                    minimumFractionDigits: 0,
-                                                    maximumFractionDigits: 2,
-                                                })}
-                                            </motion.span>
-                                        )}
-                                    </AnimatePresence>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <NumberFlow
-                                            value={pricingPackage.price}
-                                            locales={locale === "de" ? "de-DE" : "en-US"}
-                                            format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
-                                            className="text-4xl font-semibold text-white"
-                                        />
-                                        <span className="mt-2 text-base text-tertiary">{periodSuffix}</span>
-                                        {discount > 0 && (
-                                            <StableBadge border className="border! border-brand/10! bg-brand/10! px-3 py-1 text-sm font-medium text-brand!">
-                                                -{formatDiscountBadge(discount, locale)}
-                                            </StableBadge>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
-                            {(features.length > 0 || missingFeatures.length > 0) && (
-                                <div className="relative z-10 mt-8">
-                                    {content.whatsIncludedText && <p className="text-sm text-secondary">{content.whatsIncludedText}</p>}
-                                    <ul className={cn("flex flex-col gap-2", content.whatsIncludedText && "mt-3")}>
-                                        {features.map((feature, featureIndex) => (
-                                            <li key={feature.id ?? `feature-${featureIndex}`} className="flex items-start gap-3 text-sm text-white">
-                                                <IconCheck size={18} className="mt-0.5 shrink-0 text-brand" />
-                                                <span>{feature.text}</span>
-                                            </li>
-                                        ))}
-                                        {missingFeatures.map((feature, featureIndex) => (
-                                            <li key={feature.id ?? `missing-feature-${featureIndex}`} className="flex items-start gap-3 text-sm text-tertiary">
-                                                <IconX size={18} className="mt-0.5 shrink-0" />
-                                                <span>{feature.text}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {buttonLabel && buttonUrl && (
-                                <div className="relative z-10 mt-auto pt-8">
-                                    <HapticButtonLink
-                                        href={buttonUrl}
-                                        variant={pricingPackage.content?.button?.variant ?? "normal"}
-                                        className={cn("w-full", pricingPackage.content?.button?.variant === "filled" && "bg-white/80! text-primary! hover:bg-white!")}
-                                    >
-                                        {buttonLabel}
-                                    </HapticButtonLink>
-                                </div>
-                            )}
-                        </StaggerItem>
-                    )
-
-                    return highlighted ? (
-                        <BorderBeam key={pricingPackage.key} size="md" colorVariant="colorful" strength={0.7} duration={3.5} className="h-full">
-                            {card}
-                        </BorderBeam>
-                    ) : (
-                        card
-                    )
-                })}
-            </StaggerContainer>
+            <div className="w-full overflow-x-auto rounded-3xl bg-light shadow-[inset_0_1px_1px_#bfbfbf1a]">
+                <table className="w-full min-w-[850px] border-collapse text-left">
+                    <thead>
+                        <tr className="border-b border-white/10">
+                            <th scope="col" className="w-[32%] px-6 py-6 align-bottom text-lg font-semibold text-white">{locale === "de" ? "Tarife vergleichen" : "Compare plans"}{content.comparisonIntro && <p className="mt-1 text-sm font-normal text-secondary">{content.comparisonIntro}</p>}</th>
+                            {pricingPackages.map((pricingPackage) => {
+                                const highlighted = pricingPackage.key === "max"
+                                const regularPrice = pricingPackage.pricing?.totalBeforeDiscount ?? null
+                                const discount = regularPrice && pricingPackage.price !== null && pricingPackage.price < regularPrice ? (regularPrice - pricingPackage.price) / regularPrice : 0
+                                return (
+                                    <th key={pricingPackage.key} scope="col" className={cn("w-[22.6%] px-5 py-6 align-top", highlighted && "bg-white/[0.06]")}>
+                                        <div className="flex min-h-7 items-center justify-between gap-2">
+                                            <span className="text-lg font-semibold text-white">{pricingPackage.title}</span>
+                                            {highlighted && <StableBadge border className="border! border-brand/20! bg-brand/5! px-2 py-0.5 text-xs text-brand!">Popular</StableBadge>}
+                                        </div>
+                                        {pricingPackage.price !== null ? <>
+                                            <div className="mt-3 flex items-baseline gap-2 whitespace-nowrap">
+                                                <NumberFlow value={pricingPackage.price} locales={locale === "de" ? "de-DE" : "en-US"} format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }} className="text-3xl font-semibold text-white" />
+                                                <span className="text-xs font-normal text-tertiary">{periodSuffix}</span>
+                                            </div>
+                                            {discount > 0 && <p className="mt-1 text-xs text-brand">-{formatDiscountBadge(discount, locale)}</p>}
+                                        </> : <p className="mt-3 flex items-baseline gap-2 text-3xl font-semibold text-white"><span className="text-sm font-normal">{locale === "de" ? "ab" : "from"}</span><NumberFlow value={49.9} locales={locale === "de" ? "de-DE" : "en-US"} format={{ style: "currency", currency: "EUR", minimumFractionDigits: 2 }} /></p>}
+                                        {pricingPackage.description && <p className="mt-1 text-sm font-normal text-secondary">{pricingPackage.description}</p>}
+                                        {pricingPackage.content?.button?.label?.trim() && pricingPackage.content.button.url?.trim() && <HapticButtonLink href={pricingPackage.content.button.url.trim()} variant={pricingPackage.content.button.variant ?? "normal"} className={cn("mt-4 w-full whitespace-nowrap", highlighted && "bg-white! text-primary! hover:bg-white/90!")}>{pricingPackage.content.button.label.trim()}</HapticButtonLink>}
+                                    </th>
+                                )
+                            })}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {comparisonCategories.map((category, categoryIndex) => <Fragment key={category.id ?? category.title}>
+                            <tr>
+                                <th scope="rowgroup" className="px-6 pt-5 pb-2 text-sm font-semibold text-white">{category.title}</th>
+                                {pricingPackages.map((pricingPackage) => <td key={pricingPackage.key} className={cn("pt-5 pb-2", pricingPackage.key === "max" && "bg-white/[0.06]")} />)}
+                            </tr>
+                            {category.rows?.map((row, rowIndex) => <tr key={row.id ?? row.label} className={cn(rowIndex === (category.rows?.length ?? 0) - 1 && categoryIndex < comparisonCategories.length - 1 && "border-b border-white/[0.07]")}>
+                                <th scope="row" className="px-6 py-3.5 text-sm font-normal text-secondary">{row.label}</th>
+                                {pricingPackages.map((pricingPackage) => {
+                                    const value = row[pricingPackage.key as "pro" | "max" | "custom"]
+                                    return <td key={pricingPackage.key} className={cn("px-5 py-3.5 text-sm", pricingPackage.key === "max" && "bg-white/[0.06]")}>{value === "\u2713" ? <IconCheck aria-label={locale === "de" ? "Enthalten" : "Included"} size={17} className="text-brand" /> : <span className="text-white">{value || "\u2014"}</span>}</td>
+                                })}
+                            </tr>)}
+                        </Fragment>)}
+                    </tbody>
+                </table>
+            </div>
         </Section>
     )
 }

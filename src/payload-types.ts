@@ -1128,6 +1128,7 @@ export interface Page {
             blockType: 'subscriptionConfigurator';
           }
         | {
+            pricingCustomerType: 'b2c' | 'b2b';
             sectionHeading?: string | null;
             sectionLayout: 'center' | 'left';
             sectionDescription?: string | null;
@@ -1135,11 +1136,22 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
-            popularPill?: {
-              icon?: string | null;
-              text?: string | null;
-              color?: ('brand' | 'pink' | 'yellow' | 'aqua' | 'blue' | 'lime' | 'magenta') | null;
-            };
+            comparisonIntro?: string | null;
+            comparisonCategories?:
+              | {
+                  title: string;
+                  rows?:
+                    | {
+                        label: string;
+                        pro?: string | null;
+                        max?: string | null;
+                        custom?: string | null;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  id?: string | null;
+                }[]
+              | null;
             whatsIncludedText?: string | null;
             /**
              * Optional color applied to all card titles. Leave empty to use white.
@@ -2391,6 +2403,7 @@ export interface PagesSelect<T extends boolean = true> {
         pricing?:
           | T
           | {
+              pricingCustomerType?: T;
               sectionHeading?: T;
               sectionLayout?: T;
               sectionDescription?: T;
@@ -2400,12 +2413,21 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
-              popularPill?:
+              comparisonIntro?: T;
+              comparisonCategories?:
                 | T
                 | {
-                    icon?: T;
-                    text?: T;
-                    color?: T;
+                    title?: T;
+                    rows?:
+                      | T
+                      | {
+                          label?: T;
+                          pro?: T;
+                          max?: T;
+                          custom?: T;
+                          id?: T;
+                        };
+                    id?: T;
                   };
               whatsIncludedText?: T;
               titleColor?: T;
