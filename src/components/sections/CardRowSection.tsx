@@ -7,7 +7,6 @@ import { getMediaUrl } from "@/lib/media"
 import type { Media } from "@/payload-types"
 import Image from "next/image"
 import { Children, type ReactNode } from "react"
-import { Card } from "../ui/Card"
 
 interface CardRowSectionProps {
     content?: CardRowLayoutBlock | null
@@ -40,10 +39,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
 
                     return (
                         <StaggerItem key={card.id ?? `${card.title}-${index}`} y={14} duration={0.48} className="h-full">
-                            <Card
-                                size={"lg"}
-                                className="group flex h-full p-2! transform-gpu flex-col will-change-transform before:pointer-events-none before:absolute before:inset-1px before:rounded-[calc(1.5rem-1px)] before:border before:border-white/5 before:content-['']"
-                            >
+                            <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl bg-light p-2 shadow-[inset_0_1px_1px_#bfbfbf1a]">
                                 {isPlayground ? (
                                     <div className="relative aspect-[243.476/160] overflow-hidden rounded-2xl bg-primary/40">
                                         <PlaygroundFrame url={card.playgroundUrl} title={`${card.title} playground`} />
@@ -65,7 +61,7 @@ export function CardRowSection({ content, children }: CardRowSectionProps) {
                                         </LinkButton>
                                     )}
                                 </div>
-                            </Card>
+                            </div>
                         </StaggerItem>
                     )
                 })}

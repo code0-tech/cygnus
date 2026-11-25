@@ -41,7 +41,7 @@ export function DeploymentImage({ color, icon, text }: DeploymentImageProps) {
     const Icon = icons[icon]
 
     return (
-        <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-primary/40">
+        <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-primary">
             <div className={cn("absolute inset-x-[6%] -top-1/2 h-full rounded-full", accent.glow)} aria-hidden="true" />
 
             <div className="relative aspect-[243.476/160] w-full px-5 py-4">
