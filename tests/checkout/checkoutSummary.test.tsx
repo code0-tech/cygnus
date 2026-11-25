@@ -86,7 +86,7 @@ const { CheckoutSummary } = await import("../../src/components/checkout/summary/
 
 const content = {
     eyebrow: "Order summary",
-    heading: "Your plan: {plan}",
+    heading: "{plan} Plan",
     description: "Review your plan",
     nextChargeText: "Next charge on {date}",
     pricing: { perMonthSuffix: "/ month", discountButtonLabel: "Apply" },
