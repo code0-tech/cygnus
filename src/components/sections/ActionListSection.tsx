@@ -1,11 +1,11 @@
 "use client"
 
-import { ActionCard } from "@/components/actions/ActionCard"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
-import type { ActionSortOrder, ActionTag, PaginatedActionsResult } from "@/lib/cms"
+import { ActionIcon } from "@/components/actions/ActionIcon"
+import type { ActionItem, ActionSortOrder, ActionTag, PaginatedActionsResult } from "@/lib/cms"
 import { cn } from "@/lib/utils"
-import { Button, Menu, MenuContent, MenuItem, MenuTrigger, TextInput } from "@code0-tech/pictor"
-import { IconChevronDown, IconSearch } from "@tabler/icons-react"
+import { Button, SegmentedControl, SegmentedControlItem, TextInput } from "@code0-tech/pictor"
+import { IconArrowUpRight, IconSearch } from "@tabler/icons-react"
+import Link from "next/link"
 import { Section } from "@/components/ui/Section"
 import type { ChangeEvent } from "react"
 import { useEffect, useRef, useState } from "react"
@@ -57,7 +57,7 @@ const CATEGORY_LABEL_KEYS: Array<{ tag: ActionTag; label: CategoryLabelKey }> = 
     { tag: "Utility", label: "utility" },
 ]
 
-const ACTION_ROWS_PER_PAGE = 3
+const PAGE_SIZE = 12
 const ACTION_FETCH_LIMIT = 18
 
 async function fetchActionPage({
@@ -91,25 +91,33 @@ export function ActionListSection({ initialResult, locale, content }: { initialR
     const [actions, setActions] = useState(initialResult.actions)
     const [hasNextPage, setHasNextPage] = useState(initialResult.hasNextPage)
     const [nextPage, setNextPage] = useState(initialResult.nextPage)
+    const [totalDocs, setTotalDocs] = useState(initialResult.totalDocs)
     const [isLoading, setIsLoading] = useState(false)
-    const [visibleRows, setVisibleRows] = useState(ACTION_ROWS_PER_PAGE)
+    const [isLoadingMore, setIsLoadingMore] = useState(false)
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+    // Query key whose results are currently shown. Differs from the current key while a filter request is pending.
+    const [settledQueryKey, setSettledQueryKey] = useState(`${locale}|||newest`)
     const lastQueryKeyRef = useRef(`${locale}|||newest`)
-    const isMediumScreen = useMediaQuery("(min-width: 768px)")
-    const isLargeScreen = useMediaQuery("(min-width: 1024px)")
-    const columnCount = isLargeScreen ? 6 : isMediumScreen ? 4 : 2
+
+    const currentQueryKey = `${locale}|${search.trim()}|${selectedTag ?? ""}|${sortOrder}`
+    const latestQueryKeyRef = useRef(currentQueryKey)
+    latestQueryKeyRef.current = currentQueryKey
+
     const allCategoriesLabel = content.allCategoriesLabel || "All Categories"
-    const selectedCategory = CATEGORY_LABEL_KEYS.find(({ tag }) => tag === selectedTag)
-    const selectedCategoryLabel = selectedCategory ? content.categoryLabels?.[selectedCategory.label] || selectedCategory.tag : allCategoriesLabel
+    const categories = [
+        { tag: null as ActionTag | null, label: allCategoriesLabel },
+        ...CATEGORY_LABEL_KEYS.map(({ tag, label }) => ({ tag: tag as ActionTag | null, label: content.categoryLabels?.[label] || tag })),
+    ]
+    const selectedCategoryLabel = categories.find(({ tag }) => tag === selectedTag)?.label ?? allCategoriesLabel
     const sortOptions: Array<{ value: ActionSortOrder; label: string }> = [
         { value: "newest", label: content.sortNewestLabel },
         { value: "oldest", label: content.sortOldestLabel },
     ]
-    const selectedSortLabel = sortOptions.find(({ value }) => value === sortOrder)?.label ?? content.sortNewestLabel
-    const currentQueryKey = `${locale}|${search.trim()}|${selectedTag ?? ""}|${sortOrder}`
-    const latestQueryKeyRef = useRef(currentQueryKey)
-    latestQueryKeyRef.current = currentQueryKey
-    const visibleActions = actions.slice(0, visibleRows * columnCount)
+    const visibleActions = actions.slice(0, visibleCount)
     const hasMoreActions = visibleActions.length < actions.length || hasNextPage
+    const isFiltering = currentQueryKey !== settledQueryKey
+    const showSkeletons = isFiltering || isLoadingMore
+    const isEmpty = !isFiltering && !isLoading && actions.length === 0
 
     useEffect(() => {
         const queryKey = currentQueryKey
@@ -124,10 +132,13 @@ export function ActionListSection({ initialResult, locale, content }: { initialR
                     setActions(result.actions)
                     setHasNextPage(result.hasNextPage)
                     setNextPage(result.nextPage)
+                    setTotalDocs(result.totalDocs)
+                    setSettledQueryKey(queryKey)
                 })
                 .catch((error) => {
                     if (error instanceof DOMException && error.name === "AbortError") return
                     console.error("Failed to filter actions:", error)
+                    setSettledQueryKey(queryKey)
                 })
                 .finally(() => {
                     if (!controller.signal.aborted) setIsLoading(false)
@@ -140,25 +151,30 @@ export function ActionListSection({ initialResult, locale, content }: { initialR
         }
     }, [currentQueryKey, locale, search, selectedTag, sortOrder])
 
-    const resetRows = () => setVisibleRows(ACTION_ROWS_PER_PAGE)
+    const resetVisible = () => setVisibleCount(PAGE_SIZE)
+    const changeSearch = (value: string) => {
+        setSearch(value)
+        resetVisible()
+    }
     const selectTag = (tag: ActionTag | null) => {
         setSelectedTag(tag)
-        resetRows()
+        resetVisible()
     }
     const selectSortOrder = (value: ActionSortOrder) => {
         setSortOrder(value)
-        resetRows()
+        resetVisible()
     }
     const loadMore = async () => {
         if (isLoading) return
 
-        const nextVisibleRows = visibleRows + ACTION_ROWS_PER_PAGE
-        if (nextVisibleRows * columnCount <= actions.length || !hasNextPage || !nextPage) {
-            setVisibleRows(nextVisibleRows)
+        const nextVisibleCount = visibleCount + PAGE_SIZE
+        if (nextVisibleCount <= actions.length || !hasNextPage || !nextPage) {
+            setVisibleCount(nextVisibleCount)
             return
         }
 
         setIsLoading(true)
+        setIsLoadingMore(true)
         const queryKey = currentQueryKey
         try {
             const result = await fetchActionPage({ locale, page: nextPage, search, tag: selectedTag, sortOrder })
@@ -166,11 +182,12 @@ export function ActionListSection({ initialResult, locale, content }: { initialR
             setActions((currentActions) => [...currentActions, ...result.actions])
             setHasNextPage(result.hasNextPage)
             setNextPage(result.nextPage)
-            setVisibleRows(nextVisibleRows)
+            setVisibleCount(nextVisibleCount)
         } catch (error) {
             console.error("Failed to load more actions:", error)
         } finally {
             setIsLoading(false)
+            setIsLoadingMore(false)
         }
     }
 
@@ -183,84 +200,82 @@ export function ActionListSection({ initialResult, locale, content }: { initialR
             className="mx-auto w-full gap-2 sm:gap-4 md:gap-8"
             headingLevel={1}
         >
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-row gap-2 sm:gap-4">
-                    <div className="min-w-0 flex-1">
-                        <TextInput
-                            value={search}
-                            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                                setSearch(event.currentTarget.value)
-                                resetRows()
+            <div className="grid items-start gap-6 md:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
+                <aside className="flex flex-col gap-3 md:sticky md:top-24">
+                    <TextInput
+                        value={search}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) => changeSearch(event.currentTarget.value)}
+                        placeholder={content.searchPlaceholder}
+                        left={<IconSearch size={14} />}
+                        clearable
+                        className="w-full! text-white!"
+                    />
+                    <nav aria-label={allCategoriesLabel} className="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:flex-col md:overflow-visible md:px-0">
+                        {categories.map(({ tag, label }) => (
+                            <CategoryButton key={tag ?? "all"} label={label} active={selectedTag === tag} onClick={() => selectTag(tag)} />
+                        ))}
+                    </nav>
+                </aside>
+
+                <div className="flex min-w-0 flex-col gap-5">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <div className="flex flex-col gap-1">
+                            <h2 className="text-3xl font-bold tracking-tight text-white">{selectedCategoryLabel}</h2>
+                            <p className={cn("text-sm tabular-nums text-tertiary", isLoading && "animate-pulse")}>
+                                <span className="font-semibold text-white">{totalDocs}</span> Actions
+                            </p>
+                        </div>
+                        {/* Styled like the payment period switch in CheckoutSummary. */}
+                        <SegmentedControl
+                            type="single"
+                            color="secondary"
+                            className="shrink-0"
+                            value={sortOrder}
+                            onValueChange={(value: string) => {
+                                // Radix lets a single toggle group be deselected (value ""); keep the current order then.
+                                const option = sortOptions.find((option) => option.value === value)
+                                if (option) selectSortOrder(option.value)
                             }}
-                            placeholder={content.searchPlaceholder}
-                            left={<IconSearch size={12} />}
-                            clearable
-                            className="w-full! text-white!"
-                        />
-                    </div>
-                    <Menu modal={false}>
-                        <MenuTrigger asChild>
-                            <Button className="w-36! shrink-0 justify-between gap-2!">
-                                {selectedSortLabel}
-                                <IconChevronDown size={16} />
-                            </Button>
-                        </MenuTrigger>
-                        <MenuContent
-                            align="end"
-                            className="w-(--radix-dropdown-menu-trigger-width) [&_.scroll-area]:w-full! [&_.scroll-area__viewport>div]:block! [&_.scroll-area__viewport>div]:w-full! [&_.scroll-area__viewport>div>div]:w-full!"
                         >
                             {sortOptions.map(({ value, label }) => (
-                                <MenuItem key={value} onClick={() => selectSortOrder(value)} className="w-full">
-                                    {label}
-                                </MenuItem>
+                                <SegmentedControlItem key={value} value={value} className="px-3! py-2! text-xs! sm:text-sm!">
+                                    <span className="text-white">{label}</span>
+                                </SegmentedControlItem>
                             ))}
-                        </MenuContent>
-                    </Menu>
-                </div>
-            </div>
-            <div className="grid items-start gap-6 md:grid-cols-[13rem_minmax(0,1fr)]">
-                <div className="md:hidden">
-                    <Menu modal={false}>
-                        <MenuTrigger asChild>
-                            <Button className="w-full! justify-between">
-                                {selectedCategoryLabel}
-                                <IconChevronDown size={16} />
-                            </Button>
-                        </MenuTrigger>
-                        <MenuContent className="w-(--radix-dropdown-menu-trigger-width)">
-                            <MenuItem onClick={() => selectTag(null)}>{allCategoriesLabel}</MenuItem>
-                            {CATEGORY_LABEL_KEYS.map(({ tag, label }) => (
-                                <MenuItem key={tag} onClick={() => selectTag(tag)}>
-                                    {content.categoryLabels?.[label] || tag}
-                                </MenuItem>
-                            ))}
-                        </MenuContent>
-                    </Menu>
-                </div>
-                <nav aria-label={allCategoriesLabel} className="sticky top-24 hidden flex-col gap-1 md:flex">
-                    <CategoryButton active={selectedTag === null} label={allCategoriesLabel} onClick={() => selectTag(null)} />
-                    {CATEGORY_LABEL_KEYS.map(({ tag, label }) => (
-                        <CategoryButton key={tag} active={selectedTag === tag} label={content.categoryLabels?.[label] || tag} onClick={() => selectTag(tag)} />
-                    ))}
-                </nav>
-                <div className="min-w-0">
-                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-                        {visibleActions.map((action) => (
-                            <ActionCard key={action.id} action={action} locale={locale} />
-                        ))}
+                        </SegmentedControl>
                     </div>
-                    {hasMoreActions && (
-                        <div className="mt-6 flex justify-center">
+
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4" aria-busy={showSkeletons}>
+                        {!isFiltering &&
+                            visibleActions.map((action) => (
+                                <ActionTile key={action.id} action={action} locale={locale} categoryLabel={action.tags?.[0] ? getCategoryLabel(action.tags[0], content) : null} />
+                            ))}
+                        {showSkeletons && Array.from({ length: PAGE_SIZE }, (_, index) => <ActionTileSkeleton key={`skeleton-${index}`} />)}
+                    </div>
+
+                    {isEmpty && (
+                        <div className="flex flex-col items-center gap-2 rounded-3xl border border-dashed border-white/10 py-16 text-center">
+                            <IconSearch size={20} className="text-tertiary" />
+                            <p className="text-sm text-tertiary">{content.noActionsFoundLabel}</p>
+                        </div>
+                    )}
+
+                    {!isFiltering && hasMoreActions && (
+                        <div className="mt-4 flex justify-center">
                             <Button type="button" variant="normal" disabled={isLoading} onClick={() => void loadMore()}>
                                 {content.loadMoreLabel}
                             </Button>
                         </div>
                     )}
-                    {!isLoading && actions.length === 0 && <p className="py-8 text-center text-sm text-tertiary">{content.noActionsFoundLabel}</p>}
                 </div>
             </div>
         </Section>
     )
+}
+
+function getCategoryLabel(tag: string, content: ActionListContent) {
+    const entry = CATEGORY_LABEL_KEYS.find((item) => item.tag === tag)
+    return (entry && content.categoryLabels?.[entry.label]) || tag
 }
 
 function CategoryButton({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
@@ -268,9 +283,57 @@ function CategoryButton({ active, label, onClick }: { active: boolean; label: st
         <button
             type="button"
             onClick={onClick}
-            className={cn("shrink-0 rounded-xl px-3 py-2 text-left text-sm transition-colors", active ? "bg-light text-white" : "text-tertiary hover:bg-light hover:text-white")}
+            className={cn(
+                "shrink-0 rounded-full px-4 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors",
+                active ? "bg-light text-white shadow-[inset_0_1px_1px_#bfbfbf1a]" : "text-tertiary hover:bg-white/4 hover:text-white"
+            )}
         >
             {label}
         </button>
+    )
+}
+
+/** Neutral fallback when an action has no brand colour (instead of the brand green). */
+const NEUTRAL_ACCENT = "var(--color-secondary)"
+
+/**
+ * Square action tile in the house card style (light surface + 1px inset highlight).
+ * The action's brand colour only shows as a soft glow in the top-left corner.
+ */
+function ActionTile({ action, locale, categoryLabel }: { action: ActionItem; locale: string; categoryLabel?: string | null }) {
+    const accent = action.brandColor1?.trim() || NEUTRAL_ACCENT
+
+    return (
+        <Link
+            href={`/${locale}/actions/${action.slug}`}
+            className="group relative isolate flex aspect-square flex-col overflow-hidden rounded-3xl bg-light p-4 shadow-[inset_0_1px_1px_#bfbfbf1a] transition-colors hover:bg-[#272532]"
+        >
+            <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -z-10 opacity-60 transition-opacity group-hover:opacity-100"
+                style={{ background: `radial-gradient(circle at 0% 0%, color-mix(in oklab, ${accent} 22%, transparent), transparent 55%)` }}
+            />
+            <IconArrowUpRight size={18} className="absolute top-4 right-4 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+            <div className="flex flex-1 items-center justify-center">{action.icon && <ActionIcon icon={action.icon} size={80} />}</div>
+            <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
+                <h3 className="max-w-full truncate text-base font-bold text-white">{action.title}</h3>
+                {categoryLabel && <span className="w-fit rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-secondary">{categoryLabel}</span>}
+            </div>
+        </Link>
+    )
+}
+
+/** Loading placeholder matching ActionTile's size and layout. */
+function ActionTileSkeleton() {
+    return (
+        <div aria-hidden className="flex aspect-square animate-pulse flex-col rounded-3xl bg-light p-4 shadow-[inset_0_1px_1px_#bfbfbf1a]">
+            <div className="flex flex-1 items-center justify-center">
+                <div className="size-20 rounded-2xl bg-white/5" />
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+                <div className="my-1 h-4 w-2/3 rounded-full bg-white/8" />
+                <div className="h-[19px] w-16 rounded-full bg-white/5" />
+            </div>
+        </div>
     )
 }
