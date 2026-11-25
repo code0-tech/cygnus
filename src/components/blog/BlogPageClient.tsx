@@ -5,7 +5,6 @@ import { FirstBlogCard } from "@/components/cards/FirstBlogCard"
 import type { BlogPostItem } from "@/lib/cms"
 import { Alert, Button } from "@code0-tech/pictor"
 import { useRef, useState, useTransition } from "react"
-import { Card } from "../ui/Card"
 
 interface BlogPageClientProps {
     heading: string
@@ -21,21 +20,20 @@ interface BlogPageClientProps {
 
 function BlogCardSkeleton() {
     return (
-        <Card className="h-full p-2">
+        <div aria-hidden="true" className="h-full animate-pulse rounded-3xl bg-light p-2 shadow-[inset_0_1px_1px_#bfbfbf1a]">
             <div className="relative z-10 flex h-full flex-row items-stretch gap-4 md:flex-col">
-                <div className="relative w-40 aspect-video shrink-0 overflow-hidden rounded-2xl bg-white/10 md:w-full md:aspect-video" />
+                <div className="aspect-video w-40 shrink-0 rounded-2xl bg-primary/40 md:w-full" />
                 <div className="min-w-0 flex-1 px-1 pb-1 md:flex md:flex-col md:justify-between">
                     <div>
                         <div className="h-6 w-full rounded-full bg-white/10" />
                         <div className="mt-2 h-6 w-4/5 rounded-full bg-white/10" />
                         <div className="mt-4 h-4 w-full rounded-full bg-white/10" />
                         <div className="mt-2 h-4 w-5/6 rounded-full bg-white/10" />
-                        <div className="mt-2 h-4 w-2/3 rounded-full bg-white/10" />
                     </div>
                     <div className="mb-2 mt-4 h-4 w-3/4 rounded-full bg-white/10" />
                 </div>
             </div>
-        </Card>
+        </div>
     )
 }
 
@@ -86,7 +84,7 @@ export function BlogPageClient({ heading, initialPosts, initialHasNextPage, init
                     <div aria-hidden className="h-16" />
                 </>
             )}
-            {remainingPosts.length > 0 && (
+            {(remainingPosts.length > 0 || isPending) && (
                 <>
                     <div className="flex items-center gap-4">
                         <h2 className="text-2xl font-medium text-secondary">{viewOtherBlogsLabel}</h2>

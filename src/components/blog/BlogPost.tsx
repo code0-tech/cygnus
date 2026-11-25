@@ -13,6 +13,7 @@ import { MarkdownContent } from "./MarkdownContent"
 import { TableOfContents, type TocHeading } from "./TableOfContents"
 import { LinkButton } from "../ui/LinkButton"
 import { Card } from "../ui/Card"
+import { PlaygroundFrame } from "../ui/PlaygroundFrame"
 
 interface BlogPostProps {
     slug: string
@@ -129,7 +130,13 @@ export async function BlogPost({ slug, locale }: BlogPostProps) {
                 {post.shortDescription ? <p className="text-balance text-lg text-secondary mb-4">{post.shortDescription}</p> : null}
             </header>
 
-            {heroImageUrl ? (
+            {post.heroMediaType === "playground" && post.heroPlaygroundUrl ? (
+                <Card size="lg" className="p-2">
+                    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/5">
+                        <PlaygroundFrame url={post.heroPlaygroundUrl} title={`${post.title} playground`} />
+                    </div>
+                </Card>
+            ) : heroImageUrl ? (
                 <Card size="lg" className="p-2">
                     <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-white/5">
                         <Image src={heroImageUrl} alt={heroImage.alt ?? post.title} fill priority sizes="(min-width: 1024px) 75vw, 100vw" className="object-cover" />

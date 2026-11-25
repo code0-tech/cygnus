@@ -76,6 +76,7 @@ export const enum_actions_tags = pgEnum('enum_actions_tags', ['AI', 'Analytics',
 export const enum_jobs_category = pgEnum('enum_jobs_category', ['engineering', 'marketing', 'design', 'product', 'sales', 'operations'])
 export const enum_jobs_type = pgEnum('enum_jobs_type', ['full-time', 'part-time', 'contract', 'internship', 'working-student', 'freelance'])
 export const enum_jobs_location = pgEnum('enum_jobs_location', ['remote', 'hybrid', 'leipzig', 'solingen'])
+export const enum_blog_hero_media_type = pgEnum('enum_blog_hero_media_type', ['image', 'playground'])
 export const enum_payload_ai_auditlog_action = pgEnum('enum_payload_ai_auditlog_action', ['create', 'update', 'delete', 'updateGlobal'])
 export const enum_payload_ai_auditlog_target_type = pgEnum('enum_payload_ai_auditlog_target_type', ['collection', 'global'])
 export const enum_navigation_buttons_buttons_variant = pgEnum('enum_navigation_buttons_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
@@ -1739,6 +1740,8 @@ export const blog = pgTable('blog', {
   heroImage: integer('hero_image_id').references(() => media.id, {
       onDelete: 'set null'
   }),
+  heroMediaType: enum_blog_hero_media_type('hero_media_type').default("image"),
+  heroPlaygroundUrl: varchar('hero_playground_url'),
   updatedAt: timestamp('updated_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
   createdAt: timestamp('created_at', {mode: 'string',withTimezone: true,precision: 3}).defaultNow().notNull(),
 }, (columns) => [
@@ -4340,6 +4343,7 @@ type DatabaseSchema = {
   enum_jobs_category: typeof enum_jobs_category
   enum_jobs_type: typeof enum_jobs_type
   enum_jobs_location: typeof enum_jobs_location
+  enum_blog_hero_media_type: typeof enum_blog_hero_media_type
   enum_payload_ai_auditlog_action: typeof enum_payload_ai_auditlog_action
   enum_payload_ai_auditlog_target_type: typeof enum_payload_ai_auditlog_target_type
   enum_navigation_buttons_buttons_variant: typeof enum_navigation_buttons_buttons_variant

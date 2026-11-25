@@ -64,7 +64,7 @@ type ActionDetailItem = ActionItem
 export type JobItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order">
 type JobDetailItem = Pick<Job, "id" | "title" | "slug" | "category" | "type" | "location" | "description" | "order" | "content">
 export type TeamMemberItem = Pick<TeamMember, "id" | "name" | "image" | "shortDescription" | "about" | "role" | "joinedAt">
-export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription" | "isPinned"> & {
+export type BlogPostItem = Pick<Blog, "id" | "title" | "slug" | "content" | "createdAt" | "shortDescription" | "isPinned" | "heroMediaType" | "heroPlaygroundUrl"> & {
     heroImage?: (number | null) | Media
     meta?: Blog["meta"]
     author: number | Pick<TeamMember, "name" | "image" | "role">
@@ -486,6 +486,8 @@ const getBlogPostsCached = cache(async (locale: AppLocale, page: number, limit: 
                     shortDescription: true,
                     createdAt: true,
                     heroImage: true,
+                    heroMediaType: true,
+                    heroPlaygroundUrl: true,
                     author: true,
                 },
             })

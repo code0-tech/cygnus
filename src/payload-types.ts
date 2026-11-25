@@ -1381,6 +1381,8 @@ export interface Blog {
   };
   shortDescription?: string | null;
   heroImage?: (number | null) | Media;
+  heroMediaType?: ('image' | 'playground') | null;
+  heroPlaygroundUrl?: string | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -2711,6 +2713,8 @@ export interface BlogSelect<T extends boolean = true> {
   content?: T;
   shortDescription?: T;
   heroImage?: T;
+  heroMediaType?: T;
+  heroPlaygroundUrl?: T;
   meta?:
     | T
     | {

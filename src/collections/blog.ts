@@ -1,5 +1,6 @@
 import { lexicalEditor } from "@payloadcms/richtext-lexical"
 import { sanitizeLexicalUploadValues } from "@/lib/sanitizeLexicalUploadValues"
+import { validatePlaygroundUrl } from "@/fields/playgroundMediaFields"
 import type { CollectionConfig } from "payload"
 
 export const Blog: CollectionConfig = {
@@ -97,6 +98,29 @@ export const Blog: CollectionConfig = {
             name: "heroImage",
             type: "upload",
             relationTo: "media",
+            admin: {
+                condition: (_, siblingData) => siblingData?.heroMediaType !== "playground",
+            },
+        },
+        {
+            name: "heroMediaType",
+            label: "Hero Media Type",
+            type: "select",
+            defaultValue: "image",
+            options: [
+                { label: "Image", value: "image" },
+                { label: "Playground", value: "playground" },
+            ],
+        },
+        {
+            name: "heroPlaygroundUrl",
+            label: "Playground URL",
+            type: "text",
+            admin: {
+                condition: (_, siblingData) => siblingData?.heroMediaType === "playground",
+            },
+            validate: (value: string | null | undefined, { siblingData }: { siblingData: unknown }) =>
+                validatePlaygroundUrl(value, { mediaType: siblingData && typeof siblingData === "object" && "heroMediaType" in siblingData ? siblingData.heroMediaType : "image" }),
         },
     ],
 }
