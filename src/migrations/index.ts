@@ -221,6 +221,7 @@ import * as migration_20261125_204000_small_pricing_customer_type from './202611
 import * as migration_20261125_204500_remove_small_pricing_features from './20261125_204500_remove_small_pricing_features';
 import * as migration_20261125_205000_small_pricing_copy_fields from './20261125_205000_small_pricing_copy_fields';
 import * as migration_20261125_210000_pricing_copy_fields from './20261125_210000_pricing_copy_fields';
+import * as migration_20261125_211000_compare_application_matrix from './20261125_211000_compare_application_matrix';
 
 export const migrations = [
   {
@@ -1332,5 +1333,10 @@ export const migrations = [
     up: migration_20261125_210000_pricing_copy_fields.up,
     down: migration_20261125_210000_pricing_copy_fields.down,
     name: '20261125_210000_pricing_copy_fields',
+  },
+  {
+    up: migration_20261125_211000_compare_application_matrix.up,
+    down: migration_20261125_211000_compare_application_matrix.down,
+    name: '20261125_211000_compare_application_matrix',
   },
 ];

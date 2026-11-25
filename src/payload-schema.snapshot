@@ -63,10 +63,9 @@ export const enum_pages_blocks_small_pricing_gradient_direction = pgEnum('enum_p
 export const enum_pages_blocks_small_pricing_pro_button_variant = pgEnum('enum_pages_blocks_small_pricing_pro_button_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_small_pricing_max_button_variant = pgEnum('enum_pages_blocks_small_pricing_max_button_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_small_pricing_custom_button_variant = pgEnum('enum_pages_blocks_small_pricing_custom_button_variant', ['none', 'normal', 'outlined', 'filled'])
+export const enum_pages_blocks_compare_application_apps_features_status = pgEnum('enum_pages_blocks_compare_application_apps_features_status', ['included', 'partial', 'unavailable'])
 export const enum_pages_blocks_compare_application_buttons_variant = pgEnum('enum_pages_blocks_compare_application_buttons_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_compare_application_section_layout = pgEnum('enum_pages_blocks_compare_application_section_layout', ['center', 'left'])
-export const enum_pages_blocks_compare_application_gradient = pgEnum('enum_pages_blocks_compare_application_gradient', ['blue', 'yellow', 'pink', 'aqua', 'brand', 'lime', 'magenta', 'neutral'])
-export const enum_pages_blocks_compare_application_gradient_direction = pgEnum('enum_pages_blocks_compare_application_gradient_direction', ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'])
 export const enum_pages_slug = pgEnum('enum_pages_slug', ['main', 'jobs', 'blog', 'features', 'about-us', 'legal-notice', 'privacy', 'terms', 'contact', 'actions', 'action-details', 'community-edition', 'enterprise-edition', 'pricing', 'subscription'])
 export const enum_actions_tags = pgEnum('enum_actions_tags', ['AI', 'Analytics', 'Communication', 'Cybersecurity', 'Data & Storage', 'Developer Tools', 'Development', 'Finance & Accounting', 'HITL', 'Marketing', 'Miscellaneous', 'Productivity', 'Sales', 'Utility'])
 export const enum_jobs_category = pgEnum('enum_jobs_category', ['engineering', 'marketing', 'design', 'product', 'sales', 'operations'])
@@ -1504,8 +1503,9 @@ export const pages_blocks_compare_application_apps_features = pgTable('pages_blo
   _parentID: varchar('_parent_id').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
+  category: varchar('category').notNull(),
   title: varchar('title').notNull(),
-  exists: boolean('exists').default(true),
+  status: enum_pages_blocks_compare_application_apps_features_status('status').notNull().default("included"),
 }, (columns) => [
     index('pages_blocks_compare_application_apps_features_order_idx').on(columns._order), index('pages_blocks_compare_application_apps_features_parent_id_idx').on(columns._parentID), index('pages_blocks_compare_application_apps_features_locale_idx').on(columns._locale), foreignKey({
       columns: [columns['_parentID']],
@@ -1521,10 +1521,14 @@ export const pages_blocks_compare_application_apps = pgTable('pages_blocks_compa
   _parentID: varchar('_parent_id').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
-  logo: integer('logo_id').notNull().references(() => media.id, {
+  logo: integer('logo_id').references(() => media.id, {
       onDelete: 'set null'
   }),
+  logoFallback: varchar('logo_fallback').default("Logo"),
   name: varchar('name').notNull(),
+  comparisonUrl: varchar('comparison_url'),
+  comparisonLinkLabel: varchar('comparison_link_label'),
+  highlighted: boolean('highlighted').default(false),
 }, (columns) => [
     index('pages_blocks_compare_application_apps_order_idx').on(columns._order), index('pages_blocks_compare_application_apps_parent_id_idx').on(columns._parentID), index('pages_blocks_compare_application_apps_locale_idx').on(columns._locale), index('pages_blocks_compare_application_apps_logo_idx').on(columns.logo), foreignKey({
       columns: [columns['_parentID']],
@@ -1559,14 +1563,16 @@ export const pages_blocks_compare_application = pgTable('pages_blocks_compare_ap
   _path: text('_path').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
-  sectionHeading: varchar('section_heading'),
+  sectionHeading: varchar('section_heading').default("**CodeZero in comparison with**\\nother automation tools"),
   sectionLayout: enum_pages_blocks_compare_application_section_layout('section_layout').notNull().default("center"),
   sectionDescription: varchar('section_description'),
   sectionLinkButton_label: varchar('section_link_button_label'),
   sectionLinkButton_url: varchar('section_link_button_url'),
+  featureColumnLabel: varchar('feature_column_label').default("Feature"),
+  partialLabel: varchar('partial_label').default("Partial"),
+  detailedComparisonsLabel: varchar('detailed_comparisons_label').default("Detailed comparisons"),
+  footnote: varchar('footnote').default("As of [DATE], based on publicly available information."),
   showIcon: boolean('show_icon').default(true),
-  gradient: enum_pages_blocks_compare_application_gradient('gradient').default("blue"),
-  gradientDirection: enum_pages_blocks_compare_application_gradient_direction('gradient_direction').default("topLeft"),
   blockName: varchar('block_name'),
 }, (columns) => [
     index('pages_blocks_compare_application_order_idx').on(columns._order), index('pages_blocks_compare_application_parent_id_idx').on(columns._parentID), index('pages_blocks_compare_application_path_idx').on(columns._path), index('pages_blocks_compare_application_locale_idx').on(columns._locale), foreignKey({
@@ -4307,10 +4313,9 @@ type DatabaseSchema = {
   enum_pages_blocks_small_pricing_pro_button_variant: typeof enum_pages_blocks_small_pricing_pro_button_variant
   enum_pages_blocks_small_pricing_max_button_variant: typeof enum_pages_blocks_small_pricing_max_button_variant
   enum_pages_blocks_small_pricing_custom_button_variant: typeof enum_pages_blocks_small_pricing_custom_button_variant
+  enum_pages_blocks_compare_application_apps_features_status: typeof enum_pages_blocks_compare_application_apps_features_status
   enum_pages_blocks_compare_application_buttons_variant: typeof enum_pages_blocks_compare_application_buttons_variant
   enum_pages_blocks_compare_application_section_layout: typeof enum_pages_blocks_compare_application_section_layout
-  enum_pages_blocks_compare_application_gradient: typeof enum_pages_blocks_compare_application_gradient
-  enum_pages_blocks_compare_application_gradient_direction: typeof enum_pages_blocks_compare_application_gradient_direction
   enum_pages_slug: typeof enum_pages_slug
   enum_actions_tags: typeof enum_actions_tags
   enum_jobs_category: typeof enum_jobs_category

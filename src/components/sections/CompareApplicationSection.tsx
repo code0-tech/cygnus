@@ -5,8 +5,9 @@ import type { CompareApplicationLayoutBlock } from "@/lib/cms"
 import { getMediaUrl } from "@/lib/media"
 import { cn } from "@/lib/utils"
 import type { Media } from "@/payload-types"
-import { IconCheck, IconX } from "@tabler/icons-react"
+import { IconCheck, IconChevronRight, IconX } from "@tabler/icons-react"
 import Image from "next/image"
+import { Fragment } from "react"
 
 interface CompareApplicationSectionProps {
     content?: CompareApplicationLayoutBlock | null
@@ -14,48 +15,60 @@ interface CompareApplicationSectionProps {
 
 export function CompareApplicationSection({ content }: CompareApplicationSectionProps) {
     const apps = content?.apps?.filter((app) => Boolean(app.name)) ?? []
-    const buttons = content?.buttons?.filter((button) => Boolean(button.label && button.url)) ?? []
-    const button = buttons[0]
+    const button = content?.buttons?.[0]
     const showIcon = content?.showIcon !== false
-
     if (!content || apps.length === 0) return null
+    const highlightedAppIndex = apps.findIndex((app) => app.highlighted)
+    const highlightedColumnWidth = 68 / apps.length
+
+    const categories = Array.from(new Set(apps.flatMap((app) => app.features?.map((feature) => feature.category).filter((category): category is string => Boolean(category)) ?? [])))
+    const comparisonRows = categories.map((category) => {
+        const titles = Array.from(new Set(apps.flatMap((app) => app.features?.filter((feature) => feature.category === category).map((feature) => feature.title).filter((title): title is string => Boolean(title)) ?? [])))
+        return {
+            category,
+            rows: titles.map((title) => ({
+                title,
+                statuses: apps.map((app) => app.features?.find((feature) => feature.category === category && feature.title === title)?.status ?? "unavailable"),
+            })),
+        }
+    })
 
     return (
         <Section
             heading={content.sectionHeading}
-            description={content.sectionDescription}
-            linkButton={content.sectionLinkButton}
             funnelType={content.sectionLayout ?? "center"}
             animation={{ preset: "none" }}
         >
-            <Card size="lg" variant="light" radialGradient={content.gradient} gradientDirection={content.gradientDirection} className="w-full p-0!">
-                <div className="relative z-10 overflow-x-auto rounded-[inherit]">
-                    <table className="w-full table-fixed border-separate border-spacing-0" style={{ minWidth: `${Math.max(apps.length, 2) * 15}rem` }}>
+            <Card size="lg" variant="default" topline={false} className="w-full rounded-3xl border-0! bg-light! p-0! shadow-[inset_0_1px_1px_#bfbfbf1a]">
+                <div className="overflow-x-auto rounded-[inherit]">
+                    <div className="relative min-w-[900px]">
+                        {highlightedAppIndex >= 0 && <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-y-0 z-0 bg-white/[0.06]"
+                            style={{
+                                left: `calc(32% + ${highlightedAppIndex * highlightedColumnWidth}%)`,
+                                width: `${highlightedColumnWidth}%`,
+                            }}
+                        />}
+                    <table className="relative z-10 w-full min-w-[900px] table-fixed border-separate border-spacing-0 text-left">
+                        <colgroup>
+                            <col className="w-[32%]" />
+                            {apps.map((app) => <col key={app.id ?? app.name} />)}
+                        </colgroup>
                         <thead>
                             <tr>
-                                {apps.map((app, index) => {
+                                <th scope="col" className="border-b border-white/10 px-6 py-6 align-bottom text-sm font-normal text-secondary">{content.featureColumnLabel}</th>
+                                {apps.map((app) => {
                                     const logo = typeof app.logo === "object" ? (app.logo as Media) : null
                                     const logoUrl = getMediaUrl(logo?.url)
-
+                                    const highlighted = Boolean(app.highlighted)
                                     return (
-                                        <th
-                                            scope="col"
-                                            className={cn("border-b border-white/10 p-5 text-left align-top", index > 0 && "border-l")}
-                                            key={app.id ?? `${app.name}-${index}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/5 p-2">
-                                                    {logoUrl && (
-                                                        <Image
-                                                            src={logoUrl}
-                                                            alt={logo?.alt || app.name}
-                                                            fill
-                                                            sizes="44px"
-                                                            className="object-contain p-2"
-                                                        />
-                                                    )}
+                                        <th key={app.id ?? app.name} scope="col" className="border-b border-white/10 px-4 py-6 text-center">
+                                            <div className="mx-auto flex flex-col items-center gap-2">
+                                                <div className={cn("relative flex size-10 items-center justify-center overflow-hidden rounded-xl", highlighted ? "bg-white text-primary" : "bg-white/[0.05] text-secondary")}>
+                                                    {logoUrl ? <Image src={logoUrl} alt={logo?.alt || app.name} fill sizes="40px" className="object-contain p-2" /> : <span className="text-xs font-semibold">{app.logoFallback}</span>}
                                                 </div>
-                                                <span className="text-lg font-semibold text-white">{app.name}</span>
+                                                <span className="text-sm font-semibold text-white">{app.name}</span>
                                             </div>
                                         </th>
                                     )
@@ -63,48 +76,48 @@ export function CompareApplicationSection({ content }: CompareApplicationSection
                             </tr>
                         </thead>
                         <tbody>
+                            {comparisonRows.map((category, categoryIndex) => <Fragment key={`category-${category.category}`}>
+                                <tr>
+                                    <th scope="rowgroup" className="px-6 pt-5 pb-2 text-sm font-semibold text-white">{category.category}</th>
+                                    {apps.map((app) => <td key={app.id ?? app.name} className="pt-5 pb-2" />)}
+                                </tr>
+                                {category.rows.map((row, rowIndex) => (
+                                    <tr key={`${category.category}-${row.title}`} className={cn(rowIndex === category.rows.length - 1 && categoryIndex < comparisonRows.length - 1 && "border-b border-white/[0.07]")}>
+                                        <th scope="row" className="px-6 py-3 text-sm font-normal text-secondary">{row.title}</th>
+                                        {row.statuses.map((status, index) => {
+                                            const app = apps[index]
+                                            return (
+                                                <td key={app.id ?? app.name} className="px-4 py-3 text-center text-sm">
+                                                    {status === "included" && showIcon && <IconCheck aria-hidden="true" size={17} className="mx-auto text-brand" />}
+                                                    {status === "partial" && <span className="text-secondary">{content.partialLabel}</span>}
+                                                    {status === "unavailable" && showIcon && <IconX aria-hidden="true" size={16} className="mx-auto text-tertiary" />}
+                                                </td>
+                                            )
+                                        })}
+                                    </tr>
+                                ))}
+                            </Fragment>)}
                             <tr>
-                                {apps.map((app, index) => {
-                                    const features = app.features?.filter((feature) => Boolean(feature.title)) ?? []
-
-                                    return (
-                                        <td className={cn("p-5 align-top", index > 0 && "border-l border-white/10")} key={app.id ?? `${app.name}-${index}`}>
-                                            <div className="flex h-full flex-col">
-                                                <ul className="flex flex-col gap-2">
-                                                    {features.map((feature, featureIndex) => (
-                                                        <li
-                                                            className={cn("flex items-start text-sm", showIcon && "gap-2", feature.exists === false ? "text-tertiary" : "text-white")}
-                                                            key={feature.id ?? `feature-${featureIndex}`}
-                                                        >
-                                                            {showIcon &&
-                                                                (feature.exists === false ? (
-                                                                    <IconX size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-                                                                ) : (
-                                                                    <IconCheck size={16} className="mt-0.5 shrink-0 text-brand" aria-hidden="true" />
-                                                                ))}
-                                                            <span>{feature.title}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-
-                                                {index === 0 && button && (
-                                                    <div className="mt-auto pt-6">
-                                                        <HapticButtonLink
-                                                            href={button.url}
-                                                            variant={button.variant ?? "normal"}
-                                                            className={cn("w-full!", button.variant === "filled" && "bg-white/80! text-primary! hover:bg-white!")}
-                                                        >
-                                                            {button.label}
-                                                        </HapticButtonLink>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                    )
-                                })}
+                                <th scope="row" className="border-t border-white/[0.07] px-6 py-4 text-xs font-normal text-tertiary">{content.detailedComparisonsLabel}</th>
+                                {apps.map((app, index) => (
+                                    <td key={app.id ?? app.name} className="border-t border-white/[0.07] px-4 py-3 text-center">
+                                        {index === 0 && button ? (
+                                            <HapticButtonLink href={button.url} variant={button.variant ?? "filled"} className="whitespace-nowrap bg-white! px-4! py-2! text-primary! hover:bg-white/90!">{button.label}</HapticButtonLink>
+                                        ) : app.comparisonUrl && app.comparisonLinkLabel ? (
+                                            <HapticButtonLink href={app.comparisonUrl} variant="normal" className="whitespace-nowrap text-sm!">
+                                                <span className="inline-flex items-center gap-1">
+                                                    {app.comparisonLinkLabel.replace(/\s*\u203a$/u, "")}
+                                                    <IconChevronRight size={14} aria-hidden="true" />
+                                                </span>
+                                            </HapticButtonLink>
+                                        ) : null}
+                                    </td>
+                                ))}
                             </tr>
                         </tbody>
                     </table>
+                    {content.footnote && <p className="relative z-10 px-4 py-3 text-xs text-tertiary">{content.footnote}</p>}
+                    </div>
                 </div>
             </Card>
         </Section>

@@ -1289,21 +1289,28 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
+            featureColumnLabel?: string | null;
+            partialLabel?: string | null;
+            detailedComparisonsLabel?: string | null;
+            footnote?: string | null;
             apps: {
-              logo: number | Media;
+              logo?: (number | null) | Media;
+              logoFallback?: string | null;
               name: string;
+              comparisonUrl?: string | null;
+              comparisonLinkLabel?: string | null;
+              highlighted?: boolean | null;
               features?:
                 | {
+                    category: string;
                     title: string;
-                    exists?: boolean | null;
+                    status: 'included' | 'partial' | 'unavailable';
                     id?: string | null;
                   }[]
                 | null;
               id?: string | null;
             }[];
             showIcon?: boolean | null;
-            gradient?: ('blue' | 'yellow' | 'pink' | 'aqua' | 'brand' | 'lime' | 'magenta' | 'neutral') | null;
-            gradientDirection?: ('topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight') | null;
             buttons?:
               | {
                   label: string;
@@ -2579,23 +2586,30 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              featureColumnLabel?: T;
+              partialLabel?: T;
+              detailedComparisonsLabel?: T;
+              footnote?: T;
               apps?:
                 | T
                 | {
                     logo?: T;
+                    logoFallback?: T;
                     name?: T;
+                    comparisonUrl?: T;
+                    comparisonLinkLabel?: T;
+                    highlighted?: T;
                     features?:
                       | T
                       | {
+                          category?: T;
                           title?: T;
-                          exists?: T;
+                          status?: T;
                           id?: T;
                         };
                     id?: T;
                   };
               showIcon?: T;
-              gradient?: T;
-              gradientDirection?: T;
               buttons?:
                 | T
                 | {
