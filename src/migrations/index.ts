@@ -213,6 +213,7 @@ import * as migration_20261118_120000_license_usage from './20261118_120000_lice
 import * as migration_20261121_120000_checkout_close_label from './20261121_120000_checkout_close_label';
 import * as migration_20261122_120000_checkout_customer_type_login from './20261122_120000_checkout_customer_type_login';
 import * as migration_20261125_120000_checkout_summary_plan_title_heading from './20261125_120000_checkout_summary_plan_title_heading';
+import * as migration_20261125_180000_action_definition_show_more_labels from './20261125_180000_action_definition_show_more_labels';
 
 export const migrations = [
   {
@@ -1284,5 +1285,10 @@ export const migrations = [
     up: migration_20261125_120000_checkout_summary_plan_title_heading.up,
     down: migration_20261125_120000_checkout_summary_plan_title_heading.down,
     name: '20261125_120000_checkout_summary_plan_title_heading',
+  },
+  {
+    up: migration_20261125_180000_action_definition_show_more_labels.up,
+    down: migration_20261125_180000_action_definition_show_more_labels.down,
+    name: '20261125_180000_action_definition_show_more_labels',
   },
 ];

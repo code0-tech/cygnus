@@ -823,6 +823,8 @@ export interface Page {
             };
             functionDefinitionLabel: string;
             parametersLabel: string;
+            showAllLabel: string;
+            showLessLabel: string;
             id?: string | null;
             blockName?: string | null;
             blockType: 'actionFunctions';
@@ -837,6 +839,8 @@ export interface Page {
             };
             flowTypeLabel: string;
             settingsLabel: string;
+            showAllLabel: string;
+            showLessLabel: string;
             id?: string | null;
             blockName?: string | null;
             blockType: 'actionEvents';
@@ -2046,6 +2050,8 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               functionDefinitionLabel?: T;
               parametersLabel?: T;
+              showAllLabel?: T;
+              showLessLabel?: T;
               id?: T;
               blockName?: T;
             };
@@ -2063,6 +2069,8 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               flowTypeLabel?: T;
               settingsLabel?: T;
+              showAllLabel?: T;
+              showLessLabel?: T;
               id?: T;
               blockName?: T;
             };

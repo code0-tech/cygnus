@@ -730,6 +730,8 @@ export const pages_blocks_action_functions = pgTable('pages_blocks_action_functi
   sectionLinkButton_url: varchar('section_link_button_url'),
   functionDefinitionLabel: varchar('function_definition_label').notNull().default("FunctionDefinition"),
   parametersLabel: varchar('parameters_label').notNull().default("Parameters"),
+  showAllLabel: varchar('show_all_label').notNull().default("Show all"),
+  showLessLabel: varchar('show_less_label').notNull().default("Show less"),
   blockName: varchar('block_name'),
 }, (columns) => [
     index('pages_blocks_action_functions_order_idx').on(columns._order), index('pages_blocks_action_functions_parent_id_idx').on(columns._parentID), index('pages_blocks_action_functions_path_idx').on(columns._path), index('pages_blocks_action_functions_locale_idx').on(columns._locale), foreignKey({
@@ -754,6 +756,8 @@ export const pages_blocks_action_events = pgTable('pages_blocks_action_events', 
   sectionLinkButton_url: varchar('section_link_button_url'),
   flowTypeLabel: varchar('flow_type_label').notNull().default("FlowType"),
   settingsLabel: varchar('settings_label').notNull().default("Settings"),
+  showAllLabel: varchar('show_all_label').notNull().default("Show all"),
+  showLessLabel: varchar('show_less_label').notNull().default("Show less"),
   blockName: varchar('block_name'),
 }, (columns) => [
     index('pages_blocks_action_events_order_idx').on(columns._order), index('pages_blocks_action_events_parent_id_idx').on(columns._parentID), index('pages_blocks_action_events_path_idx').on(columns._path), index('pages_blocks_action_events_locale_idx').on(columns._locale), foreignKey({

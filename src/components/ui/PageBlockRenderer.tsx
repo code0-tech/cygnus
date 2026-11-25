@@ -93,6 +93,8 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
                 sectionLinkButton={content.sectionLinkButton}
                 functionDefinitionLabel={content.functionDefinitionLabel}
                 parametersLabel={content.parametersLabel}
+                showAllLabel={content.showAllLabel}
+                showLessLabel={content.showLessLabel}
             />
         )
     },
@@ -108,6 +110,8 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
                 sectionLinkButton={content.sectionLinkButton}
                 flowTypeLabel={content.flowTypeLabel}
                 settingsLabel={content.settingsLabel}
+                showAllLabel={content.showAllLabel}
+                showLessLabel={content.showLessLabel}
             />
         )
     },

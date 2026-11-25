@@ -8,5 +8,7 @@ export const ActionFunctionsBlock: Block = {
         sectionFields({ layoutDefaultValue: "left" }),
         { name: "functionDefinitionLabel", type: "text", required: true, localized: true, defaultValue: "FunctionDefinition" },
         { name: "parametersLabel", type: "text", required: true, localized: true, defaultValue: "Parameters" },
+        { name: "showAllLabel", type: "text", required: true, localized: true, defaultValue: "Show all" },
+        { name: "showLessLabel", type: "text", required: true, localized: true, defaultValue: "Show less" },
     ],
 }
