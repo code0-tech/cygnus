@@ -50,7 +50,7 @@ export function resolveSubscriptionSelection(raw: RawSubscriptionSelection | URL
     if (rawCustomerType && rawCustomerType !== customerType) issues.push({ field: "customerType", message: "customerType must be b2b or b2c." })
 
     const rawPlan = rawValue(raw, "plan")
-    const plan = PLANS.has(rawPlan as SubscriptionPlan) ? (rawPlan as SubscriptionPlan) : "custom"
+    const plan = PLANS.has(rawPlan as SubscriptionPlan) ? (rawPlan as SubscriptionPlan) : (config.defaults?.plan ?? "custom")
     if (rawPlan && rawPlan !== plan) issues.push({ field: "plan", message: "plan must be pro, max, or custom." })
 
     const rawDeployment = rawValue(raw, "deploymentType") ?? rawValue(raw, "deployment")

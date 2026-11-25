@@ -59,7 +59,7 @@ interface SubscriptionConfiguratorProps {
 export function SubscriptionConfigurator({ locale, content, onActiveImageChangeAction, subscriptionPrices, checkoutPackages }: SubscriptionConfiguratorProps) {
     const workflowExecutions = content.workflowExecutions
     const aiTokens = content.aiTokens
-    const catalog = getSubscriptionCatalog(content, subscriptionPrices, checkoutPackages)
+    const catalog = getSubscriptionCatalog(content, subscriptionPrices, checkoutPackages, content.selectionDefaults ?? undefined)
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const configuratorRef = useRef<HTMLDivElement>(null)

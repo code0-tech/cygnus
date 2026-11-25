@@ -37,6 +37,50 @@ test("starts at the smallest Crater package when the URL has no selection", () =
     })
 })
 
+test("uses CMS selection defaults when URL parameters are absent and lets URL values take precedence", () => {
+    const cmsDefaults: SubscriptionSelectionCatalog = {
+        defaults: {
+            customerType: "b2b",
+            deployment: "cloud",
+            plan: "pro",
+            paymentPeriod: { b2b: "yearly", b2c: "quarterly" },
+        },
+        workflowExecutions: {
+            b2b: { packages: [100_000, 1_000_000], default: 1_000_000 },
+            b2c: { packages: [10_000, 100_000], default: 100_000 },
+        },
+        aiTokens: {
+            b2b: { packages: [10_000_000, 100_000_000], default: 100_000_000 },
+            b2c: { packages: [1_000_000, 10_000_000], default: 10_000_000 },
+        },
+    }
+
+    assert.deepEqual(parseSubscriptionSelectionFromSearchParams(new URLSearchParams(), cmsDefaults), {
+        plan: "pro",
+        deployment: "cloud",
+        customerType: "b2b",
+        paymentPeriod: "yearly",
+        workflowExecutions: 1_000_000,
+        aiTokens: 100_000_000,
+    })
+
+    assert.deepEqual(parseSubscriptionSelectionFromSearchParams(new URLSearchParams({
+        plan: "custom",
+        deploymentType: "self_hosted",
+        customerType: "b2c",
+        paymentPeriod: "monthly",
+        workflowExecutions: "10000",
+        aiTokens: "1000000",
+    }), cmsDefaults), {
+        plan: "custom",
+        deployment: "self_hosted",
+        customerType: "b2c",
+        paymentPeriod: "monthly",
+        workflowExecutions: 10_000,
+        aiTokens: 1_000_000,
+    })
+})
+
 test("writes the resolved usage defaults back into the search params on a fresh page load", () => {
     const selection = parseSubscriptionSelectionFromSearchParams(new URLSearchParams(), content)
     const params = buildSubscriptionSelectionSearchParams(selection)

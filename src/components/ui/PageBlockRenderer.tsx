@@ -149,6 +149,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
                 heading: content.pageIntro?.heading?.trim() || "",
                 description: content.pageIntro?.description?.trim() || "",
             },
+            selectionDefaults: content.selectionDefaults,
         }
         const checkoutPackages = options.checkoutPackages
         if (!checkoutPackages) return null

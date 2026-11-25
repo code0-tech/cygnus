@@ -1119,6 +1119,24 @@ export interface Page {
             blockType: 'flowExample';
           }
         | {
+            /**
+             * Used only when the URL does not specify the corresponding option.
+             */
+            selectionDefaults?: {
+              customerType?: ('b2c' | 'b2b') | null;
+              plan?: ('pro' | 'max' | 'custom') | null;
+              deployment?: ('self_hosted' | 'cloud') | null;
+              paymentPeriodB2C?: ('monthly' | 'quarterly' | 'yearly') | null;
+              paymentPeriodB2B?: ('monthly' | 'quarterly' | 'yearly') | null;
+              usageB2C?: {
+                workflowExecutions?: number | null;
+                aiTokens?: number | null;
+              };
+              usageB2B?: {
+                workflowExecutions?: number | null;
+                aiTokens?: number | null;
+              };
+            };
             pageIntro?: {
               heading?: string | null;
               description?: string | null;
@@ -2385,6 +2403,27 @@ export interface PagesSelect<T extends boolean = true> {
         subscriptionConfigurator?:
           | T
           | {
+              selectionDefaults?:
+                | T
+                | {
+                    customerType?: T;
+                    plan?: T;
+                    deployment?: T;
+                    paymentPeriodB2C?: T;
+                    paymentPeriodB2B?: T;
+                    usageB2C?:
+                      | T
+                      | {
+                          workflowExecutions?: T;
+                          aiTokens?: T;
+                        };
+                    usageB2B?:
+                      | T
+                      | {
+                          workflowExecutions?: T;
+                          aiTokens?: T;
+                        };
+                  };
               pageIntro?:
                 | T
                 | {

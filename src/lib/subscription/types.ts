@@ -17,6 +17,16 @@ export type SubscriptionSelection = {
     aiTokens: number
 }
 
+export interface SubscriptionSelectionDefaults {
+    customerType?: SubscriptionCustomerType | null
+    plan?: SubscriptionPlan | null
+    deployment?: SubscriptionDeploymentMode | null
+    paymentPeriodB2B?: PaymentPeriod | null
+    paymentPeriodB2C?: PaymentPeriod | null
+    usageB2B?: { workflowExecutions?: number | null; aiTokens?: number | null } | null
+    usageB2C?: { workflowExecutions?: number | null; aiTokens?: number | null } | null
+}
+
 export type RawSubscriptionSelection = Partial<Record<"plan" | "deploymentType" | "deployment" | "customerType" | "paymentPeriod" | "workflowExecutions" | "aiTokens", string | null | undefined>>
 
 export type SubscriptionSelectionIssue = {

@@ -3,6 +3,7 @@ import "server-only"
 import { extractActionModuleInfo, fetchMediaJson } from "@/lib/actionExtraction"
 import { DEFAULT_LOCALE, type AppLocale } from "@/lib/i18n"
 import type { NavigationData } from "@/lib/navigation"
+import type { SubscriptionSelectionDefaults } from "@/lib/subscription/types"
 import { getPayloadClient } from "@/lib/payloadClient"
 import type { Action, Blog, Checkout, Config, CookieBanner, Footer, Job, Media, Navigation, Page, SubscriptionConfig, TeamMember } from "@/payload-types"
 import { cache } from "react"
@@ -91,6 +92,7 @@ export interface SubscriptionConfiguratorBlockData {
         heading: string
         description: string
     }
+    selectionDefaults?: SubscriptionSelectionDefaults | null
 }
 
 export type SubscriptionConfiguratorContent = SubscriptionConfigData & SubscriptionConfiguratorBlockData
