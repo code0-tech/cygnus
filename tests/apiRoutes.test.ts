@@ -65,7 +65,10 @@ for (const [index, route] of forms.entries()) {
 
     test(`${route.name} rejects invalid submissions before accessing Payload`, async () => {
         const before = getPayloadClient.mock.callCount()
-        for (const [offset, body] of [null, {}, { ...validForm, email: "invalid" }, { ...validForm, acceptTerms: false }].entries()) {
+        const withoutTerms = { name: validForm.name, email: validForm.email, message: validForm.message, text: validForm.text }
+        // Only a real `true` counts as consent; anything else is rejected before Payload or email is touched.
+        const invalidBodies = [null, {}, { ...validForm, email: "invalid" }, withoutTerms, { ...validForm, acceptTerms: false }, { ...validForm, acceptTerms: "true" }, { ...validForm, acceptTerms: 1 }]
+        for (const [offset, body] of invalidBodies.entries()) {
             assert.equal((await route.handler(request(body, `203.0.113.${index * 10 + offset + 1}`))).status, 400)
         }
         assert.equal(getPayloadClient.mock.callCount(), before)

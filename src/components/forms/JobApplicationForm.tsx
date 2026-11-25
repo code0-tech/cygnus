@@ -46,6 +46,8 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
     const { trigger } = useWebHaptics()
     const labels = { ...defaultContent, ...content }
     const [isSubmitting, setIsSubmitting] = useState(false)
+    // Bumped after a successful submit to remount the checkbox, which keeps its own checked state.
+    const [termsCheckboxKey, setTermsCheckboxKey] = useState(0)
     const [submitStatus, setSubmitStatus] = useState<{ type: "success" | "error"; message: string } | null>(null)
     const initialValues = useMemo<JobApplicationFormValues>(
         () => ({
@@ -60,16 +62,16 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
     const validation = useMemo(
         () => ({
             name: (value: string) => {
-                if (!value) return "Name is required"
+                if (!value.trim()) return "Name is required"
                 return null
             },
             email: (value: string) => {
-                if (!value) return "Email is required"
-                if (!emailValidation(value)) return "Please provide a valid email"
+                if (!value.trim()) return "Email is required"
+                if (!emailValidation(value.trim())) return "Please provide a valid email"
                 return null
             },
             text: (value: string) => {
-                if (!value) return "Message is required"
+                if (!value.trim()) return "Message is required"
                 return null
             },
             acceptTerms: (value: boolean) => {
@@ -80,7 +82,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
         [locale]
     )
 
-    const [inputs, validate] = useForm({
+    const [inputs, validate, values] = useForm({
         useInitialValidation: false,
         initialValues,
         validate: validation,
@@ -109,6 +111,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                     inputs.getInputProps("email").formValidation?.setValue?.("")
                     inputs.getInputProps("text").formValidation?.setValue?.("")
                     inputs.getInputProps("acceptTerms").formValidation?.setValue?.(false)
+                    setTermsCheckboxKey((key) => key + 1)
                     setSubmitStatus({ type: "success", message: "Application sent successfully." })
                 } catch (error) {
                     console.error("Job application submit error:", error)
@@ -126,6 +129,9 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
     const emailInputProps = inputs.getInputProps("email")
     const textInputProps = inputs.getInputProps("text")
     const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
+    // Same rules as the validation above, run on the live values: the button stays disabled until every field is valid
+    // and the terms are accepted. The API validates all of this again server-side.
+    const canSubmit = [validation.name(values.name), validation.email(values.email), validation.text(values.text), validation.acceptTerms(values.acceptTerms)].every((error) => error === null)
 
     return (
         <div className="min-w-0 space-y-4 rounded-3xl bg-light p-4 shadow-[inset_0_1px_1px_#bfbfbf1a]">
@@ -169,7 +175,12 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                 }}
                 {...textInputProps}
             />
-            <AcceptTermsCheckbox locale={locale} revalidateOnToggle={() => validate("acceptTerms")} {...acceptTermsInputProps} />
+            <AcceptTermsCheckbox
+                key={termsCheckboxKey}
+                locale={locale}
+                revalidateOnToggle={() => validate("acceptTerms")}
+                {...acceptTermsInputProps}
+            />
             <Button
                 type="submit"
                 variant="normal"
@@ -178,7 +189,7 @@ export function JobApplicationForm({ jobSlug, content, locale }: JobApplicationF
                     trigger("heavy")
                     validate()
                 }}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !canSubmit}
             >
                 {labels.applicationSubmitLabel}
             </Button>
