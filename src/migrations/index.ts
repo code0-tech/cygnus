@@ -217,6 +217,7 @@ import * as migration_20261125_180000_action_definition_show_more_labels from '.
 import * as migration_20261125_200000_pricing_comparison_table from './20261125_200000_pricing_comparison_table';
 import * as migration_20261125_201500_remove_pricing_popular_pill from './20261125_201500_remove_pricing_popular_pill';
 import * as migration_20261125_203000_pricing_customer_type from './20261125_203000_pricing_customer_type';
+import * as migration_20261125_204000_small_pricing_customer_type from './20261125_204000_small_pricing_customer_type';
 
 export const migrations = [
   {
@@ -1308,5 +1309,10 @@ export const migrations = [
     up: migration_20261125_203000_pricing_customer_type.up,
     down: migration_20261125_203000_pricing_customer_type.down,
     name: '20261125_203000_pricing_customer_type',
+  },
+  {
+    up: migration_20261125_204000_small_pricing_customer_type.up,
+    down: migration_20261125_204000_small_pricing_customer_type.down,
+    name: '20261125_204000_small_pricing_customer_type',
   },
 ];

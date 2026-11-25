@@ -10,6 +10,17 @@ export const SmallPricingBlock: Block = {
         plural: "Small Pricing Blocks",
     },
     fields: [
+        {
+            name: "pricingCustomerType",
+            label: "Price Audience",
+            type: "select",
+            required: true,
+            defaultValue: "b2c",
+            options: [
+                { label: "Personal (B2C)", value: "b2c" },
+                { label: "Business (B2B)", value: "b2b" },
+            ],
+        },
         sectionFields(),
         {
             name: "pricingPeriod",

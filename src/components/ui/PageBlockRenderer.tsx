@@ -172,6 +172,7 @@ const pageBlockRenderers: Partial<Record<PageBlock["blockType"], BlockRenderer>>
                 locale={options.locale ?? "en"}
                 subscriptionConfig={config}
                 subscriptionPrices={subscriptionPrices}
+                checkoutPackages={options.checkoutPackages}
             />
         )
     },

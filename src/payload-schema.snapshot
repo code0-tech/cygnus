@@ -55,6 +55,7 @@ export const enum_pages_blocks_pricing_highlighted_card_color = pgEnum('enum_pag
 export const enum_pages_blocks_pricing_pro_button_variant = pgEnum('enum_pages_blocks_pricing_pro_button_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_pricing_max_button_variant = pgEnum('enum_pages_blocks_pricing_max_button_variant', ['none', 'normal', 'outlined', 'filled'])
 export const enum_pages_blocks_pricing_custom_button_variant = pgEnum('enum_pages_blocks_pricing_custom_button_variant', ['none', 'normal', 'outlined', 'filled'])
+export const enum_pages_blocks_small_pricing_pricing_customer_type = pgEnum('enum_pages_blocks_small_pricing_pricing_customer_type', ['b2c', 'b2b'])
 export const enum_pages_blocks_small_pricing_section_layout = pgEnum('enum_pages_blocks_small_pricing_section_layout', ['center', 'left'])
 export const enum_pages_blocks_small_pricing_pricing_period = pgEnum('enum_pages_blocks_small_pricing_pricing_period', ['monthly', 'quarterly', 'yearly'])
 export const enum_pages_blocks_small_pricing_gradient = pgEnum('enum_pages_blocks_small_pricing_gradient', ['blue', 'yellow', 'pink', 'aqua', 'brand', 'lime', 'magenta', 'neutral'])
@@ -1545,6 +1546,7 @@ export const pages_blocks_small_pricing = pgTable('pages_blocks_small_pricing', 
   _path: text('_path').notNull(),
   _locale: enum__locales('_locale').notNull(),
   id: varchar('id').primaryKey(),
+  pricingCustomerType: enum_pages_blocks_small_pricing_pricing_customer_type('pricing_customer_type').notNull().default("b2c"),
   sectionHeading: varchar('section_heading'),
   sectionLayout: enum_pages_blocks_small_pricing_section_layout('section_layout').notNull().default("center"),
   sectionDescription: varchar('section_description'),
@@ -4439,6 +4441,7 @@ type DatabaseSchema = {
   enum_pages_blocks_pricing_pro_button_variant: typeof enum_pages_blocks_pricing_pro_button_variant
   enum_pages_blocks_pricing_max_button_variant: typeof enum_pages_blocks_pricing_max_button_variant
   enum_pages_blocks_pricing_custom_button_variant: typeof enum_pages_blocks_pricing_custom_button_variant
+  enum_pages_blocks_small_pricing_pricing_customer_type: typeof enum_pages_blocks_small_pricing_pricing_customer_type
   enum_pages_blocks_small_pricing_section_layout: typeof enum_pages_blocks_small_pricing_section_layout
   enum_pages_blocks_small_pricing_pricing_period: typeof enum_pages_blocks_small_pricing_pricing_period
   enum_pages_blocks_small_pricing_gradient: typeof enum_pages_blocks_small_pricing_gradient

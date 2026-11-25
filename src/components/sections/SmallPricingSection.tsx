@@ -1,7 +1,6 @@
 "use client"
 
 import type { PaymentPeriod } from "@/lib/subscription/types"
-import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
 import { Card } from "@/components/ui/Card"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { Section } from "@/components/ui/Section"
@@ -10,26 +9,27 @@ import type { SmallPricingLayoutBlock, SubscriptionConfigData } from "@/lib/cms"
 import type { AppLocale } from "@/lib/i18n"
 import { formatDiscountBadge, resolveCheckoutPricing } from "@/lib/subscription/calculator"
 import type { SubscriptionPriceCatalog } from "@/lib/subscription/prices"
-import { cn } from "@/lib/utils"
+import type { CheckoutPackages } from "@/lib/subscription/usagePackages"
 import NumberFlow from "@number-flow/react"
-import { IconCheck, IconX } from "@tabler/icons-react"
 
 interface SmallPricingSectionProps {
     content?: SmallPricingLayoutBlock | null
     locale: AppLocale
     subscriptionConfig: SubscriptionConfigData
     subscriptionPrices: SubscriptionPriceCatalog
+    checkoutPackages?: CheckoutPackages | null
 }
 
-export function SmallPricingSection({ content, locale, subscriptionConfig, subscriptionPrices }: SmallPricingSectionProps) {
+export function SmallPricingSection({ content, locale, subscriptionConfig, subscriptionPrices, checkoutPackages }: SmallPricingSectionProps) {
     if (!content || !subscriptionConfig || !subscriptionPrices) return null
     const paymentPeriod = subscriptionConfig.paymentPeriod
     const selectedPeriod = content.pricingPeriod
+    const customerType = content.pricingCustomerType ?? "b2c"
 
     const getPricingForPeriod = (plan: "pro" | "max", period: PaymentPeriod) =>
         resolveCheckoutPricing({
             aiTokensParam: null,
-            customerTypeParam: "b2c",
+            customerTypeParam: customerType,
             fallbackPeriodSuffix: subscriptionConfig.paymentPeriod.monthlyPeriodSuffix,
             paymentPeriodParam: period,
             planParam: plan,
@@ -43,119 +43,68 @@ export function SmallPricingSection({ content, locale, subscriptionConfig, subsc
         quarterly: paymentPeriod.quarterlyPeriodSuffix,
         yearly: paymentPeriod.yearlyPeriodSuffix,
     }[selectedPeriod]
-
     const proPricing = getPricingForPeriod("pro", selectedPeriod)
     const maxPricing = getPricingForPeriod("max", selectedPeriod)
+    const getDiscount = (period: PaymentPeriod) => {
+        const { pricing } = getPricingForPeriod("pro", period)
+        return pricing.totalBeforeDiscount > 0 ? Math.max(0, (pricing.totalBeforeDiscount - pricing.totalPrice) / pricing.totalBeforeDiscount) : 0
+    }
     const pricingPackages = [
-        {
-            key: "pro",
-            title: subscriptionConfig.plan.pro.title || "Pro",
-            description: subscriptionConfig.plan.pro.description,
-            price: proPricing.pricing.totalPrice,
-            pricing: proPricing.pricing,
-            content: content.pro,
-        },
-        {
-            key: "max",
-            title: subscriptionConfig.plan.max.title || "Max",
-            description: subscriptionConfig.plan.max.description,
-            price: maxPricing.pricing.totalPrice,
-            pricing: maxPricing.pricing,
-            content: content.max,
-        },
-        {
-            key: "custom",
-            title: subscriptionConfig.plan.custom.title || "Custom",
-            description: subscriptionConfig.plan.custom.description,
-            price: null,
-            pricing: null,
-            content: content.custom,
-        },
-    ]
+        { key: "pro", title: subscriptionConfig.plan.pro.title || "Pro", description: subscriptionConfig.plan.pro.description, price: proPricing.pricing.totalPrice },
+        { key: "max", title: subscriptionConfig.plan.max.title || "Max", description: subscriptionConfig.plan.max.description, price: maxPricing.pricing.totalPrice },
+        { key: "custom", title: subscriptionConfig.plan.custom.title || "Custom", description: subscriptionConfig.plan.custom.description, price: null },
+    ] as const
+    const formatQuantity = (value: number) => new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value)
+    const detailsUrl = content.sectionLinkButton?.url?.trim() || "/pricing"
+    const detailsLabel = locale === "de" ? "Alle Tarifdetails ansehen" : "See all plan details"
+    const periodSavings = locale === "de"
+        ? `Spare ${formatDiscountBadge(getDiscount("quarterly"), locale)} quartalsweise oder ${formatDiscountBadge(getDiscount("yearly"), locale)} j\u00e4hrlich.`
+        : `Save ${formatDiscountBadge(getDiscount("quarterly"), locale)} quarterly or ${formatDiscountBadge(getDiscount("yearly"), locale)} yearly.`
 
     return (
         <Section
-            heading={content.sectionHeading}
-            description={content.sectionDescription}
-            linkButton={content.sectionLinkButton}
+            heading={content.sectionHeading || "**Simple pricing**\\nfor every stage of your business."}
             funnelType={content.sectionLayout ?? "center"}
             animation={{ preset: "none" }}
         >
-            <Card size="lg" variant="light" radialGradient={content.gradient} gradientDirection={content.gradientDirection} className="mx-auto w-full max-w-5xl p-2!">
-                <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-1/3 hidden w-1/3 bg-[radial-gradient(ellipse_at_top,oklch(1_0_0/0.1),transparent_68%)] md:block" />
-                <StaggerContainer className="relative z-10 grid grid-cols-1 md:grid-cols-3" delayChildren={0.04} staggerChildren={0.08}>
+            <Card size="lg" variant="default" topline={false} className="mx-auto w-full max-w-6xl rounded-3xl border-0! bg-light! p-2! shadow-[inset_0_1px_1px_#bfbfbf1a]">
+                <div className="grid grid-cols-1 gap-0 md:grid-cols-2 xl:grid-cols-4">
                     {pricingPackages.map((pricingPackage) => {
-                        const features = pricingPackage.content?.features?.filter((feature) => Boolean(feature.text)) ?? []
-                        const missingFeatures = pricingPackage.content?.missing?.filter((feature) => Boolean(feature.text)) ?? []
-                        const buttonLabel = pricingPackage.content?.button?.label?.trim()
-                        const buttonUrl = pricingPackage.content?.button?.url?.trim()
                         const highlighted = pricingPackage.key === "max"
-                        const discount =
-                            pricingPackage.pricing && pricingPackage.pricing.totalBeforeDiscount > 0
-                                ? Math.max(0, (pricingPackage.pricing.totalBeforeDiscount - pricingPackage.pricing.totalPrice) / pricingPackage.pricing.totalBeforeDiscount)
-                                : 0
-
+                        const discount = pricingPackage.key === "pro" ? getDiscount(selectedPeriod) : pricingPackage.key === "max" && maxPricing.pricing.totalBeforeDiscount > 0
+                            ? Math.max(0, (maxPricing.pricing.totalBeforeDiscount - maxPricing.pricing.totalPrice) / maxPricing.pricing.totalBeforeDiscount)
+                            : 0
+                        const quantities = pricingPackage.key !== "custom" ? checkoutPackages?.planQuantities[pricingPackage.key] : null
                         return (
-                            <StaggerItem key={pricingPackage.key} y={10} duration={0.36} className="relative flex min-w-0 flex-col overflow-hidden p-5 sm:p-6">
-                                {highlighted && (
-                                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(1_0_0/0.1),transparent_68%)] md:hidden" />
-                                )}
+                            <div key={pricingPackage.key} className={`relative flex min-h-[220px] min-w-0 flex-col rounded-2xl p-5 sm:p-6 ${highlighted ? "bg-white/[0.06]" : ""}`}>
                                 <div className="flex items-start justify-between gap-2">
-                                    <div className="min-w-0">
-                                        <h3 className="text-xl font-semibold text-white">{pricingPackage.title}</h3>
-                                        {pricingPackage.description && <p className="text-sm leading-5 text-secondary">{pricingPackage.description}</p>}
-                                    </div>
-                                    {discount > 0 && (
-                                        <StableBadge border className="border! border-brand/10! bg-brand/10! px-3 py-1 text-sm font-medium text-brand!">
-                                            <span className="inline-flex items-baseline gap-0">-{formatDiscountBadge(discount, locale)}</span>
-                                        </StableBadge>
-                                    )}
+                                    <h3 className="text-xl font-semibold text-white">{pricingPackage.title}</h3>
+                                    {highlighted && <StableBadge border className="border! border-brand/20! bg-brand/5! px-2 py-0.5 text-xs text-brand!">Popular</StableBadge>}
                                 </div>
-
-                                {pricingPackage.price !== null && (
-                                    <div className="mt-2 flex items-baseline gap-1">
-                                        <NumberFlow
-                                            value={pricingPackage.price}
-                                            locales={locale === "de" ? "de-DE" : "en-US"}
-                                            format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }}
-                                            className="text-3xl font-semibold text-white"
-                                        />
-                                        <span className="text-base text-tertiary">{periodSuffix}</span>
+                                {pricingPackage.description && <p className="mt-1 text-sm leading-5 text-secondary">{pricingPackage.description}</p>}
+                                <div className="mt-auto pt-6">
+                                    <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+                                        {pricingPackage.price !== null ? (
+                                            <NumberFlow value={pricingPackage.price} locales={locale === "de" ? "de-DE" : "en-US"} format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }} className="text-3xl font-semibold text-white" />
+                                        ) : <><span className="text-sm text-secondary">{locale === "de" ? "ab" : "from"}</span><NumberFlow value={49.9} locales={locale === "de" ? "de-DE" : "en-US"} format={{ style: "currency", currency: "EUR", minimumFractionDigits: 2 }} className="text-3xl font-semibold text-white" /></>}
+                                        <span className="text-sm text-tertiary">{periodSuffix}</span>
+                                        {discount > 0 && <span className="text-xs font-medium text-brand">-{formatDiscountBadge(discount, locale)}</span>}
                                     </div>
-                                )}
-
-                                {(features.length > 0 || missingFeatures.length > 0) && (
-                                    <ul className="mt-4 flex flex-col gap-1.5">
-                                        {features.map((feature, featureIndex) => (
-                                            <li key={feature.id ?? `feature-${featureIndex}`} className="flex items-start gap-2 text-sm text-white">
-                                                <IconCheck size={16} className="mt-0.5 shrink-0 text-brand" />
-                                                <span>{feature.text}</span>
-                                            </li>
-                                        ))}
-                                        {missingFeatures.map((feature, featureIndex) => (
-                                            <li key={feature.id ?? `missing-feature-${featureIndex}`} className="flex items-start gap-2 text-sm text-tertiary">
-                                                <IconX size={16} className="mt-0.5 shrink-0" />
-                                                <span>{feature.text}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-
-                                {buttonLabel && buttonUrl && (
-                                    <div className="mt-auto pt-6">
-                                        <HapticButtonLink
-                                            href={buttonUrl}
-                                            variant={pricingPackage.content?.button?.variant ?? "normal"}
-                                            className={cn("w-full text-sm!", pricingPackage.content?.button?.variant === "filled" && "bg-white/80! text-primary! hover:bg-white!")}
-                                        >
-                                            {buttonLabel}
-                                        </HapticButtonLink>
-                                    </div>
-                                )}
-                            </StaggerItem>
+                                    {quantities && <p className="mt-4 text-sm text-secondary">{formatQuantity(quantities.workflowExecutions)} {locale === "de" ? "Ausf\u00fchrungen" : "executions"} {"\u2022"} {formatQuantity(quantities.aiTokens)} AI tokens</p>}
+                                    {pricingPackage.key === "custom" && <p className="mt-4 text-sm text-secondary">{locale === "de" ? "Nutzung individuell konfigurierbar" : "Usage you configure yourself"}</p>}
+                                </div>
+                            </div>
                         )
                     })}
-                </StaggerContainer>
+                    <div className="flex min-h-[220px] min-w-0 flex-col p-5 sm:p-6">
+                        <h3 className="text-xl font-semibold text-white">{locale === "de" ? "Noch unsicher?" : "Not sure yet?"}</h3>
+                        <p className="mt-1 text-sm leading-5 text-secondary">{locale === "de" ? "Vergleiche alle Tarife und Funktionen im Detail." : "Compare all plans and features side by side."}</p>
+                        <div className="mt-auto pt-6">
+                            <HapticButtonLink href={detailsUrl} variant="filled" className="w-full bg-white! text-primary! hover:bg-white/90!">{detailsLabel}</HapticButtonLink>
+                            <p className="mt-3 text-center text-xs text-tertiary">{periodSavings}</p>
+                        </div>
+                    </div>
+                </div>
             </Card>
         </Section>
     )

@@ -1223,6 +1223,7 @@ export interface Page {
             blockType: 'pricing';
           }
         | {
+            pricingCustomerType: 'b2c' | 'b2b';
             sectionHeading?: string | null;
             sectionLayout: 'center' | 'left';
             sectionDescription?: string | null;
@@ -2507,6 +2508,7 @@ export interface PagesSelect<T extends boolean = true> {
         smallPricing?:
           | T
           | {
+              pricingCustomerType?: T;
               sectionHeading?: T;
               sectionLayout?: T;
               sectionDescription?: T;
