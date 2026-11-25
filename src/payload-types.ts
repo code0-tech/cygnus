@@ -1136,7 +1136,14 @@ export interface Page {
               label?: string | null;
               url?: string | null;
             };
+            comparisonHeading?: string | null;
             comparisonIntro?: string | null;
+            popularLabel?: string | null;
+            customPricePrefix?: string | null;
+            customPriceFrom?: number | null;
+            discountPrefix?: string | null;
+            includedAriaLabel?: string | null;
+            emptyValue?: string | null;
             comparisonCategories?:
               | {
                   title: string;
@@ -2393,7 +2400,14 @@ export interface PagesSelect<T extends boolean = true> {
                     label?: T;
                     url?: T;
                   };
+              comparisonHeading?: T;
               comparisonIntro?: T;
+              popularLabel?: T;
+              customPricePrefix?: T;
+              customPriceFrom?: T;
+              discountPrefix?: T;
+              includedAriaLabel?: T;
+              emptyValue?: T;
               comparisonCategories?:
                 | T
                 | {

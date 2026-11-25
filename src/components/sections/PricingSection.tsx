@@ -3,7 +3,7 @@
 import type { PaymentPeriod } from "@/lib/subscription/types"
 import { HapticButtonLink } from "@/components/ui/HapticButtonLink"
 import { Section } from "@/components/ui/Section"
-import { FormattedText } from "@/components/ui/FormattedText"
+import { FormattedText, hasHighlightedText } from "@/components/ui/FormattedText"
 import { StableBadge } from "@/components/ui/StableBadge"
 import { SegmentedControl, SegmentedControlItem } from "@code0-tech/pictor"
 import type { PricingLayoutBlock, SubscriptionConfigData } from "@/lib/cms"
@@ -14,23 +14,6 @@ import { cn } from "@/lib/utils"
 import NumberFlow from "@number-flow/react"
 import { IconCheck } from "@tabler/icons-react"
 import { Fragment, useState } from "react"
-
-const defaultComparisonCategories: NonNullable<PricingLayoutBlock["comparisonCategories"]> = [
-    { title: "Usage", rows: [
-        { label: "Workflow executions per month", pro: "2,000", max: "25,000", custom: "Configurable" },
-        { label: "AI tokens per month", pro: "500k", max: "4M", custom: "Configurable" },
-    ] },
-    { title: "Build", rows: [
-        { label: "Visual flow builder", pro: "\u2713", max: "\u2713", custom: "\u2713" },
-        { label: "AI agents with MCP & multi-agent", pro: "\u2713", max: "\u2713", custom: "\u2713" },
-        { label: "Files in flows", pro: "\u2713", max: "\u2713", custom: "\u2713" },
-    ] },
-    { title: "Run & debug", rows: [
-        { label: "Deterministic replay", pro: "\u2713", max: "\u2713", custom: "\u2713" },
-        { label: "Eject as binary / WASM", pro: "\u2713", max: "\u2713", custom: "\u2713" },
-    ] },
-    { title: "Support", rows: [{ label: "[SUPPORT LEVEL]", pro: "\u2014", max: "\u2014", custom: "\u2014" }] },
-]
 
 interface PricingSectionProps {
     content?: PricingLayoutBlock | null
@@ -94,7 +77,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
     const pricingPackages = [
         {
             key: "pro",
-            title: subscriptionConfig.plan.pro.title || "Pro",
+            title: subscriptionConfig.plan.pro.title,
             description: subscriptionConfig.plan.pro.description,
             price: proPricing.pricing.totalPrice,
             pricing: proPricing.pricing,
@@ -102,7 +85,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
         },
         {
             key: "max",
-            title: subscriptionConfig.plan.max.title || "Max",
+            title: subscriptionConfig.plan.max.title,
             description: subscriptionConfig.plan.max.description,
             price: maxPricing.pricing.totalPrice,
             pricing: maxPricing.pricing,
@@ -110,7 +93,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
         },
         {
             key: "custom",
-            title: subscriptionConfig.plan.custom.title || "Custom",
+            title: subscriptionConfig.plan.custom.title,
             description: subscriptionConfig.plan.custom.description,
             price: null,
             pricing: null,
@@ -118,7 +101,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
         },
     ]
 
-    const comparisonCategories = content.comparisonCategories?.length ? content.comparisonCategories : defaultComparisonCategories
+    const comparisonCategories = content.comparisonCategories ?? []
 
     return (
         <Section
@@ -128,13 +111,8 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
         >
             <div className="flex w-full flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
                 <div className="max-w-2xl text-left">
-                    <h2 className="text-3xl font-semibold leading-tight text-white md:text-4xl">
-                        {content.sectionHeading ? <FormattedText text={content.sectionHeading} /> : (
-                            <>
-                                Your pricing for Enterprise,<br />
-                                <span className="text-secondary">licensed per workspace.</span>
-                            </>
-                        )}
+                    <h2 className={cn("text-3xl font-semibold leading-tight md:text-4xl", hasHighlightedText(content.sectionHeading) ? "text-secondary" : "text-white")}>
+                        {content.sectionHeading && <FormattedText text={content.sectionHeading} />}
                     </h2>
                 </div>
                 <SegmentedControl
@@ -167,7 +145,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
                 <table className="w-full min-w-[850px] border-collapse text-left">
                     <thead>
                         <tr className="border-b border-white/10">
-                            <th scope="col" className="w-[32%] px-6 py-6 align-bottom text-lg font-semibold text-white">{locale === "de" ? "Tarife vergleichen" : "Compare plans"}{content.comparisonIntro && <p className="mt-1 text-sm font-normal text-secondary">{content.comparisonIntro}</p>}</th>
+                            <th scope="col" className="w-[32%] px-6 py-6 align-bottom text-lg font-semibold text-white">{content.comparisonHeading}{content.comparisonIntro && <p className="mt-1 text-sm font-normal text-secondary">{content.comparisonIntro}</p>}</th>
                             {pricingPackages.map((pricingPackage) => {
                                 const highlighted = pricingPackage.key === "max"
                                 const regularPrice = pricingPackage.pricing?.totalBeforeDiscount ?? null
@@ -176,15 +154,15 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
                                     <th key={pricingPackage.key} scope="col" className={cn("w-[22.6%] px-5 py-6 align-top", highlighted && "bg-white/[0.06]")}>
                                         <div className="flex min-h-7 items-center justify-between gap-2">
                                             <span className="text-lg font-semibold text-white">{pricingPackage.title}</span>
-                                            {highlighted && <StableBadge border className="border! border-brand/20! bg-brand/5! px-2 py-0.5 text-xs text-brand!">Popular</StableBadge>}
+                                            {highlighted && <StableBadge border className="border! border-brand/20! bg-brand/5! px-2 py-0.5 text-xs text-brand!">{content.popularLabel}</StableBadge>}
                                         </div>
                                         {pricingPackage.price !== null ? <>
                                             <div className="mt-3 flex items-baseline gap-2 whitespace-nowrap">
                                                 <NumberFlow value={pricingPackage.price} locales={locale === "de" ? "de-DE" : "en-US"} format={{ style: "currency", currency: "EUR", trailingZeroDisplay: "stripIfInteger" }} className="text-3xl font-semibold text-white" />
                                                 <span className="text-xs font-normal text-tertiary">{periodSuffix}</span>
                                             </div>
-                                            {discount > 0 && <p className="mt-1 text-xs text-brand">-{formatDiscountBadge(discount, locale)}</p>}
-                                        </> : <p className="mt-3 flex items-baseline gap-2 text-3xl font-semibold text-white"><span className="text-sm font-normal">{locale === "de" ? "ab" : "from"}</span><NumberFlow value={49.9} locales={locale === "de" ? "de-DE" : "en-US"} format={{ style: "currency", currency: "EUR", minimumFractionDigits: 2 }} /><span className="text-xs font-normal text-tertiary">{periodSuffix}</span></p>}
+                                            {discount > 0 && <p className="mt-1 text-xs text-brand">{content.discountPrefix}{formatDiscountBadge(discount, locale)}</p>}
+                                        </> : <p className="mt-3 flex items-baseline gap-2 text-3xl font-semibold text-white"><span className="text-sm font-normal">{content.customPricePrefix}</span><NumberFlow value={content.customPriceFrom ?? 0} locales={locale === "de" ? "de-DE" : "en-US"} format={{ style: "currency", currency: "EUR", minimumFractionDigits: 2 }} /><span className="text-xs font-normal text-tertiary">{periodSuffix}</span></p>}
                                         {pricingPackage.description && <p className="mt-1 text-sm font-normal text-secondary">{pricingPackage.description}</p>}
                                         {pricingPackage.content?.button?.label?.trim() && pricingPackage.content.button.url?.trim() && <HapticButtonLink href={pricingPackage.content.button.url.trim()} variant={pricingPackage.content.button.variant ?? "normal"} className={cn("mt-4 w-full whitespace-nowrap", highlighted && "bg-white! text-primary! hover:bg-white/90!")}>{pricingPackage.content.button.label.trim()}</HapticButtonLink>}
                                     </th>
@@ -202,7 +180,7 @@ export function PricingSection({ content, locale, subscriptionConfig, subscripti
                                 <th scope="row" className="px-6 py-3.5 text-sm font-normal text-secondary">{row.label}</th>
                                 {pricingPackages.map((pricingPackage) => {
                                     const value = row[pricingPackage.key as "pro" | "max" | "custom"]
-                                    return <td key={pricingPackage.key} className={cn("px-5 py-3.5 text-sm", pricingPackage.key === "max" && "bg-white/[0.06]")}>{value === "\u2713" ? <IconCheck aria-label={locale === "de" ? "Enthalten" : "Included"} size={17} className="text-brand" /> : <span className="text-white">{value || "\u2014"}</span>}</td>
+                                    return <td key={pricingPackage.key} className={cn("px-5 py-3.5 text-sm", pricingPackage.key === "max" && "bg-white/[0.06]")}>{value === "\u2713" ? <IconCheck aria-label={content.includedAriaLabel ?? ""} size={17} className="text-brand" /> : <span className="text-white">{value || content.emptyValue}</span>}</td>
                                 })}
                             </tr>)}
                         </Fragment>)}

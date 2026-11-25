@@ -21,7 +21,14 @@ export const PricingBlock: Block = {
                 { label: "Business (B2B)", value: "b2b" },
             ],
         },
-        sectionFields(),
+        sectionFields({ headingDefaultValue: "**Your pricing for Enterprise,**\\nlicensed per workspace." }),
+        {
+            name: "comparisonHeading",
+            label: "Comparison Heading",
+            type: "text",
+            localized: true,
+            defaultValue: "Compare plans",
+        },
         {
             name: "comparisonIntro",
             label: "Comparison Intro",
@@ -29,6 +36,12 @@ export const PricingBlock: Block = {
             localized: true,
             defaultValue: "Quotas reset monthly from your order date.",
         },
+        { name: "popularLabel", label: "Popular Label", type: "text", localized: true, defaultValue: "Popular" },
+        { name: "customPricePrefix", label: "Custom Price Prefix", type: "text", localized: true, defaultValue: "from" },
+        { name: "customPriceFrom", label: "Custom Starting Price", type: "number", min: 0, defaultValue: 49.9 },
+        { name: "discountPrefix", label: "Discount Prefix", type: "text", localized: true, defaultValue: "-" },
+        { name: "includedAriaLabel", label: "Included Feature Label", type: "text", localized: true, defaultValue: "Included" },
+        { name: "emptyValue", label: "Empty Value", type: "text", localized: true, defaultValue: "—" },
         {
             name: "comparisonCategories",
             label: "Comparison Categories",
