@@ -6,7 +6,6 @@ import { Alert, Button, EmailInput, emailValidation, TextAreaInput, TextInput, u
 import type { FocusEvent } from "react"
 import { useMemo, useState } from "react"
 import { useWebHaptics } from "web-haptics/react"
-import { Card } from "../ui/Card"
 
 interface ContactFormContent {
     nameLabel: string
@@ -127,11 +126,11 @@ export function ContactForm({ content, locale }: ContactFormProps) {
     const acceptTermsInputProps = inputs.getInputProps("acceptTerms")
 
     return (
-        <Card size="lg" variant={"light"} className="space-y-4 p-4 min-w-0">
+        <div className="min-w-0 space-y-4 rounded-3xl bg-light p-4 shadow-[inset_0_1px_1px_#bfbfbf1a]">
             <TextInput
                 maxLength={100}
                 placeholder={labels.namePlaceholder}
-                label={labels.nameLabel}
+                title={labels.nameLabel}
                 onChange={() => {
                     if (!nameInputProps.formValidation?.valid) {
                         validate("name")
@@ -142,7 +141,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
             <EmailInput
                 maxLength={254}
                 placeholder={labels.emailPlaceholder}
-                label={labels.emailLabel}
+                title={labels.emailLabel}
                 onChange={() => {
                     if (!emailInputProps.formValidation?.valid) {
                         validate("email")
@@ -159,7 +158,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
             <TextAreaInput
                 maxLength={5000}
                 placeholder={labels.messagePlaceholder}
-                label={labels.messageLabel}
+                title={labels.messageLabel}
                 onChange={() => {
                     if (!messageInputProps.formValidation?.valid) {
                         validate("message")
@@ -171,7 +170,7 @@ export function ContactForm({ content, locale }: ContactFormProps) {
             <Button
                 type="submit"
                 variant="normal"
-                className="mt-2 w-full! text-base!"
+                className="mt-2 h-12! w-full! bg-white! px-8! text-sm! text-primary! ring-1! ring-white/20! hover:bg-white/90! lg:h-10!"
                 onClick={() => {
                     trigger("heavy")
                     validate()
@@ -185,6 +184,6 @@ export function ContactForm({ content, locale }: ContactFormProps) {
                     {submitStatus.message}
                 </Alert>
             )}
-        </Card>
+        </div>
     )
 }
