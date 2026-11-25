@@ -1,5 +1,4 @@
 import { StaggerContainer, StaggerItem } from "@/components/animations/Stagger"
-import { Card } from "@/components/ui/Card"
 import { Section } from "@/components/ui/Section"
 import { getBlogPostBySlug, type BlogPreviewLayoutBlock } from "@/lib/cms"
 import { formatLongDate } from "@/lib/formatters"
@@ -21,11 +20,7 @@ interface BlogPreviewSectionProps {
 function PreviewFrame({ children, showBorder }: { children: ReactNode; showBorder: boolean }) {
     if (!showBorder) return children
 
-    return (
-        <Card size="lg" variant="light" className="p-2!">
-            {children}
-        </Card>
-    )
+    return <div className="rounded-3xl bg-light p-2 shadow-[inset_0_1px_1px_#bfbfbf1a]">{children}</div>
 }
 
 export async function BlogPreviewSection({ content, locale = "en" }: BlogPreviewSectionProps) {
@@ -59,7 +54,7 @@ export async function BlogPreviewSection({ content, locale = "en" }: BlogPreview
                 <Link href={postHref} className="group block rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60">
                     <PreviewFrame showBorder={showBorder}>
                         <article className={cn("relative z-10 overflow-hidden", isImageCenter ? "flex flex-col" : "grid min-h-96 lg:grid-cols-2")}>
-                            <div className={cn("relative overflow-hidden rounded-2xl border border-white/5 bg-primary/40", isImageCenter ? "aspect-video" : "min-h-64 lg:min-h-96", isImageRight && "lg:order-2")}>
+                            <div className={cn("relative overflow-hidden rounded-2xl bg-primary/40", !showBorder && "border border-white/5", isImageCenter ? "aspect-video" : "min-h-64 lg:min-h-96", isImageRight && "lg:order-2")}>
                                 {heroImageUrl ? (
                                     <Image
                                         src={heroImageUrl}
