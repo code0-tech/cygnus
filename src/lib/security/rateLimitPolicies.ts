@@ -28,16 +28,16 @@ export interface RateLimitPolicy {
 const policyDefinitions = {
     login: {
         maxEnvKey: "CRATER_LOGIN_RATE_LIMIT_MAX",
-        defaultMax: 20,
+        defaultMax: 50,
         windowEnvKey: "CRATER_LOGIN_RATE_LIMIT_WINDOW_SECONDS",
-        defaultWindowSeconds: 5 * 60,
+        defaultWindowSeconds: 2 * 60,
     },
     // Its own budget rather than the login one: guest creation depends on Sagittarius, and a Sagittarius
     // that refuses every guest must not also lock the browser out of the plain session route the checkout
     // needs afterwards.
     guest: {
         maxEnvKey: "CRATER_GUEST_RATE_LIMIT_MAX",
-        defaultMax: 10,
+        defaultMax: 20,
         windowEnvKey: "CRATER_GUEST_RATE_LIMIT_WINDOW_SECONDS",
         defaultWindowSeconds: 5 * 60,
     },
