@@ -60,6 +60,16 @@ test("uses CMS selection defaults when URL parameters are absent and lets URL va
         deployment: "cloud",
         customerType: "b2b",
         paymentPeriod: "yearly",
+        // Usage quantities only apply to the custom plan.
+        workflowExecutions: 0,
+        aiTokens: 0,
+    })
+
+    assert.deepEqual(parseSubscriptionSelectionFromSearchParams(new URLSearchParams({ plan: "custom" }), cmsDefaults), {
+        plan: "custom",
+        deployment: "cloud",
+        customerType: "b2b",
+        paymentPeriod: "yearly",
         workflowExecutions: 1_000_000,
         aiTokens: 100_000_000,
     })

@@ -229,11 +229,12 @@ for (const state of ["CHECKOUT_PENDING", "PAYMENT_PENDING"]) {
         }) as typeof fetch
         render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="de" sessionId="cs_test" />)
         await screen.findByRole("heading", { name: content.delayedHeading })
+        // The retry button only mounts once the "checking" spinner (also role="status") has finished its exit animation.
+        assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
         assert.equal(screen.getByRole("status").textContent, content.delayedPendingDescription)
         assert.equal(screen.queryByText(errorMessage), null)
         assert.equal(screen.queryByText(content.receiptHint), null)
         assert.equal(screen.queryByRole("link", { name: content.licenseDashboardLabel }), null)
-        assert.ok(await screen.findByRole("button", { name: content.licenseStatusRetryLabel }))
         assert.deepEqual(routerReplaceCalls, [])
     })
 }

@@ -3,6 +3,7 @@ import test from "node:test"
 import { NextResponse } from "next/server"
 import { POST as sendOffer } from "../../src/app/api/crater/checkout/offer/route"
 import { createGuestCheckoutSession } from "../../src/lib/checkout/guestCheckoutSession"
+import { getRateLimitPolicy } from "../../src/lib/security/rateLimitPolicies"
 import { withGraphQLServer } from "../helpers/graphqlTestServer"
 
 const selection = { deploymentType: "cloud", plan: "custom", paymentPeriod: "yearly", aiTokens: "500000", workflowExecutions: "2000" }
@@ -61,13 +62,14 @@ test("refuses incomplete or malformed offers before calling Crater", async () =>
     })
 })
 
-test("every offer sends an email, so a session is limited to five of them", async () => {
-    await withGraphQLServer(Array.from({ length: 5 }, () => ({ data: { quotesCreate: { errors: [] } } })), async (server) => {
+test("every offer sends an email, so a session is limited by the offer rate limit", async () => {
+    const { max } = getRateLimitPolicy("offer")
+    await withGraphQLServer(Array.from({ length: max }, () => ({ data: { quotesCreate: { errors: [] } } })), async (server) => {
         const statuses = []
-        for (let attempt = 0; attempt < 6; attempt += 1) statuses.push((await sendOffer(request({ ...selection, email: "buyer@example.com" }, "c_ust_offer_limited"))).status)
+        for (let attempt = 0; attempt <= max; attempt += 1) statuses.push((await sendOffer(request({ ...selection, email: "buyer@example.com" }, "c_ust_offer_limited"))).status)
 
-        assert.deepEqual(statuses, [201, 201, 201, 201, 201, 429])
-        assert.equal(server.requests.length, 5)
+        assert.deepEqual(statuses, [...Array.from({ length: max }, () => 201), 429])
+        assert.equal(server.requests.length, max)
     })
 })
 
