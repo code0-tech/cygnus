@@ -8,7 +8,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
         CREATE TABLE IF NOT EXISTS "pages_blocks_pricing_comparison_categories" (
             "_order" integer NOT NULL,
             "_parent_id" varchar NOT NULL,
-            "_locale" "public"."enum__locales" NOT NULL,
+            "_locale" "public"."_locales" NOT NULL,
             "id" varchar PRIMARY KEY NOT NULL,
             "title" varchar NOT NULL
         );
@@ -23,7 +23,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
         CREATE TABLE IF NOT EXISTS "pages_blocks_pricing_comparison_categories_rows" (
             "_order" integer NOT NULL,
             "_parent_id" varchar NOT NULL,
-            "_locale" "public"."enum__locales" NOT NULL,
+            "_locale" "public"."_locales" NOT NULL,
             "id" varchar PRIMARY KEY NOT NULL,
             "label" varchar NOT NULL,
             "pro" varchar,
