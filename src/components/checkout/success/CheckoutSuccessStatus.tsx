@@ -3,7 +3,7 @@
 import { parseCheckoutCompletionStatus, type CheckoutCompletionStatus } from "@/lib/checkout/completionStatus"
 import { checkoutFetch, getCheckoutCompletionStatus, getCheckoutStatusPollDelay, hasCheckoutStatusPollingExpired } from "@/lib/checkout/client"
 import { LinkButton } from "@/components/ui/LinkButton"
-import { ButtonLoader } from "@/components/ui/Loader"
+import { ButtonLoader, Loader } from "@/components/ui/Loader"
 import { CheckoutPricingOverview } from "@/components/checkout/summary/CheckoutPricingOverview"
 import { CheckoutConfetti } from "@/components/checkout/success/CheckoutConfetti"
 import { clearCheckoutContactDraft } from "@/lib/checkout/checkoutDraft"
@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 type SuccessContent = CheckoutData["success"]
-type CheckoutStatus = CheckoutCompletionStatus["state"] | "LOADING" | "DELAYED" | "ERROR" | "INVALID"
+type CheckoutStatus = CheckoutCompletionStatus["state"] | "LOADING" | "DELAYED" | "ERROR" | "INVALID" | "ABANDONED"
 
 interface CheckoutSuccessStatusProps {
     checkoutSearchParams: string
@@ -44,6 +44,9 @@ interface CheckoutSuccessStatusViewProps extends Omit<CheckoutSuccessStatusProps
 }
 
 const SETTLED_STATES = new Set<string>(["FULFILLMENT_PENDING", "READY"])
+// Stripe only sends the user here after leaving the payment step. A session that is still open on a
+// repeated check was abandoned (e.g. a cancelled PayPal/Klarna redirect), so the user belongs back in checkout.
+const ABANDONED_CHECKOUT_PENDING_CHECKS = 2
 const LINK_BUTTON_CLASS_NAME = "button button--secondary button--xs after:hidden"
 
 export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMessage, locale, planQuantities, pricingContent, sculptorUrl, sessionId, subscriptionConfig }: CheckoutSuccessStatusProps) {
@@ -55,6 +58,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
     const [isDownloadingLicense, setIsDownloadingLicense] = useState(false)
     const [licenseDownloadError, setLicenseDownloadError] = useState(false)
     const pollAttemptRef = useRef(0)
+    const checkoutPendingChecksRef = useRef(0)
     const pollingStartedAtRef = useRef(Date.now())
     const pollTimeoutRef = useRef<number | null>(null)
 
@@ -78,6 +82,14 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
             setStatus(nextCompletion.state)
             if (SETTLED_STATES.has(nextCompletion.state)) clearCheckoutContactDraft()
 
+            if (nextCompletion.state === "CHECKOUT_PENDING") {
+                checkoutPendingChecksRef.current += 1
+                if (checkoutPendingChecksRef.current >= ABANDONED_CHECKOUT_PENDING_CHECKS) {
+                    setStatus("ABANDONED")
+                    return
+                }
+            }
+
             if (nextCompletion.state === "CHECKOUT_PENDING" || nextCompletion.state === "PAYMENT_PENDING" || nextCompletion.state === "FULFILLMENT_PENDING") {
                 if (hasCheckoutStatusPollingExpired(pollingStartedAtRef.current, Date.now())) {
                     setStatus("DELAYED")
@@ -93,7 +105,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
     )
 
     useEffect(() => {
-        if (status === "READY" || status === "FAILED" || status === "INVALID") return
+        if (status === "READY" || status === "FAILED" || status === "INVALID" || status === "ABANDONED") return
         const controller = new AbortController()
 
         void checkStatus(controller.signal).catch((error: unknown) => {
@@ -108,11 +120,11 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
     }, [attempt, checkStatus])
 
     useEffect(() => {
-        if (status !== "FAILED") return
+        if (status !== "FAILED" && status !== "ABANDONED") return
 
         const nextParams = new URLSearchParams(checkoutSearchParams)
         nextParams.delete("session_id")
-        nextParams.set("paymentFailed", "1")
+        if (status === "FAILED") nextParams.set("paymentFailed", "1")
         router.replace(`/${locale}/checkout?${nextParams.toString()}`)
     }, [checkoutSearchParams, locale, router, status])
 
@@ -143,6 +155,7 @@ export function CheckoutSuccessStatus({ checkoutSearchParams, content, errorMess
             onRetry={() => {
                 pollingStartedAtRef.current = Date.now()
                 pollAttemptRef.current = 0
+                checkoutPendingChecksRef.current = 0
                 setStatus("LOADING")
                 setAttempt((current) => current + 1)
             }}
@@ -182,6 +195,9 @@ function CheckoutSuccessStatusView({
     }
     const fulfillmentConfirmed = status === "FULFILLMENT_PENDING" || status === "READY" || (status === "DELAYED" && completion?.state === "FULFILLMENT_PENDING")
     const statusFailed = status === "FAILED" || status === "INVALID"
+    // Until Crater confirms the session was completed, the user may still have cancelled the payment,
+    // so "license being prepared" would be premature. Show a neutral spinner instead.
+    const paymentSubmitted = status === "PAYMENT_PENDING" || status === "FULFILLMENT_PENDING"
     const heading =
         status === "DELAYED" ? content.delayedHeading : status === "FAILED" ? content.failedHeading : status === "INVALID" ? content.invalidHeading : fulfillmentConfirmed ? content.heading : null
     const description =
@@ -336,11 +352,15 @@ function CheckoutSuccessStatusView({
                                         {content.checkoutRetryLabel}
                                     </LinkButton>
                                 </motion.div>
-                            ) : (
+                            ) : paymentSubmitted ? (
                                 <motion.div key="pending" exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}>
                                     <Button type="button" variant="normal" disabled>
                                         <ButtonLoader label={content.licensePendingLabel} />
                                     </Button>
+                                </motion.div>
+                            ) : (
+                                <motion.div key="checking" exit={{ opacity: 0, transition: { duration: reducedMotion ? 0 : 0.2 } }}>
+                                    <Loader size={20} className="text-tertiary" />
                                 </motion.div>
                             )}
                         </AnimatePresence>

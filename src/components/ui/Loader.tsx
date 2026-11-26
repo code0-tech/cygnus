@@ -10,7 +10,7 @@ interface ButtonLoaderProps {
     label?: string
 }
 
-function Loader({ className, loading = true, stroke = 2, ...props }: LoaderProps) {
+export function Loader({ className, loading = true, stroke = 2, ...props }: LoaderProps) {
     if (!loading) return null
 
     return <IconLoader role="status" aria-label="Loading" stroke={stroke} className={cn("animate-spin motion-reduce:animate-none", className)} {...props} />

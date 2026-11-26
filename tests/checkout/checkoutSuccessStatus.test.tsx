@@ -200,6 +200,25 @@ test("pauses slow fulfillment without showing a payment error and can resume to 
     assert.ok(screen.getByRole("button", { name: content.licenseDownloadLabel }))
 })
 
+test("sends an abandoned checkout (session still open on return) back into checkout without a failure flag", async () => {
+    let requests = 0
+    globalThis.fetch = (async () => {
+        requests += 1
+        return Response.json({ state: "CHECKOUT_PENDING", customerId: "gid://crater/Customer/1", licenseId: null, configuration: null, pricing: null })
+    }) as typeof fetch
+    render(<CheckoutSuccessStatus {...sharedProps} checkoutSearchParams={checkoutSearchParams} content={content} errorMessage={errorMessage} locale="en" sessionId="cs_test" />)
+
+    // A possibly cancelled payment must not announce a license.
+    assert.equal(screen.queryByText(content.licensePendingLabel), null)
+    await waitFor(() => assert.equal(requests, 1))
+    assert.equal(screen.queryByText(content.licensePendingLabel), null)
+
+    await waitFor(() => assert.deepEqual(routerReplaceCalls, ["/en/checkout?plan=pro&customerType=b2b&paymentPeriod=monthly"]), { timeout: 4000 })
+    assert.equal(requests, 2)
+    assert.equal(screen.queryByText(content.failedHeading), null)
+    assert.equal(screen.queryByText(content.heading), null)
+})
+
 for (const state of ["CHECKOUT_PENDING", "PAYMENT_PENDING"]) {
     test(`delayed ${state} does not claim the payment is confirmed`, async () => {
         let now = 1_000_000
