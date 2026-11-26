@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import type { Media } from "@/payload-types"
 import Image from "next/image"
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder"
+import { PlaygroundThumbnail } from "@/components/blog/PlaygroundThumbnail"
 import Link from "next/link"
 import type { ReactNode } from "react"
 import { OffsetCardMotion } from "./client/OffsetCardMotion"
@@ -55,7 +56,9 @@ export async function BlogPreviewSection({ content, locale = "en" }: BlogPreview
                     <PreviewFrame showBorder={showBorder}>
                         <article className={cn("relative z-10 overflow-hidden", isImageCenter ? "flex flex-col" : "grid min-h-96 lg:grid-cols-2")}>
                             <div className={cn("relative overflow-hidden rounded-2xl bg-primary/40", !showBorder && "border border-white/5", isImageCenter ? "aspect-video" : "min-h-64 lg:min-h-96", isImageRight && "lg:order-2")}>
-                                {heroImageUrl ? (
+                                {post.heroMediaType === "playground" && post.heroPlaygroundUrl ? (
+                                    <PlaygroundThumbnail title={post.title} url={post.heroPlaygroundUrl} className="h-full w-full rounded-none" />
+                                ) : heroImageUrl ? (
                                     <Image
                                         src={heroImageUrl}
                                         alt={heroImage?.alt ?? post.title}

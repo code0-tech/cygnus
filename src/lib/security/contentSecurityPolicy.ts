@@ -6,7 +6,7 @@ export function createContentSecurityPolicy(nonce: string, development = process
         "font-src 'self' data: https:",
         "form-action 'self'",
         "frame-ancestors 'self'",
-        "frame-src 'self' https://*.stripe.com https://*.link.com https://www.youtube.com https://player.vimeo.com",
+        "frame-src 'self' https://*.stripe.com https://*.link.com https://playground.codezero.build https://www.youtube.com https://player.vimeo.com",
         "img-src 'self' blob: data: https:",
         "manifest-src 'self'",
         "media-src 'self' blob: https:",

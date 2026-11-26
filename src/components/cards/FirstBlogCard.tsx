@@ -6,6 +6,7 @@ import { getMediaUrl } from "@/lib/media"
 import { Media, TeamMember } from "@/payload-types"
 import Image from "next/image"
 import { ImagePlaceholder } from "@/components/ui/ImagePlaceholder"
+import { PlaygroundThumbnail } from "@/components/blog/PlaygroundThumbnail"
 import Link from "next/link"
 import { useWebHaptics } from "web-haptics/react"
 
@@ -32,7 +33,9 @@ export function FirstBlogCard({ locale, post }: { locale: string; post: BlogPost
 
                 <div className="aspect-video w-full shrink-0 rounded-3xl bg-light p-2 shadow-[inset_0_1px_1px_#bfbfbf1a] xl:w-3/5">
                     <Link href={postHref} onClick={() => trigger("medium")} className="relative block h-full w-full overflow-hidden rounded-2xl bg-primary/50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/60">
-                        {heroImageUrl ? (
+                        {post.heroMediaType === "playground" && post.heroPlaygroundUrl ? (
+                            <PlaygroundThumbnail title={post.title} url={post.heroPlaygroundUrl} className="h-full w-full" />
+                        ) : heroImageUrl ? (
                             <Image
                                 src={heroImageUrl}
                                 alt={heroImage.alt ?? post.title}
